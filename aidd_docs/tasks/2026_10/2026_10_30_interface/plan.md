@@ -23,7 +23,7 @@ status: draft
 | 3   | Médias des liens dans webpool : métadonnées, type de média, famille de source, vignettes et favicons en cache — **faite** | [`phase-3.md`](./phase-3.md) |
 | 4   | Représentation des liens et copie de liste (API + datapool) — **en partie faite** : vue flux et copie de toute la liste (côté datapool, par pages de 500) ; restent la vue grille (attend les vignettes) et l'export client côté API | [`phase-4.md`](./phase-4.md) |
 | 5   | Direction artistique « Data Pool » : v1 **intégrée** (3e5fa92) ; v2 « outil de recherche » (artefact « datapool — maquettes v2 », 8b63daa) **intégrée** ; restent comptes, recherche globale, cartes de pools | [`phase-5.md`](./phase-5.md) |
-| 6   | Mise en production alwaysdata : site statique datapool (fait, `main` 412fa95) ; site Node.js de l'API webpool, redémarrage après bascule, cache de médias — **en cours** | [`phase-6.md`](./phase-6.md) |
+| 6   | Mise en production alwaysdata : site statique datapool (fait, `main` 412fa95) ; site Node.js de l'API webpool, redémarrage après bascule, cache de médias — **préparée** (webpool 0b82fc4), procédure à dérouler depuis le poste | [`phase-6.md`](./phase-6.md) |
 
 ### Phase 3 — Médias des liens (webpool)
 
