@@ -111,14 +111,19 @@
   --space-12: 48px;
 
   /* Densité */
-  --row-h: 28px;          /* ligne de la vue flux : 22+ lignes sur 650px utiles */
+  --row-h: 28px;          /* densité « compact » : 25 lignes par écran à 1366×768 */
+  --row-comfort: 76px;    /* densité « confort » : vignette, titre, description */
+  --header-h: 56px;
+  --side-w: 248px;        /* panneau de facettes */
+  --preview-w: 360px;     /* panneau d'aperçu */
   --control-h: 32px;
   --control-h-touch: 44px;
 
-  /* Rayons : angles francs, à peine adoucis */
-  --radius-xs: 1px;
-  --radius-sm: 2px;
-  --radius-md: 4px;
+  /* Rayons : adoucis (v2), les encoches néon gardent l'angle franc */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
   --radius-pill: 999px;
 
   /* Encoches d'angle (motif « panneau de deck ») */

@@ -2,7 +2,7 @@
 // signale débordements horizontaux et chevauchements de texte, compte les lignes
 // visibles de la vue flux, et enregistre les captures dans design/screenshots/.
 // Usage : node design/tools/shoot.mjs [filtre]
-import { mkdirSync, readdirSync } from 'node:fs';
+import { mkdirSync, readdirSync, rmSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 
@@ -11,6 +11,7 @@ const { chromium } = require('playwright');
 
 const DESIGN = fileURLToPath(new URL('..', import.meta.url));
 const OUT = `${DESIGN}screenshots/`;
+if (!process.argv[2]) rmSync(OUT, { recursive: true, force: true });
 mkdirSync(OUT, { recursive: true });
 
 const PAGES = [
@@ -29,6 +30,7 @@ for (const file of PAGES.filter((p) => !filter || p.includes(filter))) {
       const page = await browser.newPage({ viewport: { width, height }, deviceScaleFactor: 1 });
       const errors = [];
       page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
+      page.on('pageerror', (e) => errors.push(`erreur JS : ${e.message}`));
       page.on('requestfailed', (r) => errors.push(`requête échouée : ${r.url().slice(0, 80)}`));
       page.on('request', (r) => { if (!r.url().startsWith('file:') && !r.url().startsWith('data:')) errors.push(`ressource externe : ${r.url()}`); });
       await page.goto(`file://${DESIGN}${file}${theme === 'light' ? '?theme=light' : ''}`);
@@ -46,7 +48,7 @@ for (const file of PAGES.filter((p) => !filter || p.includes(filter))) {
           if (el.scrollWidth > el.clientWidth + 1 && getComputedStyle(el).textOverflow !== 'ellipsis') out.push(`texte tronqué : ${el.className} « ${el.textContent.trim().slice(0, 40)} »`);
         }
         // Chevauchement entre enfants directs des lignes flux et des en-têtes.
-        for (const row of [...document.querySelectorAll('.row, .page-head, .card .body, .app-header')].slice(0, 60)) {
+        for (const row of [...document.querySelectorAll('.row, .page-head, .card .body, .app-header, .xp-bar, .d-comfort .item, .d-compact .item')].slice(0, 80)) {
           const kids = [...row.children].filter((k) => { const s = getComputedStyle(k); return s.display !== 'none' && s.position !== 'absolute'; }).map((k) => [k, k.getBoundingClientRect()]);
           for (let i = 0; i < kids.length; i++) for (let j = i + 1; j < kids.length; j++) {
             const [a, ra] = kids[i], [b, rb] = kids[j];
@@ -55,13 +57,13 @@ for (const file of PAGES.filter((p) => !filter || p.includes(filter))) {
           }
         }
         let rows = null;
-        const flux = document.querySelector('.flux-wrap .flux');
+        const flux = document.querySelector('[data-xp] .items.d-compact');
         if (flux) {
-          const first = flux.querySelector('.row');
+          const first = flux.querySelector('.item');
           const header = document.querySelector('.app-header').getBoundingClientRect().height;
           const top = first.getBoundingClientRect().top + scrollY - header;
           scrollTo(0, top);
-          rows = [...flux.querySelectorAll('.row')].filter((r) => { const b = r.getBoundingClientRect(); return b.top >= header - 1 && b.bottom <= innerHeight + 1; }).length;
+          rows = [...flux.querySelectorAll('.item')].filter((r) => { const b = r.getBoundingClientRect(); return b.top >= header - 1 && b.bottom <= innerHeight + 1; }).length;
           scrollTo(0, 0);
         }
         return { out: [...new Set(out)], rows };
@@ -71,12 +73,12 @@ for (const file of PAGES.filter((p) => !filter || p.includes(filter))) {
       await page.screenshot({ path: `${OUT}${name}.png`, fullPage: true });
       if (report.rows != null) {
         // Capture « un écran » de la vue flux, liste remontée sous l'en-tête.
-        await page.evaluate(() => { const r = document.querySelector('.flux .row'); scrollTo(0, r.getBoundingClientRect().top + scrollY - document.querySelector('.app-header').getBoundingClientRect().height); });
+        await page.evaluate(() => { const r = document.querySelector('[data-xp] .items .item'); scrollTo(0, r.getBoundingClientRect().top + scrollY - document.querySelector('.app-header').getBoundingClientRect().height); });
         await page.screenshot({ path: `${OUT}${name}--ecran.png` });
       }
       const issues = [...report.out, ...errors];
       problems += issues.length;
-      console.log(`${issues.length ? '✗' : '✓'} ${name}${report.rows != null ? ` · ${report.rows} liens visibles par écran` : ''}`);
+      console.log(`${issues.length ? '✗' : '✓'} ${name}${report.rows != null ? ` · ${report.rows} liens visibles par écran (compact)` : ''}`);
       for (const i of issues) console.log(`    ${i}`);
       await page.close();
     }

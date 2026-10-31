@@ -78,6 +78,9 @@ export const SPRITE = `<svg width="0" height="0" style="position:absolute" aria-
 <symbol id="i-sliders" viewBox="0 0 16 16"><path d="M2 4h7M12 4h2M2 12h2M7 12h7M2 8h4M9 8h5"/><circle cx="10.5" cy="4" r="1.5"/><circle cx="5.5" cy="12" r="1.5"/><circle cx="7.5" cy="8" r="1.5"/></symbol>
 <symbol id="i-close" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></symbol>
 <symbol id="i-sparkle" viewBox="0 0 16 16"><path d="M8 1.5l1.6 4.9 4.9 1.6-4.9 1.6L8 14.5l-1.6-4.9L1.5 8l4.9-1.6z"/></symbol>
+<symbol id="i-eye" viewBox="0 0 16 16"><path d="M1 8s2.6-5 7-5 7 5 7 5-2.6 5-7 5-7-5-7-5z"/><circle cx="8" cy="8" r="2.2"/></symbol>
+<symbol id="i-dense" viewBox="0 0 16 16"><path d="M1.5 2.5h13M1.5 5h13M1.5 7.5h13M1.5 10h13M1.5 12.5h13M1.5 15h13"/></symbol>
+<symbol id="i-comfort" viewBox="0 0 16 16"><rect x="1.5" y="2" width="4" height="4" rx="1"/><rect x="1.5" y="10" width="4" height="4" rx="1"/><path d="M8 3h6.5M8 5.5h4M8 11h6.5M8 13.5h4"/></symbol>
 <symbol id="i-run" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.5" stroke-dasharray="3 2"/><path d="M8 4.5V8l2.5 1.5"/></symbol>
 </svg>`;
 
@@ -120,6 +123,7 @@ export const BODY_SCRIPT = `<script>
     root.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !menu.hidden) { close(); toggle.focus(); } });
     document.addEventListener('click', function (e) { if (!root.contains(e.target)) close(); });
     main.addEventListener('click', function () {
+      count = Number(root.getAttribute('data-count'));
       show('busy', '<svg class="icon sm" aria-hidden="true"><use href="#i-run"/></svg>Préparation de ' + nf.format(count) + ' liens…');
       setTimeout(function () {
         var text = 'https://exemple.org/1\\nhttps://exemple.org/2';
@@ -130,6 +134,13 @@ export const BODY_SCRIPT = `<script>
     });
   });
 
+  // Menu de compte.
+  document.querySelectorAll('[data-account]').forEach(function (a) {
+    var b = a.querySelector('.avatar'), m = a.querySelector('.menu');
+    b.addEventListener('click', function () { m.hidden = !m.hidden; b.setAttribute('aria-expanded', String(!m.hidden)); });
+    document.addEventListener('click', function (e) { if (!a.contains(e.target)) { m.hidden = true; b.setAttribute('aria-expanded', 'false'); } });
+  });
+
   // Bascules segmentées de démonstration (components.html).
   document.querySelectorAll('.seg[data-demo] button').forEach(function (b) {
     b.addEventListener('click', function () { b.parentElement.querySelectorAll('button').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); }); });
@@ -138,23 +149,31 @@ export const BODY_SCRIPT = `<script>
 </script>`;
 
 // ---------------------------------------------------------------- coquille
-export function shell({ title, active, body, root = '../', admin = true, bare = false }) {
+export function shell({ title, active, body, root = '../', admin = true, bare = false, scripts = '' }) {
   const nav = [
-    ['dashboard.html', 'Tableau de bord', 'dashboard', true],
     ['pools.html', 'Pools', 'pools', false],
+    ['dashboard.html', 'Tableau de bord', 'dashboard', true],
     ['#', 'Corpus', 'corpus', true],
     ['#', 'Domaines', 'domains', true],
   ].filter((l) => admin || !l[3]);
   const header = bare ? '' : `<header class="app-header">
-  <a class="brand" href="pools.html" aria-label="datapool, accueil">${'<span class="brand-mark" aria-hidden="true">dp</span>'}<span>data<b>pool</b></span></a>
+  <a class="brand" href="pools.html" aria-label="datapool, accueil"><span class="brand-mark" aria-hidden="true">dp</span><span>data<b>pool</b></span></a>
   <nav class="app-nav" aria-label="Navigation principale">
     ${nav.map(([href, label, key]) => `<a href="${href}"${key === active ? ' aria-current="page"' : ''}>${label}</a>`).join('\n    ')}
   </nav>
+  <form class="app-search" role="search" action="pools.html" onsubmit="event.preventDefault()">${icon('i-search', 'sm')}<input type="search" aria-label="Rechercher dans tous vos pools" placeholder="Rechercher dans tous vos pools"><kbd>Ctrl K</kbd></form>
   <div class="app-user">
-    <span class="link-status">liaison ok</span>
-    <span class="who">admin-e2e <span class="chip">${admin ? 'admin' : 'read'}</span></span>
     <button class="btn btn-ghost btn-sm theme-toggle" type="button" data-theme-toggle aria-pressed="false">${icon('i-sun')}<span class="lbl">Clair</span></button>
-    <button class="btn btn-sm" type="button">Déconnexion</button>
+    <div class="account" data-account>
+      <button class="avatar" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="Compte : Camille Arnaud">CA</button>
+      <div class="menu" role="menu" hidden>
+        <div class="who"><strong>Camille Arnaud</strong><span class="muted mono">camille@atelier.example · ${admin ? 'admin' : 'lecture'}</span></div>
+        <a class="menu-item" role="menuitem" href="#">${icon('i-bookmark', 'sm')}<b>Mes vues enregistrées</b></a>
+        <a class="menu-item" role="menuitem" href="#">${icon('i-sliders', 'sm')}<b>Préférences</b></a>
+        <a class="menu-item" role="menuitem" href="#">${icon('i-plug', 'sm')}<b>Jetons d’API</b></a>
+        <a class="menu-item" role="menuitem" href="connexion.html">${icon('i-close', 'sm')}<b>Se déconnecter</b></a>
+      </div>
+    </div>
   </div>
 </header>`;
   return `<!doctype html>
@@ -172,6 +191,7 @@ ${SPRITE}
 ${header}
 ${body}
 ${BODY_SCRIPT}
+${scripts}
 </body>
 </html>
 `;
@@ -191,7 +211,7 @@ export function copyWidget(count, { id = 'copy', format = 'txt', menuOpen = fals
     : `<span class="copy-status" role="status" hidden></span>`;
   return `<div class="copy" data-copy data-count="${count}" data-format="${format}">
   <div class="copy-split">
-    <button class="btn btn-primary" type="button" data-copy-main${status === 'busy' ? ' aria-busy="true"' : ''}>${icon('i-copy')}Copier les <span class="count">${n(count)}</span> liens</button>
+    <button class="btn btn-primary" type="button" data-copy-main${status === 'busy' ? ' aria-busy="true"' : ''}>${icon('i-copy')}Copier les <span class="count">${n(count)}</span> liens<span class="what"></span></button>
     <button class="btn btn-primary" type="button" data-copy-toggle aria-haspopup="menu" aria-expanded="${menuOpen}" aria-controls="${id}-menu" aria-label="Format de copie : ${label}"><span class="fmt">${label}</span>${icon('i-chevron', 'sm')}</button>
   </div>
   <div class="menu" id="${id}-menu" role="menu" aria-label="Format de copie"${menuOpen ? '' : ' hidden'}>
