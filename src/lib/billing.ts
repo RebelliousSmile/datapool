@@ -94,3 +94,52 @@ export function parseLimit(raw: string | number | null | undefined): number | nu
   if (text === '') return null;
   return /^\d+$/.test(text) ? Number(text) : undefined;
 }
+
+// Classe de la pastille de statut (`.status` de ui.css).
+export const STATUS_CLASS: Record<SearchRequest['status'], string> = {
+  queued: 'idle',
+  running: 'running',
+  done: 'ok',
+  failed: 'failed',
+  cancelled: 'idle',
+};
+
+export const REQUEST_STATUSES = Object.keys(REQUEST_STATUS_LABELS) as SearchRequest['status'][];
+
+// Historique affiché : '' mes recherches, un slug : une communauté possédée,
+// ALL_REQUESTS : toutes les recherches (admin, GET /admin/requests).
+export const ALL_REQUESTS = '*';
+
+export function historyQuery(view: string, { status = '', limit, offset }: { status?: string; limit: number; offset: number }) {
+  const page = { status: status || undefined, limit, offset };
+  return view === ALL_REQUESTS
+    ? { admin: true, query: page }
+    : { admin: false, query: { ...page, community: view || undefined } };
+}
+
+// `?pool=` d'un lien : gardé seulement s'il figure dans la liste des pools.
+export const knownPool = (pools: { slug: string }[], slug: string) => (pools.some((p) => p.slug === slug) ? slug : '');
+
+export const ENTRY_KIND_LABELS: Record<Schemas['WalletEntry']['kind'], string> = {
+  donation: 'don',
+  purchase: 'apport',
+  debit: 'achat',
+  refund: 'remboursement',
+  adjustment: 'ajustement',
+};
+
+// giri signés pour le grand livre : « +1 000 » au crédit, « −200 » au débit.
+export const fmtDelta = (delta: number) => `${delta > 0 ? '+' : delta < 0 ? '−' : ''}${fmtNumber(Math.abs(delta))}`;
+
+const centsFmt = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' });
+
+// Détail d'une écriture : recherche liée, montant reçu, référence, note.
+export function entryDetail(e: Pick<Schemas['WalletEntry'], 'search_request_id' | 'amount_cents' | 'reference' | 'note'>) {
+  const parts = [
+    e.search_request_id ? `recherche #${e.search_request_id}` : '',
+    e.amount_cents ? `${centsFmt.format(e.amount_cents / 100)} reçus` : '',
+    e.reference ?? '',
+    e.note ?? '',
+  ];
+  return parts.filter(Boolean).join(' · ') || '—';
+}

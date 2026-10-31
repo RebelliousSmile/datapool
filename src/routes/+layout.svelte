@@ -59,5 +59,6 @@
   <!-- l'explorateur de pool prend toute la largeur -->
   <main class={page.route.id === '/pools/[slug]' ? 'xp-page' : 'page'} id="main">{@render children()}</main>
 {:else}
-  <ConnectForm notice={restoreError} />
+  <!-- session.notice : jeton refusé en cours de session (401) -->
+  <ConnectForm notice={restoreError || session.notice} />
 {/if}

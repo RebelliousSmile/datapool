@@ -1,6 +1,23 @@
 import { describe, expect, it } from 'vitest';
 import type { Schemas } from '../src/lib/api/client';
-import { REQUEST_STATUS_LABELS, defaultPayer, fmtEuros, fmtGiri, parseLimit, payersFor, quote, spentOn } from '../src/lib/billing';
+import {
+  ALL_REQUESTS,
+  ENTRY_KIND_LABELS,
+  entryDetail,
+  REQUEST_STATUSES,
+  REQUEST_STATUS_LABELS,
+  STATUS_CLASS,
+  defaultPayer,
+  fmtDelta,
+  fmtEuros,
+  fmtGiri,
+  historyQuery,
+  knownPool,
+  parseLimit,
+  payersFor,
+  quote,
+  spentOn,
+} from '../src/lib/billing';
 
 const billing: Schemas['Billing'] = {
   giri_per_eur: 1000,
@@ -15,6 +32,7 @@ const billing: Schemas['Billing'] = {
     { slug: 'atelier', label: 'Atelier', role: 'member', balance: 500, monthly_limit: 40, spent_30d: 20, contributed: 0, pools: ['lora'] },
     { slug: 'club', label: 'Club', role: 'owner', balance: 5, monthly_limit: null, spent_30d: 0, contributed: 2000, pools: [] },
   ],
+  invitations: [],
 };
 
 describe('recherches payantes', () => {
@@ -70,5 +88,31 @@ describe('recherches payantes', () => {
   it('statuts et giri dépensés', () => {
     expect(REQUEST_STATUS_LABELS.queued).toBe('en attente');
     expect(spentOn({ price: 30, refunded: 10 })).toBe(20);
+  });
+
+  it('historique : mes recherches, celles d’une communauté, ou toutes pour l’admin ; filtre de statut', () => {
+    expect(historyQuery('', { limit: 20, offset: 40 })).toEqual({
+      admin: false,
+      query: { status: undefined, community: undefined, limit: 20, offset: 40 },
+    });
+    expect(historyQuery('atelier', { status: 'queued', limit: 20, offset: 0 }).query).toMatchObject({ community: 'atelier', status: 'queued' });
+    expect(historyQuery(ALL_REQUESTS, { status: 'done', limit: 5, offset: 0 })).toEqual({ admin: true, query: { status: 'done', limit: 5, offset: 0 } });
+    expect(REQUEST_STATUSES).toEqual(['queued', 'running', 'done', 'failed', 'cancelled']);
+    expect(REQUEST_STATUSES.map((s) => STATUS_CLASS[s])).toEqual(['idle', 'running', 'ok', 'failed', 'idle']);
+  });
+
+  it('oublie un pool de lien absent de la liste', () => {
+    expect(knownPool([{ slug: 'lora' }], 'lora')).toBe('lora');
+    expect(knownPool([{ slug: 'lora' }], 'inconnu')).toBe('');
+  });
+
+  it('grand livre : genre et montant signé', () => {
+    expect(ENTRY_KIND_LABELS.purchase).toBe('apport');
+    expect(fmtDelta(1000).replace(/\s/g, ' ')).toBe('+1 000');
+    expect(fmtDelta(-20)).toBe('−20');
+    expect(fmtDelta(0)).toBe('0');
+    expect(entryDetail({ search_request_id: 12, note: 'pages non lancées' })).toBe('recherche #12 · pages non lancées');
+    expect(entryDetail({ amount_cents: 1250, reference: 'kofi-1' }).replace(/\s/g, ' ')).toBe('12,50 € reçus · kofi-1');
+    expect(entryDetail({})).toBe('—');
   });
 });

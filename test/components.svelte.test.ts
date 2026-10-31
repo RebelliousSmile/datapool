@@ -140,7 +140,7 @@ describe('ConnectForm', () => {
     token.value = '  wp_abc  ';
     token.dispatchEvent(new Event('input'));
     await submit(el, () => session.me);
-    expect(fetchFn).toHaveBeenCalledWith('http://api.test/api/v1/me', { headers: { Authorization: 'Bearer wp_abc' } });
+    expect(fetchFn).toHaveBeenCalledWith('http://api.test/api/v1/me', { headers: { Authorization: 'Bearer wp_abc' }, signal: expect.any(AbortSignal) });
     expect(session.me?.name).toBe('moi');
     session.disconnect();
   });

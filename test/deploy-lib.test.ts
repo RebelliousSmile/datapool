@@ -127,6 +127,10 @@ describe('CSP et .htaccess', () => {
     expect(csp).toContain("script-src 'self' 'sha256-x'");
     expect(csp).toContain("connect-src 'self' https://api.example.org");
     expect(csp).toContain("img-src 'self' data: https://api.example.org");
+    // aucun <style> en ligne ; attributs style="" tolérés (annonceur de SvelteKit)
+    expect(csp).toContain("style-src 'self';");
+    expect(csp).toContain("style-src-attr 'unsafe-inline'");
+    expect(csp).not.toMatch(/style-src 'self' 'unsafe-inline'/);
   });
 
   it('pose le repli monopage et la CSP sans <IfModule>', () => {
@@ -134,6 +138,13 @@ describe('CSP et .htaccess', () => {
     expect(htaccess).toContain('RewriteRule ^ index.html [L]');
     expect(htaccess).toContain(`Header always set Content-Security-Policy "default-src 'none'"`);
     expect(htaccess).not.toContain('IfModule');
+  });
+
+  it('pose HSTS et Permissions-Policy avec les autres en-têtes de sécurité', () => {
+    const htaccess = buildHtaccess("default-src 'none'");
+    expect(htaccess).toContain('Header always set Strict-Transport-Security "max-age=31536000"');
+    expect(htaccess).toContain('Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()"');
+    expect(htaccess).toContain('Header always set X-Content-Type-Options "nosniff"');
   });
 });
 

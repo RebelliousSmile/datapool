@@ -1,6 +1,7 @@
 <script lang="ts">
   import { resolve } from '$app/paths';
   import { page } from '$app/state';
+  import Async from '#lib/components/Async.svelte';
   import Icon from '#lib/components/Icon.svelte';
   import Pager from '#lib/components/Pager.svelte';
   import UsageBadge from '#lib/components/UsageBadge.svelte';
@@ -51,10 +52,8 @@
   <button class="btn btn-primary"><Icon name="search" small />Filtrer</button>
 </form>
 
-{#await domains}
-  <p class="terminal-line">&gt; chargement<span class="caret" aria-hidden="true"></span></p>
-{:then res}
-  {#if res}
+<Async value={domains}>
+  {#snippet children(res)}
     <div class="section-title"><h2>Sites</h2><span class="eyebrow">{fmtNumber(res.total)} domaines</span></div>
     <div class="panel flush table-wrap">
       <table class="table">
@@ -82,7 +81,5 @@
       </table>
     </div>
     <Pager total={res.total} limit={LIMIT} bind:offset />
-  {/if}
-{:catch err}
-  <div class="alert-box err" role="alert"><Icon name="alert" small />{err.message}</div>
-{/await}
+  {/snippet}
+</Async>

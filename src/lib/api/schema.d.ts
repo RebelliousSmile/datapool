@@ -878,7 +878,10 @@ export interface paths {
         post: {
             parameters: {
                 query?: never;
-                header?: never;
+                header?: {
+                    /** @description 1 à 100 caractères [A-Za-z0-9_-] ; même clé du même client : la recherche déjà achetée est rendue (200), sans nouveau débit */
+                    "Idempotency-Key"?: string;
+                };
                 path?: never;
                 cookie?: never;
             };
@@ -888,6 +891,15 @@ export interface paths {
                 };
             };
             responses: {
+                /** @description Clé d'idempotence déjà servie : recherche existante, rien de débité (en-tête Idempotent-Replayed: true) */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["RequestReceipt"];
+                    };
+                };
                 /** @description Recherche inscrite et payée */
                 201: {
                     headers: {
@@ -1065,7 +1077,7 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        /** Ajoute un membre ou change son rôle et son plafond (propriétaires seulement ; la communauté garde un propriétaire actif) */
+        /** Invite un client, ou change le rôle ou le plafond d'un membre (propriétaires seulement ; upsert partiel ; un invité devient membre en acceptant) */
         put: {
             parameters: {
                 query?: never;
@@ -1121,6 +1133,123 @@ export interface paths {
                         "application/json": {
                             community: string;
                             name: string;
+                        };
+                    };
+                };
+                400: components["responses"]["BadRequest"];
+                401: components["responses"]["Unauthorized"];
+                404: components["responses"]["NotFound"];
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/communities/{slug}/invitation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Accepte l'invitation de la communauté */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    slug: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            community: string;
+                            accepted?: boolean;
+                            left?: boolean;
+                        };
+                    };
+                };
+                401: components["responses"]["Unauthorized"];
+                404: components["responses"]["NotFound"];
+            };
+        };
+        /** Décline l'invitation de la communauté */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    slug: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            community: string;
+                            accepted?: boolean;
+                            left?: boolean;
+                        };
+                    };
+                };
+                401: components["responses"]["Unauthorized"];
+                404: components["responses"]["NotFound"];
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/communities/{slug}/membership": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Quitte la communauté (le dernier propriétaire actif ne peut pas) */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    slug: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            community: string;
+                            accepted?: boolean;
+                            left?: boolean;
                         };
                     };
                 };
@@ -1437,6 +1566,8 @@ export interface components {
                 balance: number;
             };
             communities: components["schemas"]["CommunityWallet"][];
+            /** @description invitations à des communautés, en attente d'acceptation */
+            invitations: components["schemas"]["Invitation"][];
         };
         WalletEntry: {
             id: number;
@@ -1479,8 +1610,9 @@ export interface components {
             results: number;
             new_urls: number;
             new_domains: number;
-            /** @description URLs de la recherche présentes dans le pool visé après refresh */
+            /** @description URLs de la recherche présentes aujourd'hui dans le pool visé (calculé à la lecture) */
             in_pool: number | null;
+            /** @description cause d'un échec : message générique pour un client, message brut du provider pour l'admin */
             error: string | null;
             /** Format: date-time */
             created_at: string;
@@ -1522,6 +1654,8 @@ export interface components {
             joined_at: string;
             /** @description giri versés par le membre au pot commun (apports à son nom) */
             contributed: number;
+            /** @description invitation acceptée ; un invité ne voit ni les pools ni le pot */
+            accepted: boolean;
         };
         /** @description Upsert partiel : un champ absent garde sa valeur (nouveau membre : `member`, sans plafond) ; `monthly_limit: null` lève le plafond, 0 bloque la dépense. */
         CommunityMemberInput: {
@@ -1535,6 +1669,17 @@ export interface components {
             name: string;
             role: string;
             monthly_limit: number | null;
+            /** @description false : client invité, membre après acceptation */
+            accepted: boolean;
+        };
+        Invitation: {
+            slug: string;
+            label: string;
+            /** @enum {string} */
+            role: "owner" | "member";
+            monthly_limit: number | null;
+            /** Format: date-time */
+            invited_at: string;
         };
     };
     responses: {

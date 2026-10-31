@@ -2,6 +2,7 @@
   import { resolve } from '$app/paths';
   import { page } from '$app/state';
   import CopyLinks from '#lib/components/CopyLinks.svelte';
+  import Async from '#lib/components/Async.svelte';
   import Icon from '#lib/components/Icon.svelte';
   import { COPY_CAP, fetchAllUrls } from '#lib/copy.ts';
   import Pager from '#lib/components/Pager.svelte';
@@ -72,12 +73,10 @@
   <button class="btn btn-primary"><Icon name="search" small />Filtrer</button>
 </form>
 
-{#await urls}
-  <p class="terminal-line">&gt; chargement<span class="caret" aria-hidden="true"></span></p>
-{:then res}
-  {#if res}
+<Async value={urls}>
+  {#snippet children(res)}
     <div class="list-toolbar">
-      <div class="section-title" style="margin:0;flex:1"><h2>URLs</h2><span class="eyebrow">{fmtNumber(res.total)} correspondent</span></div>
+      <div class="section-title in-toolbar"><h2>URLs</h2><span class="eyebrow">{fmtNumber(res.total)} correspondent</span></div>
       <CopyLinks
         slug="corpus"
         count={Math.min(res.total, COPY_CAP)}
@@ -112,7 +111,5 @@
       </table>
     </div>
     <Pager total={res.total} limit={LIMIT} bind:offset />
-  {/if}
-{:catch err}
-  <div class="alert-box err" role="alert"><Icon name="alert" small />{err.message}</div>
-{/await}
+  {/snippet}
+</Async>

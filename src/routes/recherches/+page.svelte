@@ -1,11 +1,31 @@
 <script lang="ts">
+  import { untrack } from 'svelte';
   import { resolve } from '$app/paths';
   import { page } from '$app/state';
+  import Async from '#lib/components/Async.svelte';
   import ExternalLink from '#lib/components/ExternalLink.svelte';
   import Icon from '#lib/components/Icon.svelte';
   import Pager from '#lib/components/Pager.svelte';
-  import { REQUEST_STATUS_LABELS, defaultPayer, fmtEuros, fmtGiri, parseLimit, payersFor, quote, spentOn } from '#lib/billing.ts';
+  import {
+    ALL_REQUESTS,
+    ENTRY_KIND_LABELS,
+    REQUEST_STATUSES,
+    REQUEST_STATUS_LABELS,
+    STATUS_CLASS,
+    defaultPayer,
+    entryDetail,
+    fmtDelta,
+    fmtEuros,
+    fmtGiri,
+    historyQuery,
+    knownPool,
+    parseLimit,
+    payersFor,
+    quote,
+    spentOn,
+  } from '#lib/billing.ts';
   import { fmtDate, fmtNumber } from '#lib/format.ts';
+  import { RequestsScreen, errorMessage } from '#lib/purchase.svelte.ts';
   import { session } from '#lib/session.svelte.ts';
   import type { Schemas } from '#lib/api/client.ts';
 
@@ -14,36 +34,31 @@
   // par un don) ; dans une communauté, on ne paie pas pour soi : les pools de la
   // communauté se paient sur son pot, alimenté par les apports des membres.
   // webpool l'exécute dans le quart d'heure et rembourse les pages non lancées.
+  // L'état (chargement, achat, annulation, invitations) vit dans RequestsScreen.
   const LIMIT = 20;
+  const screen = new RequestsScreen();
 
-  let reload = $state(0);
-  let billing = $state<Schemas['Billing'] | null>(null);
-  let loadError = $state('');
-  let pools = $state<Schemas['PoolSummary'][]>([]);
-
+  // Soldes à l'arrivée (les pools ne sont lus qu'une fois).
   $effect(() => {
-    void reload;
     const client = session.client;
-    if (!client) return;
-    Promise.all([client.billing(), client.pools()])
-      .then(([b, p]) => {
-        billing = b;
-        pools = p.items;
-        if (!form.provider && b.prices.length) form.provider = b.prices[0].provider;
-      })
-      .catch((err: Error) => (loadError = err.message));
+    if (client) untrack(() => screen.load(client));
   });
+  const billing = $derived(screen.billing);
 
   let form = $state({ query: '', provider: '', pages: 1, pool: page.url.searchParams.get('pool') ?? '', payer: '' });
-  let sending = $state(false);
-  let sendError = $state('');
-  let notice = $state('');
 
   const payers = $derived(billing ? payersFor(billing, form.pool) : []);
   const payer = $derived(payers.find((p) => p.value === form.payer));
   const devis = $derived(billing ? quote(billing, { provider: form.provider, pages: form.pages, payer }) : null);
   const giriPerEur = $derived(billing?.giri_per_eur ?? 1000);
 
+  $effect(() => {
+    if (billing && !form.provider && billing.prices.length) form.provider = billing.prices[0].provider;
+  });
+  // `?pool=` d'un pool absent de la liste : on n'envoie pas un slug invisible.
+  $effect(() => {
+    if (screen.poolsLoaded && form.pool) form.pool = knownPool(screen.pools, form.pool);
+  });
   // Le payeur suit le pool : pot de la communauté pour ses pools, personnel ailleurs.
   $effect(() => {
     if (!payer || payer.disabled) form.payer = defaultPayer(payers);
@@ -55,98 +70,116 @@
 
   async function buy(event: SubmitEvent) {
     event.preventDefault();
-    if (!session.client || !devis || devis.problem || !form.query.trim()) return;
-    sending = true;
-    sendError = '';
-    notice = '';
-    try {
-      const res = await session.client.createRequest({
-        query: form.query.trim(),
-        provider: form.provider,
-        pages: form.pages,
-        ...(form.pool ? { pool: form.pool } : {}),
-        ...(form.payer ? { community: form.payer } : {}),
-      });
-      notice = `Recherche #${res.request.id} achetée : ${fmtGiri(res.request.price)} débités, solde ${fmtGiri(res.balance)}. Elle sera lancée dans le quart d'heure.`;
+    if (screen.sending) return;
+    const client = session.client;
+    if (!client || !devis || devis.problem || !form.query.trim()) return;
+    const bought = await screen.buy(client, {
+      query: form.query.trim(),
+      provider: form.provider,
+      pages: form.pages,
+      ...(form.pool ? { pool: form.pool } : {}),
+      ...(form.payer ? { community: form.payer } : {}),
+    });
+    if (bought) {
       form.query = '';
       offset = 0;
-      reload += 1;
-    } catch (err) {
-      sendError = (err as Error).message;
-    } finally {
-      sending = false;
     }
   }
 
-  // Historique : mes recherches, ou celles d'une communauté que je possède.
+  // Historique : mes recherches, celles d'une communauté que je possède, ou
+  // toutes pour l'admin ; filtre de statut.
   let view = $state('');
+  let status = $state('');
   let offset = $state(0);
   const owned = $derived(billing?.communities.filter((c) => c.role === 'owner') ?? []);
   const history = $derived.by(() => {
-    void reload;
-    return session.client?.requests({ community: view, limit: LIMIT, offset });
+    void screen.version;
+    const client = session.client;
+    if (!client) return undefined;
+    const { admin, query } = historyQuery(view, { status, limit: LIMIT, offset });
+    return admin ? client.adminRequests(query) : client.requests(query);
   });
 
-  async function cancel(r: Schemas['SearchRequest']) {
-    sendError = '';
-    try {
-      const res = await session.client!.cancelRequest(r.id);
-      notice = `Recherche #${r.id} annulée : ${fmtGiri(res.refunded)} remboursés.`;
-      reload += 1;
-    } catch (err) {
-      sendError = (err as Error).message;
-    }
+  // Quitter une communauté : confirmation sur la tuile.
+  let leaving = $state('');
+  async function leave(slug: string) {
+    leaving = '';
+    if (session.client) await screen.membership(session.client, 'leave', slug);
   }
 
+  // Mouvements (grand livre), lus à l'ouverture de la section.
+  let ledgerOpen = $state(false);
+  let ledgerView = $state('');
+  let ledgerOffset = $state(0);
+  const ledger = $derived.by(() => {
+    void screen.version;
+    const client = session.client;
+    if (!client || !ledgerOpen) return undefined;
+    return client.billingEntries({ community: ledgerView, limit: LIMIT, offset: ledgerOffset });
+  });
+
   // Membres d'une communauté possédée : rôle et plafond (champ vide : sans plafond).
+  // Ajouter un client l'invite : il devient membre en acceptant.
   let crew = $state('');
-  let crewReload = $state(0);
   let crewError = $state('');
+  let crewNotice = $state('');
   let newMember = $state({ name: '', role: 'member', limit: '' });
   const crewSlug = $derived(crew || owned[0]?.slug || '');
   const members = $derived.by(() => {
-    void crewReload;
+    void screen.version;
     return crewSlug ? session.client?.members(crewSlug) : undefined;
   });
 
   async function saveMember(name: string, role: string, limitRaw: string | number | null) {
     crewError = '';
+    crewNotice = '';
     const limit = parseLimit(limitRaw);
     if (limit === undefined) {
       crewError = 'Plafond : un entier positif ou nul, ou vide pour aucun plafond.';
-      return false;
+      return null;
     }
     try {
-      await session.client!.setMember(crewSlug, name, { role: role as 'owner' | 'member', monthly_limit: limit });
-      crewReload += 1;
-      reload += 1;
-      return true;
+      const res = await session.client!.setMember(crewSlug, name, { role: role as 'owner' | 'member', monthly_limit: limit });
+      await screen.refresh(session.client!);
+      return res;
     } catch (err) {
-      crewError = (err as Error).message;
-      return false;
+      crewError = errorMessage(err);
+      return null;
     }
   }
 
   async function addMember(event: SubmitEvent) {
     event.preventDefault();
-    if (newMember.name.trim() && (await saveMember(newMember.name.trim(), newMember.role, newMember.limit))) {
+    const name = newMember.name.trim();
+    const res = name ? await saveMember(name, newMember.role, newMember.limit) : null;
+    if (res) {
       newMember = { name: '', role: 'member', limit: '' };
+      if (!res.accepted) crewNotice = `${name} est invité : il deviendra membre en acceptant l'invitation.`;
     }
   }
 
   async function removeMember(name: string) {
     crewError = '';
+    crewNotice = '';
     try {
       await session.client!.removeMember(crewSlug, name);
-      crewReload += 1;
-      reload += 1;
+      await screen.refresh(session.client!);
     } catch (err) {
-      crewError = (err as Error).message;
+      crewError = errorMessage(err);
     }
   }
-
-  const STATUS_CLASS: Record<string, string> = { queued: 'idle', running: 'running', done: 'ok', failed: 'failed', cancelled: 'idle' };
 </script>
+
+{#snippet cancelButton(r: Schemas['SearchRequest'])}
+  <button
+    class="btn btn-sm btn-ghost"
+    type="button"
+    disabled={screen.isCancelling(r.id)}
+    aria-busy={screen.isCancelling(r.id)}
+    onclick={() => session.client && screen.cancel(session.client, r)}
+    ><Icon name="x" small />{screen.isCancelling(r.id) ? 'Annulation…' : 'Annuler'}<span class="sr-only"> la recherche #{r.id}</span></button
+  >
+{/snippet}
 
 <div class="page-head">
   <div class="titles">
@@ -155,11 +188,47 @@
   </div>
 </div>
 
-{#if loadError}
-  <div class="alert-box err" role="alert"><Icon name="alert" small />{loadError}</div>
+{#if screen.fatalError}
+  <div class="alert-box err" role="alert"><Icon name="alert" small />{screen.fatalError}</div>
 {:else if !billing}
   <p class="terminal-line">&gt; chargement<span class="caret" aria-hidden="true"></span></p>
 {:else}
+  {#if screen.loadError}
+    <div class="alert-box err" role="alert"><Icon name="alert" small />Soldes non rafraîchis : {screen.loadError}</div>
+  {/if}
+
+  {#if billing.invitations.length}
+    <div class="section-title"><h2>Invitations</h2><span class="eyebrow">{billing.invitations.length} en attente</span></div>
+    <ul class="invitations">
+      {#each billing.invitations as inv (inv.slug)}
+        <li class="panel invitation">
+          <div>
+            <strong>{inv.label}</strong> vous invite comme {inv.role === 'owner' ? 'propriétaire' : 'membre'}
+            <div class="muted">
+              {inv.monthly_limit === null ? 'sans plafond' : `plafond : ${fmtGiri(inv.monthly_limit)} sur 30 jours`} · le {fmtDate(inv.invited_at)}
+            </div>
+          </div>
+          <div class="nowrap">
+            <button
+              class="btn btn-sm btn-primary"
+              type="button"
+              disabled={screen.isMembershipBusy(inv.slug)}
+              onclick={() => session.client && screen.membership(session.client, 'accept', inv.slug)}
+              ><Icon name="check" small />Accepter<span class="sr-only"> l'invitation de {inv.label}</span></button
+            >
+            <button
+              class="btn btn-sm btn-ghost"
+              type="button"
+              disabled={screen.isMembershipBusy(inv.slug)}
+              onclick={() => session.client && screen.membership(session.client, 'decline', inv.slug)}
+              ><Icon name="x" small />Décliner<span class="sr-only"> l'invitation de {inv.label}</span></button
+            >
+          </div>
+        </li>
+      {/each}
+    </ul>
+  {/if}
+
   <div class="section-title"><h2>Portefeuilles</h2><span class="eyebrow">1 € = {fmtNumber(billing.giri_per_eur)} giri</span></div>
   <div class="tiles">
     <div class="tile">
@@ -176,9 +245,23 @@
             : `${fmtGiri(c.spent_30d)} dépensés sur ${fmtGiri(c.monthly_limit)} en 30 jours`} · vos apports : {fmtGiri(c.contributed)} · pools :
           {c.pools.join(', ') || 'aucun'}</span
         >
+        <div class="tile-actions">
+          {#if leaving === c.slug}
+            <span class="sub">Quitter {c.label} ? Vos apports restent au pot.</span>
+            <button class="btn btn-sm" type="button" disabled={screen.isMembershipBusy(c.slug)} onclick={() => leave(c.slug)}
+              >Confirmer</button
+            >
+            <button class="btn btn-sm btn-ghost" type="button" onclick={() => (leaving = '')}>Rester</button>
+          {:else}
+            <button class="btn btn-sm btn-ghost" type="button" disabled={screen.isMembershipBusy(c.slug)} onclick={() => (leaving = c.slug)}
+              ><Icon name="x" small />Quitter<span class="sr-only"> {c.label}</span></button
+            >
+          {/if}
+        </div>
       </div>
     {/each}
   </div>
+  {#if screen.membershipError}<div class="alert-box err" role="alert"><Icon name="alert" small />{screen.membershipError}</div>{/if}
   <p class="muted">
     Le prix d'une recherche suit le coût des tokens du provider, majoré. Une page non lancée, un appel en échec ou une annulation
     sont remboursés en giri. Dans une communauté, on ne paie pas pour soi : on verse des giri au pot commun, qui paie les
@@ -191,6 +274,44 @@
       Pour un don ou un apport à une communauté, contacter l'administrateur.
     {/if}
   </p>
+
+  <details class="ledger" bind:open={ledgerOpen}>
+    <summary><h2>Mouvements</h2><span class="eyebrow">dons, apports, achats, remboursements</span></summary>
+    {#if owned.length}
+      <label class="field"
+        ><span>Grand livre</span>
+        <select class="input" bind:value={ledgerView} onchange={() => (ledgerOffset = 0)}>
+          <option value="">portefeuille personnel</option>
+          {#each owned as c (c.slug)}<option value={c.slug}>pot de {c.label}</option>{/each}
+        </select>
+      </label>
+    {/if}
+    <Async value={ledger}>
+      {#snippet children(res)}
+        <div class="panel flush table-wrap">
+          <table class="table">
+            <thead>
+              <tr><th>Date</th><th>Mouvement</th><th class="num">giri</th><th class="hide-sm">Client</th><th>Détail</th></tr>
+            </thead>
+            <tbody>
+              {#each res.items as e (e.id)}
+                <tr>
+                  <td class="mono nowrap">{fmtDate(e.created_at)}</td>
+                  <td>{ENTRY_KIND_LABELS[e.kind]}</td>
+                  <td class="num">{fmtDelta(e.delta)}</td>
+                  <td class="mono hide-sm">{e.client ?? '—'}</td>
+                  <td class="muted">{entryDetail(e)}</td>
+                </tr>
+              {:else}
+                <tr><td colspan="5" class="muted">Aucun mouvement.</td></tr>
+              {/each}
+            </tbody>
+          </table>
+        </div>
+        <Pager total={res.total} limit={LIMIT} bind:offset={ledgerOffset} />
+      {/snippet}
+    </Async>
+  </details>
 
   <div class="section-title"><h2>Nouvelle recherche</h2><span class="eyebrow">{fmtNumber(billing.max_queued)} en attente au plus</span></div>
   {#if billing.prices.length === 0}
@@ -215,7 +336,7 @@
         ><span>Pool visé</span>
         <select class="input" bind:value={form.pool}>
           <option value="">aucun (corpus seulement)</option>
-          {#each pools as p (p.slug)}<option value={p.slug}>{p.label}</option>{/each}
+          {#each screen.pools as p (p.slug)}<option value={p.slug}>{p.label}</option>{/each}
         </select>
       </label>
       <label class="field"
@@ -226,8 +347,8 @@
           {/each}
         </select>
       </label>
-      <button class="btn btn-primary" disabled={sending || !devis || !!devis.problem || !form.query.trim()}>
-        <Icon name="search" small />Acheter{devis ? ` · ${fmtGiri(devis.price)}` : ''}
+      <button class="btn btn-primary" disabled={screen.sending || !devis || !!devis.problem || !form.query.trim()}>
+        <Icon name="search" small />{screen.sending ? 'Achat…' : 'Acheter'}{devis ? ` · ${fmtGiri(devis.price)}` : ''}
       </button>
     </form>
     {#if devis}
@@ -239,31 +360,37 @@
       {#if devis.problem}<div class="alert-box err" role="alert"><Icon name="alert" small />{devis.problem}</div>{/if}
     {/if}
   {/if}
-  {#if sendError}<div class="alert-box err" role="alert"><Icon name="alert" small />{sendError}</div>{/if}
-  {#if notice}<p class="terminal-line ok" role="status">&gt; {notice}</p>{/if}
+  {#if screen.sendError}<div class="alert-box err" role="alert"><Icon name="alert" small />{screen.sendError}</div>{/if}
+  {#if screen.notice}<p class="terminal-line ok" role="status">&gt; {screen.notice}</p>{/if}
 
   <div class="section-title">
     <h2>Historique</h2>
-    {#if owned.length}
+    {#if owned.length || session.isAdmin}
       <label class="field"
         ><span class="sr-only">Recherches affichées</span>
         <select class="input" bind:value={view} onchange={() => (offset = 0)}>
           <option value="">mes recherches</option>
           {#each owned as c (c.slug)}<option value={c.slug}>communauté {c.label}</option>{/each}
+          {#if session.isAdmin}<option value={ALL_REQUESTS}>toutes les recherches</option>{/if}
         </select>
       </label>
     {/if}
+    <label class="field"
+      ><span class="sr-only">Statut</span>
+      <select class="input" bind:value={status} onchange={() => (offset = 0)}>
+        <option value="">tous les statuts</option>
+        {#each REQUEST_STATUSES as st (st)}<option value={st}>{REQUEST_STATUS_LABELS[st]}</option>{/each}
+      </select>
+    </label>
   </div>
-  {#await history}
-    <p class="terminal-line">&gt; chargement<span class="caret" aria-hidden="true"></span></p>
-  {:then res}
-    {#if res}
+  <Async value={history}>
+    {#snippet children(res)}
       <div class="panel flush table-wrap">
         <table class="table">
           <thead>
             <tr>
               <th>#</th><th>Requête</th><th>Statut</th><th class="hide-sm">Provider</th><th class="hide-sm">Pool</th>
-              <th class="num">giri</th><th class="num">Liens</th><th class="hide-sm">Achetée</th><th><span class="sr-only">Actions</span></th>
+              <th class="num">giri</th><th class="num">Liens</th><th class="hide-sm">Achetée</th><th class="hide-sm"><span class="sr-only">Actions</span></th>
             </tr>
           </thead>
           <tbody>
@@ -274,6 +401,8 @@
                   {r.query}
                   {#if view}<div class="muted">par {r.client}</div>{/if}
                   {#if r.error}<div class="muted" title={r.error}>{r.error}</div>{/if}
+                  <!-- petit écran : la colonne Actions est masquée, l'annulation passe ici -->
+                  {#if r.status === 'queued' && !view}<div class="show-sm">{@render cancelButton(r)}</div>{/if}
                 </td>
                 <td><span class="status {STATUS_CLASS[r.status]}">{REQUEST_STATUS_LABELS[r.status]}</span></td>
                 <td class="mono hide-sm">{r.provider} · {r.calls_done}/{r.pages}</td>
@@ -288,11 +417,7 @@
                   >{fmtNumber(r.results)} · {fmtNumber(r.new_urls)}{r.in_pool === null ? '' : ` · ${fmtNumber(r.in_pool)}`}</td
                 >
                 <td class="mono nowrap hide-sm">{fmtDate(r.created_at)}</td>
-                <td>
-                  {#if r.status === 'queued' && !view}
-                    <button class="btn btn-sm btn-ghost" type="button" onclick={() => cancel(r)}><Icon name="x" small />Annuler</button>
-                  {/if}
-                </td>
+                <td class="hide-sm">{#if r.status === 'queued' && !view}{@render cancelButton(r)}{/if}</td>
               </tr>
             {:else}
               <tr><td colspan="9" class="muted">Aucune recherche.</td></tr>
@@ -301,10 +426,8 @@
         </table>
       </div>
       <Pager total={res.total} limit={LIMIT} bind:offset />
-    {/if}
-  {:catch err}
-    <div class="alert-box err" role="alert"><Icon name="alert" small />{err.message}</div>
-  {/await}
+    {/snippet}
+  </Async>
 
   {#if owned.length}
     <div class="section-title">
@@ -320,10 +443,8 @@
         <span class="eyebrow">{owned[0].label} · plafond en giri sur 30 jours, vide : aucun</span>
       {/if}
     </div>
-    {#await members}
-      <p class="terminal-line">&gt; chargement<span class="caret" aria-hidden="true"></span></p>
-    {:then res}
-      {#if res}
+    <Async value={members}>
+      {#snippet children(res)}
         <div class="panel flush table-wrap">
           <table class="table">
             <thead>
@@ -333,7 +454,9 @@
               {#each res.items as m (m.name)}
                 {@const edit = { role: m.role, limit: m.monthly_limit === null ? '' : String(m.monthly_limit) }}
                 <tr>
-                  <td class="mono">{m.name}{#if m.revoked}<span class="chip">révoqué</span>{/if}</td>
+                  <td class="mono"
+                    >{m.name}{#if !m.accepted}<span class="chip">invité</span>{/if}{#if m.revoked}<span class="chip">révoqué</span>{/if}</td
+                  >
                   <td>
                     <label class="sr-only" for={`role-${m.name}`}>Rôle de {m.name}</label>
                     <select class="input" id={`role-${m.name}`} bind:value={edit.role}>
@@ -358,18 +481,17 @@
           </table>
         </div>
         <form class="filters" onsubmit={addMember}>
-          <label class="field"><span>Ajouter un client</span><input class="input" bind:value={newMember.name} required placeholder="nom du client" /></label>
+          <label class="field"><span>Inviter un client</span><input class="input" bind:value={newMember.name} required placeholder="nom du client" /></label>
           <label class="field"
             ><span>Rôle</span>
             <select class="input" bind:value={newMember.role}><option value="member">membre</option><option value="owner">propriétaire</option></select>
           </label>
           <label class="field"><span>Plafond</span><input class="input" inputmode="numeric" placeholder="aucun" bind:value={newMember.limit} /></label>
-          <button class="btn btn-primary"><Icon name="user" small />Ajouter</button>
+          <button class="btn btn-primary"><Icon name="user" small />Inviter</button>
         </form>
-      {/if}
-    {:catch err}
-      <div class="alert-box err" role="alert"><Icon name="alert" small />{err.message}</div>
-    {/await}
+      {/snippet}
+    </Async>
+    {#if crewNotice}<p class="terminal-line ok" role="status">&gt; {crewNotice}</p>{/if}
     {#if crewError}<div class="alert-box err" role="alert"><Icon name="alert" small />{crewError}</div>{/if}
   {/if}
 {/if}

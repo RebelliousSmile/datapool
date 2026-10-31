@@ -1,6 +1,6 @@
 <!-- Pictogrammes dessinés pour datapool (repris des maquettes), une fois par page.
      S'utilisent avec Icon.svelte : <Icon name="copy" />. -->
-<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<svg class="icon-sprite" width="0" height="0" aria-hidden="true">
   <symbol id="i-page" viewBox="0 0 16 16"><path d="M4 1.5h5.5L13 5v9.5H4z" /><path d="M9.5 1.5V5H13M6 8h5M6 10.5h5M6 13h3" /></symbol>
   <symbol id="i-image" viewBox="0 0 16 16"><rect x="1.5" y="2.5" width="13" height="11" rx="1" /><circle cx="5.5" cy="6" r="1.3" /><path d="M1.5 12l4-4 3 3 2-2 4 4" /></symbol>
   <symbol id="i-video" viewBox="0 0 16 16"><rect x="1.5" y="3" width="13" height="10" rx="1" /><path d="M6.5 5.8v4.4L10.3 8z" /></symbol>

@@ -178,13 +178,18 @@ export function inlineScriptHashes(html) {
 
 // Le jeton d'API vit dans le localStorage : aucune ressource tierce, et l'API
 // est la seule origine contactée (données et vignettes de son cache).
-// Les attributs style="" posés par Svelte imposent 'unsafe-inline' pour les styles.
+// Styles : feuilles du site seulement, aucun <style> en ligne. L'application
+// n'a plus de style="" ; reste celui de l'annonceur de navigation de SvelteKit
+// (root.svelte, inséré par innerHTML), que style-src-attr laisse passer. Les
+// directives style: de Svelte passent par le CSSOM (element.style), que la CSP
+// ne bloque pas.
 /** @param {{ apiOrigin: string, scriptHashes: string[] }} policy */
 export function contentSecurityPolicy({ apiOrigin, scriptHashes }) {
   return [
     "default-src 'none'",
     `script-src 'self' ${scriptHashes.join(' ')}`.trim(),
-    "style-src 'self' 'unsafe-inline'",
+    "style-src 'self'",
+    "style-src-attr 'unsafe-inline'",
     `img-src 'self' data: ${apiOrigin}`,
     "font-src 'self'",
     `connect-src 'self' ${apiOrigin}`,
@@ -210,6 +215,9 @@ export function buildHtaccess(csp) {
     'Header always set X-Content-Type-Options "nosniff"',
     'Header always set Referrer-Policy "no-referrer"',
     'Header always set X-Frame-Options "DENY"',
+    '# site servi en https uniquement (siteUrl https exigé par validateTarget)',
+    'Header always set Strict-Transport-Security "max-age=31536000"',
+    'Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()"',
     '',
     '# fichiers nommés par empreinte : immuables ; index.html toujours revalidé',
     '<If "%{REQUEST_URI} =~ m#^/_app/immutable/#">',
