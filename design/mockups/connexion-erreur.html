@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Connexion · datapool</title>
+<script>(function(){var q=new URLSearchParams(location.search).get('theme');var t=q||localStorage.getItem('dp-theme');if(t==='light')document.documentElement.setAttribute('data-theme','light');})();</script>
+<link rel="stylesheet" href="../tokens.css">
+<link rel="stylesheet" href="../ui.css">
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<symbol id="i-page" viewBox="0 0 16 16"><path d="M4 1.5h5.5L13 5v9.5H4z"/><path d="M9.5 1.5V5H13M6 8h5M6 10.5h5M6 13h3"/></symbol>
+<symbol id="i-image" viewBox="0 0 16 16"><rect x="1.5" y="2.5" width="13" height="11" rx="1"/><circle cx="5.5" cy="6" r="1.3"/><path d="M1.5 12l4-4 3 3 2-2 4 4"/></symbol>
+<symbol id="i-video" viewBox="0 0 16 16"><rect x="1.5" y="3" width="13" height="10" rx="1"/><path d="M6.5 5.8v4.4L10.3 8z"/></symbol>
+<symbol id="i-pdf" viewBox="0 0 16 16"><path d="M3 1.5h6.5L13 5v9.5H3z"/><path d="M9.5 1.5V5H13"/><path d="M5 9h1.3a1 1 0 0 1 0 2H5V8m3.5 3V8h.8a1.5 1.5 0 0 1 0 3zm3-3h-1.2v3m0-1.5h1"/></symbol>
+<symbol id="i-copy" viewBox="0 0 16 16"><rect x="5" y="5" width="9" height="9" rx="1"/><path d="M11 5V2.5a1 1 0 0 0-1-1H2.5a1 1 0 0 0-1 1V10a1 1 0 0 0 1 1H5"/></symbol>
+<symbol id="i-chevron" viewBox="0 0 16 16"><path d="M4 6l4 4 4-4"/></symbol>
+<symbol id="i-check" viewBox="0 0 16 16"><path d="M2.5 8.5l3.5 3.5 7.5-8"/></symbol>
+<symbol id="i-alert" viewBox="0 0 16 16"><path d="M8 1.8l6.5 12H1.5z"/><path d="M8 6.5v3.2M8 11.6v.1"/></symbol>
+<symbol id="i-x" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.5"/><path d="M5.7 5.7l4.6 4.6M10.3 5.7l-4.6 4.6"/></symbol>
+<symbol id="i-list" viewBox="0 0 16 16"><path d="M1.5 3.5h13M1.5 6.5h13M1.5 9.5h13M1.5 12.5h13"/></symbol>
+<symbol id="i-grid" viewBox="0 0 16 16"><rect x="1.5" y="1.5" width="5.5" height="5.5"/><rect x="9" y="1.5" width="5.5" height="5.5"/><rect x="1.5" y="9" width="5.5" height="5.5"/><rect x="9" y="9" width="5.5" height="5.5"/></symbol>
+<symbol id="i-sun" viewBox="0 0 16 16"><circle cx="8" cy="8" r="3"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3 3l1.4 1.4M11.6 11.6L13 13M3 13l1.4-1.4M11.6 4.4L13 3"/></symbol>
+<symbol id="i-moon" viewBox="0 0 16 16"><path d="M13.5 10A6 6 0 0 1 6 2.5a6 6 0 1 0 7.5 7.5z"/></symbol>
+<symbol id="i-arrow" viewBox="0 0 16 16"><path d="M5 11l6-6M6 5h5v5"/></symbol>
+<symbol id="i-broken" viewBox="0 0 16 16"><path d="M1.5 3h6l-1 3 2 2-1 5h-6zM10 3h4.5v10H9l1-3.5-2-2z"/></symbol>
+<symbol id="i-play" viewBox="0 0 16 16"><path d="M4 2.5v11L13.5 8z"/></symbol>
+<symbol id="i-plug" viewBox="0 0 16 16"><path d="M5.5 1.5v3M10.5 1.5v3M3.5 4.5h9v3a4.5 4.5 0 0 1-9 0zM8 12v2.5"/></symbol>
+<symbol id="i-search" viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5l4 4"/></symbol>
+<symbol id="i-download" viewBox="0 0 16 16"><path d="M8 1.5v9M4.5 7L8 10.5 11.5 7M2 14h12"/></symbol>
+<symbol id="i-run" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.5" stroke-dasharray="3 2"/><path d="M8 4.5V8l2.5 1.5"/></symbol>
+</svg>
+
+<main class="jack" id="main">
+  <form class="panel jack-panel" onsubmit="event.preventDefault()">
+    <p class="terminal-line">&gt; datapool v0.1 · terminal d'accès au pool<br>&gt; <span class="ok">page autonome</span> · aucune ressource tierce chargée</p>
+    <h1 class="jack-title" style="margin:16px 0 4px">data<b>pool</b></h1>
+    <p class="secondary" style="margin:0 0 20px">Branchez-vous sur l'API webpool. Le jeton se crée avec <code>webpool client add</code>.</p>
+    <div style="display:grid;gap:14px">
+      <label class="field"><span>URL de l'API</span><input class="input" type="url" required value="https://api.webpool.example/api/v1" autocomplete="url"></label>
+      <label class="field"><span>Jeton</span><input class="input" type="password" required value="wp_live_••••••••••••" autocomplete="off" aria-invalid="true" aria-describedby="err"><small>Gardé dans ce navigateur uniquement.</small></label>
+      <p class="alert-box err" role="alert" id="err"><svg class="icon " aria-hidden="true"><use href="#i-x"/></svg><span>Jeton refusé (401). Vérifiez qu'il n'a pas été révoqué.</span></p>
+      <button class="btn btn-primary" style="min-height:44px;font-size:15px"><svg class="icon " aria-hidden="true"><use href="#i-plug"/></svg>Jack in<span class="sr-only"> (se connecter)</span></button>
+    </div>
+    <p class="terminal-line" style="margin-top:18px">&gt; en attente du jeton<span class="caret" aria-hidden="true"></span></p>
+    <div style="position:absolute;top:12px;right:12px"><button class="btn btn-ghost btn-sm theme-toggle" type="button" data-theme-toggle aria-pressed="false"><svg class="icon " aria-hidden="true"><use href="#i-sun"/></svg><span class="lbl">Clair</span></button></div>
+  </form>
+</main>
+<script>
+(function () {
+  // Bascule de thème (mémorisée).
+  document.querySelectorAll('[data-theme-toggle]').forEach(function (b) {
+    var sync = function () { var l = document.documentElement.getAttribute('data-theme') === 'light'; b.setAttribute('aria-pressed', String(l)); b.querySelector('.lbl').textContent = l ? 'Sombre' : 'Clair'; };
+    sync();
+    b.addEventListener('click', function () {
+      var l = document.documentElement.getAttribute('data-theme') === 'light';
+      if (l) document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', 'light');
+      localStorage.setItem('dp-theme', l ? 'dark' : 'light'); sync();
+    });
+  });
+
+  // Copier les N liens : menu de format + confirmation (démonstration).
+  var FMT = { txt: 'URLs', md: 'Markdown', csv: 'CSV' };
+  document.querySelectorAll('[data-copy]').forEach(function (root) {
+    var count = Number(root.getAttribute('data-count'));
+    var main = root.querySelector('[data-copy-main]'), toggle = root.querySelector('[data-copy-toggle]');
+    var menu = root.querySelector('.menu'), status = root.querySelector('.copy-status');
+    var fmt = root.getAttribute('data-format') || 'txt';
+    var nf = new Intl.NumberFormat('fr-FR');
+    function close() { menu.hidden = true; toggle.setAttribute('aria-expanded', 'false'); }
+    function show(cls, html) { status.className = 'copy-status ' + cls; status.innerHTML = html; status.hidden = false; }
+    toggle.addEventListener('click', function () {
+      var open = menu.hidden; menu.hidden = !open; toggle.setAttribute('aria-expanded', String(open));
+      if (open) (menu.querySelector('[aria-checked="true"]') || menu.querySelector('[role=menuitemradio]')).focus();
+    });
+    menu.querySelectorAll('[role=menuitemradio]').forEach(function (item) {
+      item.addEventListener('click', function () {
+        menu.querySelectorAll('[role=menuitemradio]').forEach(function (i) { i.setAttribute('aria-checked', String(i === item)); });
+        fmt = item.getAttribute('data-fmt'); toggle.querySelector('.fmt').textContent = FMT[fmt]; close(); toggle.focus();
+      });
+    });
+    root.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !menu.hidden) { close(); toggle.focus(); } });
+    document.addEventListener('click', function (e) { if (!root.contains(e.target)) close(); });
+    main.addEventListener('click', function () {
+      show('busy', '<svg class="icon sm" aria-hidden="true"><use href="#i-run"/></svg>Préparation de ' + nf.format(count) + ' liens…');
+      setTimeout(function () {
+        var text = 'https://exemple.org/1\nhttps://exemple.org/2';
+        var done = function () { show('ok', '<svg class="icon sm" aria-hidden="true"><use href="#i-check"/></svg>' + nf.format(count) + ' liens copiés · ' + FMT[fmt]); };
+        var fail = function () { show('err', '<svg class="icon sm" aria-hidden="true"><use href="#i-alert"/></svg><span>Copie refusée par le navigateur — <a href="#">télécharger le fichier</a></span>'); };
+        if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fail); else done();
+      }, 450);
+    });
+  });
+
+  // Bascules segmentées de démonstration (components.html).
+  document.querySelectorAll('.seg[data-demo] button').forEach(function (b) {
+    b.addEventListener('click', function () { b.parentElement.querySelectorAll('button').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); }); });
+  });
+})();
+</script>
+</body>
+</html>

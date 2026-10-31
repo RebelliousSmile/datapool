@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LoRA — textures et ambiances de forêt · datapool</title>
+<script>(function(){var q=new URLSearchParams(location.search).get('theme');var t=q||localStorage.getItem('dp-theme');if(t==='light')document.documentElement.setAttribute('data-theme','light');})();</script>
+<link rel="stylesheet" href="../tokens.css">
+<link rel="stylesheet" href="../ui.css">
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<symbol id="i-page" viewBox="0 0 16 16"><path d="M4 1.5h5.5L13 5v9.5H4z"/><path d="M9.5 1.5V5H13M6 8h5M6 10.5h5M6 13h3"/></symbol>
+<symbol id="i-image" viewBox="0 0 16 16"><rect x="1.5" y="2.5" width="13" height="11" rx="1"/><circle cx="5.5" cy="6" r="1.3"/><path d="M1.5 12l4-4 3 3 2-2 4 4"/></symbol>
+<symbol id="i-video" viewBox="0 0 16 16"><rect x="1.5" y="3" width="13" height="10" rx="1"/><path d="M6.5 5.8v4.4L10.3 8z"/></symbol>
+<symbol id="i-pdf" viewBox="0 0 16 16"><path d="M3 1.5h6.5L13 5v9.5H3z"/><path d="M9.5 1.5V5H13"/><path d="M5 9h1.3a1 1 0 0 1 0 2H5V8m3.5 3V8h.8a1.5 1.5 0 0 1 0 3zm3-3h-1.2v3m0-1.5h1"/></symbol>
+<symbol id="i-copy" viewBox="0 0 16 16"><rect x="5" y="5" width="9" height="9" rx="1"/><path d="M11 5V2.5a1 1 0 0 0-1-1H2.5a1 1 0 0 0-1 1V10a1 1 0 0 0 1 1H5"/></symbol>
+<symbol id="i-chevron" viewBox="0 0 16 16"><path d="M4 6l4 4 4-4"/></symbol>
+<symbol id="i-check" viewBox="0 0 16 16"><path d="M2.5 8.5l3.5 3.5 7.5-8"/></symbol>
+<symbol id="i-alert" viewBox="0 0 16 16"><path d="M8 1.8l6.5 12H1.5z"/><path d="M8 6.5v3.2M8 11.6v.1"/></symbol>
+<symbol id="i-x" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.5"/><path d="M5.7 5.7l4.6 4.6M10.3 5.7l-4.6 4.6"/></symbol>
+<symbol id="i-list" viewBox="0 0 16 16"><path d="M1.5 3.5h13M1.5 6.5h13M1.5 9.5h13M1.5 12.5h13"/></symbol>
+<symbol id="i-grid" viewBox="0 0 16 16"><rect x="1.5" y="1.5" width="5.5" height="5.5"/><rect x="9" y="1.5" width="5.5" height="5.5"/><rect x="1.5" y="9" width="5.5" height="5.5"/><rect x="9" y="9" width="5.5" height="5.5"/></symbol>
+<symbol id="i-sun" viewBox="0 0 16 16"><circle cx="8" cy="8" r="3"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3 3l1.4 1.4M11.6 11.6L13 13M3 13l1.4-1.4M11.6 4.4L13 3"/></symbol>
+<symbol id="i-moon" viewBox="0 0 16 16"><path d="M13.5 10A6 6 0 0 1 6 2.5a6 6 0 1 0 7.5 7.5z"/></symbol>
+<symbol id="i-arrow" viewBox="0 0 16 16"><path d="M5 11l6-6M6 5h5v5"/></symbol>
+<symbol id="i-broken" viewBox="0 0 16 16"><path d="M1.5 3h6l-1 3 2 2-1 5h-6zM10 3h4.5v10H9l1-3.5-2-2z"/></symbol>
+<symbol id="i-play" viewBox="0 0 16 16"><path d="M4 2.5v11L13.5 8z"/></symbol>
+<symbol id="i-plug" viewBox="0 0 16 16"><path d="M5.5 1.5v3M10.5 1.5v3M3.5 4.5h9v3a4.5 4.5 0 0 1-9 0zM8 12v2.5"/></symbol>
+<symbol id="i-search" viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5l4 4"/></symbol>
+<symbol id="i-download" viewBox="0 0 16 16"><path d="M8 1.5v9M4.5 7L8 10.5 11.5 7M2 14h12"/></symbol>
+<symbol id="i-run" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.5" stroke-dasharray="3 2"/><path d="M8 4.5V8l2.5 1.5"/></symbol>
+</svg>
+<header class="app-header">
+  <a class="brand" href="pools.html" aria-label="datapool, accueil"><span class="brand-mark" aria-hidden="true">dp</span><span>data<b>pool</b></span></a>
+  <nav class="app-nav" aria-label="Navigation principale">
+    <a href="dashboard.html">Tableau de bord</a>
+    <a href="pools.html" aria-current="page">Pools</a>
+    <a href="#">Corpus</a>
+    <a href="#">Domaines</a>
+  </nav>
+  <div class="app-user">
+    <span class="link-status">liaison ok</span>
+    <span class="who">admin-e2e <span class="chip">admin</span></span>
+    <button class="btn btn-ghost btn-sm theme-toggle" type="button" data-theme-toggle aria-pressed="false"><svg class="icon " aria-hidden="true"><use href="#i-sun"/></svg><span class="lbl">Clair</span></button>
+    <button class="btn btn-sm" type="button">Déconnexion</button>
+  </div>
+</header>
+<main class="page" id="main">
+  <nav class="crumbs" aria-label="Fil d'Ariane"><a href="pools.html">pools</a><span class="sep">/</span><span>lora-foret-textures</span></nav>
+  <div class="page-head">
+    <div class="titles">
+      <h1>LoRA — textures et ambiances de forêt</h1>
+      <div class="meta">
+        <code>lora-foret-textures</code>
+        <span>412 liens</span>
+        <span>matérialisé le 30 oct. 2026, 21:14</span>
+        <span class="fresh-ok">● frais · il y a 2 h</span>
+      </div>
+    </div>
+    <div class="actions">
+      <div class="copy" data-copy data-count="412" data-format="txt">
+  <div class="copy-split">
+    <button class="btn btn-primary" type="button" data-copy-main><svg class="icon " aria-hidden="true"><use href="#i-copy"/></svg>Copier les <span class="count">412</span> liens</button>
+    <button class="btn btn-primary" type="button" data-copy-toggle aria-haspopup="menu" aria-expanded="false" aria-controls="copy-menu" aria-label="Format de copie : URLs"><span class="fmt">URLs</span><svg class="icon sm" aria-hidden="true"><use href="#i-chevron"/></svg></button>
+  </div>
+  <div class="menu" id="copy-menu" role="menu" aria-label="Format de copie" hidden>
+    <div class="menu-label eyebrow">Format du presse-papiers</div>
+    <button class="menu-item" type="button" role="menuitemradio" data-fmt="txt" aria-checked="true"><span class="radio" aria-hidden="true"></span><b>URLs seules<span class="default">par défaut</span></b><span class="sample">https://osf.io/m8fpz/</span></button>
+    <button class="menu-item" type="button" role="menuitemradio" data-fmt="md" aria-checked="false"><span class="radio" aria-hidden="true"></span><b>Markdown</b><span class="sample">- [Titre](https://osf.io/m8fpz/)</span></button>
+    <button class="menu-item" type="button" role="menuitemradio" data-fmt="csv" aria-checked="false"><span class="radio" aria-hidden="true"></span><b>CSV</b><span class="sample">rank,title,url,domain,usage</span></button>
+  </div>
+  <span class="copy-status" role="status" hidden></span>
+</div>
+      <div class="seg" role="group" aria-label="Affichage des liens">
+  <a href="#" aria-current="page"><svg class="icon sm" aria-hidden="true"><use href="#i-list"/></svg>Flux</a>
+  <a href="pool-grille.html"><svg class="icon sm" aria-hidden="true"><use href="#i-grid"/></svg>Grille</a>
+</div>
+    </div>
+  </div>
+
+  <div class="cols">
+    <section class="panel" aria-labelledby="usage-h">
+      <div class="panel-head"><h2 id="usage-h">Usage commercial</h2><span class="eyebrow">412 liens</span></div>
+      <div class="stackbar" role="img" aria-label="Libre : 168, Sous conditions : 121, Payant : 22, Non commercial : 37, À qualifier : 64">
+  <span class="seg-u" data-usage="libre" style="flex-grow:168" title="Libre : 168 liens (41 %)"></span><span class="seg-u" data-usage="sous-conditions" style="flex-grow:121" title="Sous conditions : 121 liens (29 %)"></span><span class="seg-u" data-usage="payant" style="flex-grow:22" title="Payant : 22 liens (5 %)"></span><span class="seg-u" data-usage="non-commercial" style="flex-grow:37" title="Non commercial : 37 liens (9 %)"></span><span class="seg-u" data-usage="a-qualifier" style="flex-grow:64" title="À qualifier : 64 liens (16 %)"></span>
+</div>
+<ul class="legend">
+  <li><span class="u-mark" data-usage="libre" aria-hidden="true"></span><span class="name">Libre</span><strong>168</strong><span class="pct">41%</span></li>
+  <li><span class="u-mark" data-usage="sous-conditions" aria-hidden="true"></span><span class="name">Sous conditions</span><strong>121</strong><span class="pct">29%</span></li>
+  <li><span class="u-mark" data-usage="payant" aria-hidden="true"></span><span class="name">Payant</span><strong>22</strong><span class="pct">5%</span></li>
+  <li><span class="u-mark" data-usage="non-commercial" aria-hidden="true"></span><span class="name">Non commercial</span><strong>37</strong><span class="pct">9%</span></li>
+  <li><span class="u-mark" data-usage="a-qualifier" aria-hidden="true"></span><span class="name">À qualifier</span><strong>64</strong><span class="pct">16%</span></li>
+</ul>
+    </section>
+    <section class="panel" aria-labelledby="dom-h">
+      <div class="panel-head"><h2 id="dom-h">Domaines les plus présents</h2><span class="eyebrow">top 8</span></div>
+      <ul class="barlist">
+  <li title="flickr.com : 58 liens"><span class="name">flickr.com</span><span class="track"><span class="fill" style="width:100.0%"></span></span><span class="val">58</span></li>
+  <li title="commons.wikimedia.org : 51 liens"><span class="name">commons.wikimedia.org</span><span class="track"><span class="fill" style="width:87.9%"></span></span><span class="val">51</span></li>
+  <li title="polyhaven.com : 37 liens"><span class="name">polyhaven.com</span><span class="track"><span class="fill" style="width:63.8%"></span></span><span class="val">37</span></li>
+  <li title="ambientcg.com : 31 liens"><span class="name">ambientcg.com</span><span class="track"><span class="fill" style="width:53.4%"></span></span><span class="val">31</span></li>
+  <li title="civitai.com : 28 liens"><span class="name">civitai.com</span><span class="track"><span class="fill" style="width:48.3%"></span></span><span class="val">28</span></li>
+  <li title="europeana.eu : 24 liens"><span class="name">europeana.eu</span><span class="track"><span class="fill" style="width:41.4%"></span></span><span class="val">24</span></li>
+  <li title="pexels.com : 22 liens"><span class="name">pexels.com</span><span class="track"><span class="fill" style="width:37.9%"></span></span><span class="val">22</span></li>
+  <li title="huggingface.co : 17 liens"><span class="name">huggingface.co</span><span class="track"><span class="fill" style="width:29.3%"></span></span><span class="val">17</span></li>
+</ul>
+    </section>
+  </div>
+
+  <div class="list-toolbar">
+    <div class="section-title" style="margin:0;flex:1"><h2>Liens</h2><span class="range">1–30 sur 412 · par rang</span></div>
+    <label class="sr-only" for="filter">Filtrer les liens de la page</label>
+    <input class="input filter-input" id="filter" type="search" placeholder="Filtrer cette page…">
+  </div>
+  <div class="flux-wrap">
+  <div class="flux-head" aria-hidden="true"><span class="eyebrow">Rang</span><span></span><span class="eyebrow">Titre</span><span class="eyebrow h-url">URL</span><span class="eyebrow">Usage</span></div>
+  <ol class="flux" aria-label="Liens du pool, par rang">
+<li class="row">
+  <span class="rank">1</span>
+  <span class="fav"><img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%226%22%20fill%3D%22%230063dc%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2221.5%22%20font-family%3D%22Arial%2CHelvetica%2Csans-serif%22%20font-weight%3D%22700%22%20font-size%3D%2214%22%20fill%3D%22%23fff%22%20text-anchor%3D%22middle%22%3Efl%3C%2Ftext%3E%3C%2Fsvg%3E" alt="" width="16" height="16"></span>
+  <a class="title" href="https://www.flickr.com/photos/vosges_light/53810247731/" target="_blank" rel="noopener noreferrer" title="Brume matinale dans une hêtraie, contre-jour">Brume matinale dans une hêtraie, contre-jour</a>
+  <span class="url" title="https://www.flickr.com/photos/vosges_light/53810247731/"><span class="scheme">https://</span><span class="host">www.flickr.com</span>/photos/vosges_light/53810247731/</span>
+  <span class="usage" data-usage="sous-conditions"><span class="u-mark" aria-hidden="true"></span>Sous conditions</span>
+</li>
+<li class="row">
+  <span class="rank">2</span>
+  <span class="fav"><img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%226%22%20fill%3D%22%23c7432f%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2221.5%22%20font-family%3D%22Arial%2CHelvetica%2Csans-serif%22%20font-weight%3D%22700%22%20font-size%3D%2214%22%20fill%3D%22%23fff%22%20text-anchor%3D%22middle%22%3Eph%3C%2Ftext%3E%3C%2Fsvg%3E" alt="" width="16" height="16"></span>
+  <a class="title" href="https://polyhaven.com/a/forest_ground_04" target="_blank" rel="noopener noreferrer" title="Mossy forest floor 01 — PBR texture 4K">Mossy forest floor 01 — PBR texture 4K</a>
+  <span class="url" title="https://polyhaven.com/a/forest_ground_04"><span class="scheme">https://</span><span class="host">polyhaven.com</span>/a/forest_ground_04</span>
+  <span class="usage" data-usage="libre"><span class="u-mark" aria-hidden="true"></span>Libre</span>
+</li>
+<li class="row">
+  <span class="rank">3</span>
+  <span class="fav"><img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%226%22%20fill%3D%22%232c7a3a%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2221.5%22%20font-family%3D%22Arial%2CHelvetica%2Csans-serif%22%20font-weight%3D%22700%22%20font-size%3D%2214%22%20fill%3D%22%23fff%22%20text-anchor%3D%22middle%22%3Ecg%3C%2Ftext%3E%3C%2Fsvg%3E" alt="" width="16" height="16"></span>
+  <a class="title" href="https://ambientcg.com/view?id=Bark012" target="_blank" rel="noopener noreferrer" title="Bark 012 — écorce de chêne">Bark 012 — écorce de chêne</a>
+  <span class="url" title="https://ambientcg.com/view?id=Bark012"><span class="scheme">https://</span><span class="host">ambientcg.com</span>/view?id=Bark012</span>
+  <span class="usage" data-usage="libre"><span class="u-mark" aria-hidden="true"></span>Libre</span>
+</li>
+<li class="row">
+  <span class="rank">4</span>
+  <span class="fav"><img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%226%22%20fill%3D%22%233366cc%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2221.5%22%20font-family%3D%22Arial%2CHelvetica%2Csans-serif%22%20font-weight%3D%22700%22%20font-size%3D%2220%22%20fill%3D%22%23fff%22%20text-anchor%3D%22middle%22%3EW%3C%2Ftext%3E%3C%2Fsvg%3E" alt="" width="16" height="16"></span>
+  <a class="title" href="https://commons.wikimedia.org/wiki/File:Bialowieza_National_Park_understory_2023.jpg" target="_blank" rel="noopener noreferrer" title="Forêt primaire de Białowieża, sous-bois en été">Forêt primaire de Białowieża, sous-bois en été</a>
+  <span class="url" title="https://commons.wikimedia.org/wiki/File:Bialowieza_National_Park_understory_2023.jpg"><span class="scheme">https://</span><span class="host">commons.wikimedia.org</span>/wiki/File:Bialowieza_National_Park_understory_2023.jpg</span>
+  <span class="usage" data-usage="sous-conditions"><span class="u-mark" aria-hidden="true"></span>Sous conditions</span>
+</li>
+<li class="row">
+  <span class="rank">5</span>
+  <span class="fav"><img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%226%22%20fill%3D%22%231c7ed6%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2221.5%22%20font-family%3D%22Arial%2CHelvetica%2Csans-serif%22%20font-weight%3D%22700%22%20font-size%3D%2220%22%20fill%3D%22%23fff%22%20text-anchor%3D%22middle%22%3Ec%3C%2Ftext%3E%3C%2Fsvg%3E" alt="" width="16" height="16"></span>
+  <a class="title" href="https://civitai.com/models/412873/dark-fantasy-forest-sdxl" target="_blank" rel="noopener noreferrer" title="Dark fantasy forest LoRA (SDXL) — v3.2">Dark fantasy forest LoRA (SDXL) — v3.2</a>
+  <span class="url" title="https://civitai.com/models/412873/dark-fantasy-forest-sdxl"><span class="scheme">https://</span><span class="host">civitai.com</span>/models/412873/dark-fantasy-forest-sdxl</span>
+  <span class="usage" data-usage="sous-conditions"><span class="u-mark" aria-hidden="true"></span>Sous conditions</span>
+</li>
+<li class="row">
+  <span class="rank">6</span>
+  <span class="fav"><img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%226%22%20fill%3D%22%23e5322d%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2222%22%20font-family%3D%22Arial%2CHelvetica%2Csans-serif%22%20font-weight%3D%22700%22%20font-size%3D%2220%22%20fill%3D%22%23fff%22%20text-anchor%3D%22middle%22%3E%E2%96%B6%3C%2Ftext%3E%3C%2Fsvg%3E" alt="" width="16" height="16"></span>
+  <a class="title" href="https://www.youtube.com/watch?v=Lr9kQ2bT0xE" target="_blank" rel="noopener noreferrer" title="Tutoriel : entraîner un LoRA de textures avec kohya_ss (2025)"><span class="kind" title="Vidéo"><svg class="icon sm" aria-hidden="true"><use href="#i-video"/></svg><span class="sr-only">Vidéo : </span></span>Tutoriel : entraîner un LoRA de textures avec kohya_ss (2025)</a>
+  <span class="url" title="https://www.youtube.com/watch?v=Lr9kQ2bT0xE"><span class="scheme">https://</span><span class="host">www.youtube.com</span>/watch?v=Lr9kQ2bT0xE</span>
+  <span class="usage" data-usage="a-qualifier"><span class="u-mark" aria-hidden="true"></span>À qualifier</span>
+</li>
+<li class="row">
+  <span class="rank">7</span>
+  <span class="fav"><img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%226%22%20fill%3D%22%2305a081%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2221.5%22%20font-family%3D%22Arial%2CHelvetica%2Csans-serif%22%20font-weight%3D%22700%22%20font-size%3D%2220%22%20fill%3D%22%23fff%22%20text-anchor%3D%22middle%22%3EP%3C%2Ftext%3E%3C%2Fsvg%3E" alt="" width="16" height="16"></span>
+  <a class="title" href="https://www.pexels.com/photo/fern-leaves-forest-floor-18472301/" target="_blank" rel="noopener noreferrer" title="Fougères au sol, gros plan">Fougères au sol, gros plan</a>
+  <span class="url" title="https://www.pexels.com/photo/fern-leaves-forest-floor-18472301/"><span class="scheme">https://</span><span class="host">www.pexels.com</span>/photo/fern-leaves-forest-floor-18472301/</span>
+  <span class="usage" data-usage="libre"><span class="u-mark" aria-hidden="true"></span>Libre</span>
+</li>
+<li class="row">
+  <span class="rank">8</span>
+  <span class="fav"><img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%226%22%20fill%3D%22%23ffb000%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2221.5%22%20font-family%3D%22Arial%2CHelvetica%2Csans-serif%22%20font-weight%3D%22700%22%20font-size%3D%2214%22%20fill%3D%22%23fff%22%20text-anchor%3D%22middle%22%3Ehf%3C%2Ftext%3E%3C%2Fsvg%3E" alt="" width="16" height="16"></span>
+  <a class="title" href="https://huggingface.co/datasets/geoforest/canopy-drone-2400" target="_blank" rel="noopener noreferrer" title="Forest canopy dataset — 2 400 drone captures">Forest canopy dataset — 2 400 drone captures</a>
+  <span class="url" title="https://huggingface.co/datasets/geoforest/canopy-drone-2400"><span class="scheme">https://</span><span class="host">huggingface.co</span>/datasets/geoforest/canopy-drone-2400</span>
+  <span class="usage" data-usage="non-commercial"><span class="u-mark" aria-hidden="true"></span>Non commercial</span>
+</li>
+<li class="row">
+  <span class="rank">9</span>
+  <span class="fav"><img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%226%22%20fill%3D%22%230063dc%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2221.5%22%20font-family%3D%22Arial%2CHelvetica%2Csans-serif%22%20font-weight%3D%22700%22%20font-size%3D%2214%22%20fill%3D%22%23fff%22%20text-anchor%3D%22middle%22%3Efl%3C%2Ftext%3E%3C%2Fsvg%3E" alt="" width="16" height="16"></span>
+  <a class="title" href="https://www.flickr.com/photos/armorique_macro/53766120184/" target="_blank" rel="noopener noreferrer" title="Lichen sur granite, Bretagne">Lichen sur granite, Bretagne</a>
+  <span class="url" title="https://www.flickr.com/photos/armorique_macro/53766120184/"><span class="scheme">https://</span><span class="host">www.flickr.com</span>/photos/armorique_macro/53766120184/</span>
+  <span class="usage" data-usage="non-commercial"><span class="u-mark" aria-hidden="true"></span>Non commercial</span>
+</li>
+<li class="row">
+  <span class="rank">10</span>
+  <span class="fav"><img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%226%22%20fill%3D%22%230a72cc%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2221.5%22%20font-family%3D%22Arial%2CHelvetica%2Csans-serif%22%20font-weight%3D%22700%22%20font-size%3D%2220%22%20fill%3D%22%23fff%22%20text-anchor%3D%22middle%22%3Ee%3C%2Ftext%3E%3C%2Fsvg%3E" alt="" width="16" height="16"></span>
+  <a class="title" href="https://www.europeana.eu/fr/item/9200579/forest_fontainebleau_1860" target="_blank" rel="noopener noreferrer" title="Gravure : La Forêt de Fontainebleau (1860)">Gravure : La Forêt de Fontainebleau (1860)</a>
+  <span class="url" title="https://www.europeana.eu/fr/item/9200579/forest_fontainebleau_1860"><span class="scheme">https://</span><span class="host">www.europeana.eu</span>/fr/item/9200579/forest_fontainebleau_1860</span>
+  <span class="usage" data-usage="libre"><span class="u-mark" aria-hidden="true"></span>Libre</span>
+</li>
+<li class="row">
+  <span class="rank">11</span>
+  <span class="fav"><img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%226%22%20fill%3D%22%233366cc%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2221.5%22%20font-family%3D%22Arial%2CHelvetica%2Csans-serif%22%20font-weight%3D%22700%22%20font-size%3D%2220%22%20fill%3D%22%23fff%22%20text-anchor%3D%22middle%22%3EW%3C%2Ftext%3E%3C%2Fsvg%3E" alt="" width="16" height="16"></span>
+  <a class="title untitled" href="https://commons.wikimedia.org/wiki/File:Sequoia_trunk_detail_IMG_4471.jpg" target="_blank" rel="noopener noreferrer" title="Sans titre : https://commons.wikimedia.org/wiki/File:Sequoia_trunk_detail_IMG_4471.jpg">commons.wikimedia.org/wiki/File:Sequoia_trunk_detail_IMG_4471.jpg</a>
+  <span class="url" title="https://commons.wikimedia.org/wiki/File:Sequoia_trunk_detail_IMG_4471.jpg"><span class="scheme">https://</span><span class="host">commons.wikimedia.org</span>/wiki/File:Sequoia_trunk_detail_IMG_4471.jpg</span>
+  <span class="usage" data-usage="sous-conditions"><span class="u-mark" aria-hidden="true"></span>Sous conditions</span>
+</li>
+<li class="row">
+  <span class="rank">12</span>
+  <span class="fav"><img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%226%22%20fill%3D%22%23c7432f%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2221.5%22%20font-family%3D%22Arial%2CHelvetica%2Csans-serif%22%20font-weight%3D%22700%22%20font-size%3D%2214%22%20fill%3D%22%23fff%22%20text-anchor%3D%22middle%22%3Eph%3C%2Ftext%3E%3C%2Fsvg%3E" alt="" width="16" height="16"></span>
+  <a class="title" href="https://polyhaven.com/a/pine_needles_ground_02" target="_blank" rel="noopener noreferrer" title="Pine needles ground 02">Pine needles ground 02</a>
+  <span class="url" title="https://polyhaven.com/a/pine_needles_ground_02"><span class="scheme">https://</span><span class="host">polyhaven.com</span>/a/pine_needles_ground_02</span>
+  <span class="usage" data-usage="libre"><span class="u-mark" aria-hidden="true"></span>Libre</span>
+</li>
+<li class="row">
+  <span class="rank">13</span>
+  <span class="fav"><img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%226%22%20fill%3D%22%230063dc%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2221.5%22%20font-family%3D%22Arial%2CHelvetica%2Csans-serif%22%20font-weight%3D%22700%22%20font-size%3D%2214%22%20fill%3D%22%23fff%22%20text-anchor%3D%22middle%22%3Efl%3C%2Ftext%3E%3C%2Fsvg%3E" alt="" width="16" height="16"></span>
+  <a class="title" href="https://www.flickr.com/photos/amazonie_terrain/albums/72177720312345678" target="_blank" rel="noopener noreferrer" title="Forêt de mangroves au crépuscule, Guyane — série de 24 photos haute définition pour jeux de données d’entraînement, avec métadonnées EXIF complètes et autorisation écrite du photographe pour l’usage en apprentissage automatique">Forêt de mangroves au crépuscule, Guyane — série de 24 photos haute définition pour jeux de données d’entraînement, avec métadonnées EXIF complètes et autorisation écrite du photographe pour l’usage en apprentissage automatique</a>
+  <span class="url" title="https://www.flickr.com/photos/amazonie_terrain/albums/72177720312345678"><span class="scheme">https://</span><span class="host">www.flickr.com</span>/photos/amazonie_terrain/albums/72177720312345678</span>
+  <span class="usage" data-usage="sous-conditions"><span class="u-mark" aria-hidden="true"></span>Sous conditions</span>
+</li>
+<li class="row">
+  <span class="rank">14</span>
+  <span class="fav"><img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%226%22%20fill%3D%22%23087f5b%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2221.5%22%20font-family%3D%22Arial%2CHelvetica%2Csans-serif%22%20font-weight%3D%22700%22%20font-size%3D%2214%22%20fill%3D%22%23fff%22%20text-anchor%3D%22middle%22%3Esh%3C%2Ftext%3E%3C%2Fsvg%3E" alt="" width="16" height="16"></span>
+  <a class="title" href="https://www.shutterstock.com/image-photo/misty-pine-forest-aerial-2493318821" target="_blank" rel="noopener noreferrer" title="Stock photo: misty pine forest aerial">Stock photo: misty pine forest aerial</a>
+  <span class="url" title="https://www.shutterstock.com/image-photo/misty-pine-forest-aerial-2493318821"><span class="scheme">https://</span><span class="host">www.shutterstock.com</span>/image-photo/misty-pine-forest-aerial-2493318821</span>
+  <span class="usage" data-usage="payant"><span class="u-mark" aria-hidden="true"></span>Payant</span>
+</li>
+<li class="row">
+  <span class="rank">15</span>
+  <span class="fav"><img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%226%22%20fill%3D%22%232c7a3a%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2221.5%22%20font-family%3D%22Arial%2CHelvetica%2Csans-serif%22%20font-weight%3D%22700%22%20font-size%3D%2214%22%20fill%3D%22%23fff%22%20text-anchor%3D%22middle%22%3Ecg%3C%2Ftext%3E%3C%2Fsvg%3E" alt="" width="16" height="16"></span>
+  <a class="title" href="https://ambientcg.com/view?id=Moss004" target="_blank" rel="noopener noreferrer" title="Moss 004 — mousse humide">Moss 004 — mousse humide</a>
+  <span class="url" title="https://ambientcg.com/view?id=Moss004"><span class="scheme">https://</span><span class="host">ambientcg.com</span>/view?id=Moss004</span>
+  <span class="usage" data-usage="libre"><span class="u-mark" aria-hidden="true"></span>Libre</span>
+</li>
+<li class="row">
+  <span class="rank">16</span>
+  <span class="fav"><img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%226%22%20fill%3D%22%233366cc%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2221.5%22%20font-family%3D%22Arial%2CHelvetica%2Csans-serif%22%20font-weight%3D%22700%22%20font-size%3D%2220%22%20fill%3D%22%23fff%22%20text-anchor%3D%22middle%22%3EW%3C%2Ftext%3E%3C%2Fsvg%3E" alt="" width="16" height="16"></span>
+  <a class="title" href="https://commons.wikimedia.org/wiki/File:Mycena_chlorophos_bioluminescence.jpg" target="_blank" rel="noopener noreferrer" title="Champignons bioluminescents (Mycena), nuit">Champignons bioluminescents (Mycena), nuit</a>
+  <span class="url" title="https://commons.wikimedia.org/wiki/File:Mycena_chlorophos_bioluminescence.jpg"><span class="scheme">https://</span><span class="host">commons.wikimedia.org</span>/wiki/File:Mycena_chlorophos_bioluminescence.jpg</span>
+  <span class="usage" data-usage="sous-conditions"><span class="u-mark" aria-hidden="true"></span>Sous conditions</span>
+</li>
+<li class="row">
+  <span class="rank">17</span>
+  <span class="fav"><img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%226%22%20fill%3D%22%23c2255c%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2221.5%22%20font-family%3D%22Arial%2CHelvetica%2Csans-serif%22%20font-weight%3D%22700%22%20font-size%3D%2214%22%20fill%3D%22%23fff%22%20text-anchor%3D%22middle%22%3Ear%3C%2Ftext%3E%3C%2Fsvg%3E" alt="" width="16" height="16"></span>
+  <a class="title" href="https://www.artstation.com/artwork/forest-sunken-ruins" target="_blank" rel="noopener noreferrer" title="Concept art — forêt engloutie">Concept art — forêt engloutie</a>
+  <span class="url" title="https://www.artstation.com/artwork/forest-sunken-ruins"><span class="scheme">https://</span><span class="host">www.artstation.com</span>/artwork/forest-sunken-ruins</span>
+  <span class="usage" data-usage="non-commercial"><span class="u-mark" aria-hidden="true"></span>Non commercial</span>
+</li>
+<li class="row">
+  <span class="rank">18</span>
+  <span class="fav"><img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%226%22%20fill%3D%22%23c7432f%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2221.5%22%20font-family%3D%22Arial%2CHelvetica%2Csans-serif%22%20font-weight%3D%22700%22%20font-size%3D%2214%22%20fill%3D%22%23fff%22%20text-anchor%3D%22middle%22%3Eph%3C%2Ftext%3E%3C%2Fsvg%3E" alt="" width="16" height="16"></span>
+  <a class="title" href="https://polyhaven.com/a/leaf_litter_autumn_01" target="_blank" rel="noopener noreferrer" title="Leaf litter autumn 01">Leaf litter autumn 01</a>
+  <span class="url" title="https://polyhaven.com/a/leaf_litter_autumn_01"><span class="scheme">https://</span><span class="host">polyhaven.com</span>/a/leaf_litter_autumn_01</span>
+  <span class="usage" data-usage="libre"><span class="u-mark" aria-hidden="true"></span>Libre</span>
+</li>
+<li class="row">
+  <span class="rank">19</span>
+  <span class="fav"><img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%226%22%20fill%3D%22%23ff4500%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2221.5%22%20font-family%3D%22Arial%2CHelvetica%2Csans-serif%22%20font-weight%3D%22700%22%20font-size%3D%2220%22%20fill%3D%22%23fff%22%20text-anchor%3D%22middle%22%3Er%3C%2Ftext%3E%3C%2Fsvg%3E" alt="" width="16" height="16"></span>
+  <a class="title" href="https://www.reddit.com/r/StableDiffusion/comments/1g7x2kq/realistic_tree_trunks_settings/" target="_blank" rel="noopener noreferrer" title="Reddit r/StableDiffusion — mes réglages pour des troncs réalistes">Reddit r/StableDiffusion — mes réglages pour des troncs réalistes</a>
+  <span class="url" title="https://www.reddit.com/r/StableDiffusion/comments/1g7x2kq/realistic_tree_trunks_settings/"><span class="scheme">https://</span><span class="host">www.reddit.com</span>/r/StableDiffusion/comments/1g7x2kq/realistic_tree_trunks_settings/</span>
+  <span class="usage" data-usage="a-qualifier"><span class="u-mark" aria-hidden="true"></span>À qualifier</span>
+</li>
+<li class="row">
+  <span class="rank">20</span>
+  <span class="fav"><img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%226%22%20fill%3D%22%232c7a3a%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2221.5%22%20font-family%3D%22Arial%2CHelvetica%2Csans-serif%22%20font-weight%3D%22700%22%20font-size%3D%2214%22%20fill%3D%22%23fff%22%20text-anchor%3D%22middle%22%3Ecg%3C%2Ftext%3E%3C%2Fsvg%3E" alt="" width="16" height="16"></span>
+  <a class="title" href="https://ambientcg.com/view?id=Roots003" target="_blank" rel="noopener noreferrer" title="Roots 03 — racines apparentes">Roots 03 — racines apparentes</a>
+  <span class="url" title="https://ambientcg.com/view?id=Roots003"><span class="scheme">https://</span><span class="host">ambientcg.com</span>/view?id=Roots003</span>
+  <span class="usage" data-usage="libre"><span class="u-mark" aria-hidden="true"></span>Libre</span>
+</li>
+<li class="row">
+  <span class="rank">21</span>
+  <span class="fav"><img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%226%22%20fill%3D%22%23364fc7%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2221.5%22%20font-family%3D%22Arial%2CHelvetica%2Csans-serif%22%20font-weight%3D%22700%22%20font-size%3D%2214%22%20fill%3D%22%23fff%22%20text-anchor%3D%22middle%22%3Ear%3C%2Ftext%3E%3C%2Fsvg%3E" alt="" width="16" height="16"></span>
+  <a class="title" href="https://arxiv.org/pdf/2503.11872" target="_blank" rel="noopener noreferrer" title="Forest LoRA training notes (PDF)"><span class="kind" title="PDF"><svg class="icon sm" aria-hidden="true"><use href="#i-pdf"/></svg><span class="sr-only">PDF : </span></span>Forest LoRA training notes (PDF)</a>
+  <span class="url" title="https://arxiv.org/pdf/2503.11872"><span class="scheme">https://</span><span class="host">arxiv.org</span>/pdf/2503.11872</span>
+  <span class="usage" data-usage="libre"><span class="u-mark" aria-hidden="true"></span>Libre</span>
+</li>
+<li class="row">
+  <span class="rank">22</span>
+  <span class="fav"><img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%226%22%20fill%3D%22%2305a081%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2221.5%22%20font-family%3D%22Arial%2CHelvetica%2Csans-serif%22%20font-weight%3D%22700%22%20font-size%3D%2220%22%20fill%3D%22%23fff%22%20text-anchor%3D%22middle%22%3EP%3C%2Ftext%3E%3C%2Fsvg%3E" alt="" width="16" height="16"></span>
+  <a class="title" href="https://www.pexels.com/photo/forest-path-rain-19920442/" target="_blank" rel="noopener noreferrer" title="Sentier forestier sous la pluie">Sentier forestier sous la pluie</a>
+  <span class="url" title="https://www.pexels.com/photo/forest-path-rain-19920442/"><span class="scheme">https://</span><span class="host">www.pexels.com</span>/photo/forest-path-rain-19920442/</span>
+  <span class="usage" data-usage="libre"><span class="u-mark" aria-hidden="true"></span>Libre</span>
+</li>
+<li class="row">
+  <span class="rank">23</span>
+  <span class="fav"><img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%226%22%20fill%3D%22%230a72cc%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2221.5%22%20font-family%3D%22Arial%2CHelvetica%2Csans-serif%22%20font-weight%3D%22700%22%20font-size%3D%2220%22%20fill%3D%22%23fff%22%20text-anchor%3D%22middle%22%3Ee%3C%2Ftext%3E%3C%2Fsvg%3E" alt="" width="16" height="16"></span>
+  <a class="title" href="https://www.europeana.eu/fr/item/2048128/herbarium_quercus_1890" target="_blank" rel="noopener noreferrer" title="Herbier numérisé — feuilles de chêne (1890)">Herbier numérisé — feuilles de chêne (1890)</a>
+  <span class="url" title="https://www.europeana.eu/fr/item/2048128/herbarium_quercus_1890"><span class="scheme">https://</span><span class="host">www.europeana.eu</span>/fr/item/2048128/herbarium_quercus_1890</span>
+  <span class="usage" data-usage="sous-conditions"><span class="u-mark" aria-hidden="true"></span>Sous conditions</span>
+</li>
+<li class="row">
+  <span class="rank">24</span>
+  <span class="fav" title="Image"><svg class="icon " aria-hidden="true"><use href="#i-image"/></svg></span>
+  <a class="title" href="https://www.textures.com/browse/bark/1240" target="_blank" rel="noopener noreferrer" title="Textures écorce premium — pack 120">Textures écorce premium — pack 120</a>
+  <span class="url" title="https://www.textures.com/browse/bark/1240"><span class="scheme">https://</span><span class="host">www.textures.com</span>/browse/bark/1240</span>
+  <span class="usage" data-usage="payant"><span class="u-mark" aria-hidden="true"></span>Payant</span>
+</li>
+<li class="row">
+  <span class="rank">25</span>
+  <span class="fav"><img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%226%22%20fill%3D%22%230063dc%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2221.5%22%20font-family%3D%22Arial%2CHelvetica%2Csans-serif%22%20font-weight%3D%22700%22%20font-size%3D%2214%22%20fill%3D%22%23fff%22%20text-anchor%3D%22middle%22%3Efl%3C%2Ftext%3E%3C%2Fsvg%3E" alt="" width="16" height="16"></span>
+  <a class="title" href="https://www.flickr.com/photos/pnw_wild/53901133702/" target="_blank" rel="noopener noreferrer" title="Old growth forest Olympic NP">Old growth forest Olympic NP</a>
+  <span class="url" title="https://www.flickr.com/photos/pnw_wild/53901133702/"><span class="scheme">https://</span><span class="host">www.flickr.com</span>/photos/pnw_wild/53901133702/</span>
+  <span class="usage" data-usage="sous-conditions"><span class="u-mark" aria-hidden="true"></span>Sous conditions</span>
+</li>
+<li class="row">
+  <span class="rank">26</span>
+  <span class="fav"><img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%226%22%20fill%3D%22%2324292f%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2221.5%22%20font-family%3D%22Arial%2CHelvetica%2Csans-serif%22%20font-weight%3D%22700%22%20font-size%3D%2214%22%20fill%3D%22%23fff%22%20text-anchor%3D%22middle%22%3Egh%3C%2Ftext%3E%3C%2Fsvg%3E" alt="" width="16" height="16"></span>
+  <a class="title" href="https://github.com/kohya-ss/sd-scripts" target="_blank" rel="noopener noreferrer" title="kohya-ss/sd-scripts — scripts d’entraînement LoRA">kohya-ss/sd-scripts — scripts d’entraînement LoRA</a>
+  <span class="url" title="https://github.com/kohya-ss/sd-scripts"><span class="scheme">https://</span><span class="host">github.com</span>/kohya-ss/sd-scripts</span>
+  <span class="usage" data-usage="libre"><span class="u-mark" aria-hidden="true"></span>Libre</span>
+</li>
+<li class="row">
+  <span class="rank">27</span>
+  <span class="fav"><img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%226%22%20fill%3D%22%233366cc%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2221.5%22%20font-family%3D%22Arial%2CHelvetica%2Csans-serif%22%20font-weight%3D%22700%22%20font-size%3D%2220%22%20fill%3D%22%23fff%22%20text-anchor%3D%22middle%22%3EW%3C%2Ftext%3E%3C%2Fsvg%3E" alt="" width="16" height="16"></span>
+  <a class="title" href="https://commons.wikimedia.org/wiki/File:Moss_covered_stones_river.jpg" target="_blank" rel="noopener noreferrer" title="Moss covered stones river">Moss covered stones river</a>
+  <span class="url" title="https://commons.wikimedia.org/wiki/File:Moss_covered_stones_river.jpg"><span class="scheme">https://</span><span class="host">commons.wikimedia.org</span>/wiki/File:Moss_covered_stones_river.jpg</span>
+  <span class="usage" data-usage="libre"><span class="u-mark" aria-hidden="true"></span>Libre</span>
+</li>
+<li class="row">
+  <span class="rank">28</span>
+  <span class="fav"><img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%226%22%20fill%3D%22%23c7432f%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2221.5%22%20font-family%3D%22Arial%2CHelvetica%2Csans-serif%22%20font-weight%3D%22700%22%20font-size%3D%2214%22%20fill%3D%22%23fff%22%20text-anchor%3D%22middle%22%3Eph%3C%2Ftext%3E%3C%2Fsvg%3E" alt="" width="16" height="16"></span>
+  <a class="title" href="https://polyhaven.com/a/forest_fog" target="_blank" rel="noopener noreferrer" title="Forest fog HDRI 4K">Forest fog HDRI 4K</a>
+  <span class="url" title="https://polyhaven.com/a/forest_fog"><span class="scheme">https://</span><span class="host">polyhaven.com</span>/a/forest_fog</span>
+  <span class="usage" data-usage="libre"><span class="u-mark" aria-hidden="true"></span>Libre</span>
+</li>
+<li class="row">
+  <span class="rank">29</span>
+  <span class="fav"><img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%226%22%20fill%3D%22%231ab7ea%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2221.5%22%20font-family%3D%22Arial%2CHelvetica%2Csans-serif%22%20font-weight%3D%22700%22%20font-size%3D%2220%22%20fill%3D%22%23fff%22%20text-anchor%3D%22middle%22%3Ev%3C%2Ftext%3E%3C%2Fsvg%3E" alt="" width="16" height="16"></span>
+  <a class="title" href="https://vimeo.com/912334871" target="_blank" rel="noopener noreferrer" title="Timelapse : une forêt en automne (4K)"><span class="kind" title="Vidéo"><svg class="icon sm" aria-hidden="true"><use href="#i-video"/></svg><span class="sr-only">Vidéo : </span></span>Timelapse : une forêt en automne (4K)</a>
+  <span class="url" title="https://vimeo.com/912334871"><span class="scheme">https://</span><span class="host">vimeo.com</span>/912334871</span>
+  <span class="usage" data-usage="a-qualifier"><span class="u-mark" aria-hidden="true"></span>À qualifier</span>
+</li>
+<li class="row">
+  <span class="rank">30</span>
+  <span class="fav"><img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%226%22%20fill%3D%22%230063dc%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2221.5%22%20font-family%3D%22Arial%2CHelvetica%2Csans-serif%22%20font-weight%3D%22700%22%20font-size%3D%2214%22%20fill%3D%22%23fff%22%20text-anchor%3D%22middle%22%3Efl%3C%2Ftext%3E%3C%2Fsvg%3E" alt="" width="16" height="16"></span>
+  <a class="title" href="https://www.flickr.com/photos/taiga_macro/53720019944/" target="_blank" rel="noopener noreferrer" title="Écorce de bouleau, macro">Écorce de bouleau, macro</a>
+  <span class="url" title="https://www.flickr.com/photos/taiga_macro/53720019944/"><span class="scheme">https://</span><span class="host">www.flickr.com</span>/photos/taiga_macro/53720019944/</span>
+  <span class="usage" data-usage="non-commercial"><span class="u-mark" aria-hidden="true"></span>Non commercial</span>
+</li>
+  </ol>
+</div>
+  <nav class="pager" aria-label="Pagination">
+  <span class="range">1–30 sur 412</span>
+  <ol><li><span class="pg" aria-disabled="true">‹<span class="sr-only"> Précédent</span></span></li><li><span class="pg" aria-current="page">1</span></li><li><a class="pg" href="#" aria-label="Page 2">2</a></li><li><span class="pg gap" aria-hidden="true">…</span></li><li><a class="pg" href="#" aria-label="Page 14">14</a></li><li><a class="pg" href="#" rel="next">›<span class="sr-only"> Suivant</span></a></li></ol>
+</nav>
+</main>
+<script>
+(function () {
+  // Bascule de thème (mémorisée).
+  document.querySelectorAll('[data-theme-toggle]').forEach(function (b) {
+    var sync = function () { var l = document.documentElement.getAttribute('data-theme') === 'light'; b.setAttribute('aria-pressed', String(l)); b.querySelector('.lbl').textContent = l ? 'Sombre' : 'Clair'; };
+    sync();
+    b.addEventListener('click', function () {
+      var l = document.documentElement.getAttribute('data-theme') === 'light';
+      if (l) document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', 'light');
+      localStorage.setItem('dp-theme', l ? 'dark' : 'light'); sync();
+    });
+  });
+
+  // Copier les N liens : menu de format + confirmation (démonstration).
+  var FMT = { txt: 'URLs', md: 'Markdown', csv: 'CSV' };
+  document.querySelectorAll('[data-copy]').forEach(function (root) {
+    var count = Number(root.getAttribute('data-count'));
+    var main = root.querySelector('[data-copy-main]'), toggle = root.querySelector('[data-copy-toggle]');
+    var menu = root.querySelector('.menu'), status = root.querySelector('.copy-status');
+    var fmt = root.getAttribute('data-format') || 'txt';
+    var nf = new Intl.NumberFormat('fr-FR');
+    function close() { menu.hidden = true; toggle.setAttribute('aria-expanded', 'false'); }
+    function show(cls, html) { status.className = 'copy-status ' + cls; status.innerHTML = html; status.hidden = false; }
+    toggle.addEventListener('click', function () {
+      var open = menu.hidden; menu.hidden = !open; toggle.setAttribute('aria-expanded', String(open));
+      if (open) (menu.querySelector('[aria-checked="true"]') || menu.querySelector('[role=menuitemradio]')).focus();
+    });
+    menu.querySelectorAll('[role=menuitemradio]').forEach(function (item) {
+      item.addEventListener('click', function () {
+        menu.querySelectorAll('[role=menuitemradio]').forEach(function (i) { i.setAttribute('aria-checked', String(i === item)); });
+        fmt = item.getAttribute('data-fmt'); toggle.querySelector('.fmt').textContent = FMT[fmt]; close(); toggle.focus();
+      });
+    });
+    root.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !menu.hidden) { close(); toggle.focus(); } });
+    document.addEventListener('click', function (e) { if (!root.contains(e.target)) close(); });
+    main.addEventListener('click', function () {
+      show('busy', '<svg class="icon sm" aria-hidden="true"><use href="#i-run"/></svg>Préparation de ' + nf.format(count) + ' liens…');
+      setTimeout(function () {
+        var text = 'https://exemple.org/1\nhttps://exemple.org/2';
+        var done = function () { show('ok', '<svg class="icon sm" aria-hidden="true"><use href="#i-check"/></svg>' + nf.format(count) + ' liens copiés · ' + FMT[fmt]); };
+        var fail = function () { show('err', '<svg class="icon sm" aria-hidden="true"><use href="#i-alert"/></svg><span>Copie refusée par le navigateur — <a href="#">télécharger le fichier</a></span>'); };
+        if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fail); else done();
+      }, 450);
+    });
+  });
+
+  // Bascules segmentées de démonstration (components.html).
+  document.querySelectorAll('.seg[data-demo] button').forEach(function (b) {
+    b.addEventListener('click', function () { b.parentElement.querySelectorAll('button').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); }); });
+  });
+})();
+</script>
+</body>
+</html>

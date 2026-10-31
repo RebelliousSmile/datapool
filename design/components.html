@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Composants · datapool</title>
+<script>(function(){var q=new URLSearchParams(location.search).get('theme');var t=q||localStorage.getItem('dp-theme');if(t==='light')document.documentElement.setAttribute('data-theme','light');})();</script>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="ui.css">
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<symbol id="i-page" viewBox="0 0 16 16"><path d="M4 1.5h5.5L13 5v9.5H4z"/><path d="M9.5 1.5V5H13M6 8h5M6 10.5h5M6 13h3"/></symbol>
+<symbol id="i-image" viewBox="0 0 16 16"><rect x="1.5" y="2.5" width="13" height="11" rx="1"/><circle cx="5.5" cy="6" r="1.3"/><path d="M1.5 12l4-4 3 3 2-2 4 4"/></symbol>
+<symbol id="i-video" viewBox="0 0 16 16"><rect x="1.5" y="3" width="13" height="10" rx="1"/><path d="M6.5 5.8v4.4L10.3 8z"/></symbol>
+<symbol id="i-pdf" viewBox="0 0 16 16"><path d="M3 1.5h6.5L13 5v9.5H3z"/><path d="M9.5 1.5V5H13"/><path d="M5 9h1.3a1 1 0 0 1 0 2H5V8m3.5 3V8h.8a1.5 1.5 0 0 1 0 3zm3-3h-1.2v3m0-1.5h1"/></symbol>
+<symbol id="i-copy" viewBox="0 0 16 16"><rect x="5" y="5" width="9" height="9" rx="1"/><path d="M11 5V2.5a1 1 0 0 0-1-1H2.5a1 1 0 0 0-1 1V10a1 1 0 0 0 1 1H5"/></symbol>
+<symbol id="i-chevron" viewBox="0 0 16 16"><path d="M4 6l4 4 4-4"/></symbol>
+<symbol id="i-check" viewBox="0 0 16 16"><path d="M2.5 8.5l3.5 3.5 7.5-8"/></symbol>
+<symbol id="i-alert" viewBox="0 0 16 16"><path d="M8 1.8l6.5 12H1.5z"/><path d="M8 6.5v3.2M8 11.6v.1"/></symbol>
+<symbol id="i-x" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.5"/><path d="M5.7 5.7l4.6 4.6M10.3 5.7l-4.6 4.6"/></symbol>
+<symbol id="i-list" viewBox="0 0 16 16"><path d="M1.5 3.5h13M1.5 6.5h13M1.5 9.5h13M1.5 12.5h13"/></symbol>
+<symbol id="i-grid" viewBox="0 0 16 16"><rect x="1.5" y="1.5" width="5.5" height="5.5"/><rect x="9" y="1.5" width="5.5" height="5.5"/><rect x="1.5" y="9" width="5.5" height="5.5"/><rect x="9" y="9" width="5.5" height="5.5"/></symbol>
+<symbol id="i-sun" viewBox="0 0 16 16"><circle cx="8" cy="8" r="3"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3 3l1.4 1.4M11.6 11.6L13 13M3 13l1.4-1.4M11.6 4.4L13 3"/></symbol>
+<symbol id="i-moon" viewBox="0 0 16 16"><path d="M13.5 10A6 6 0 0 1 6 2.5a6 6 0 1 0 7.5 7.5z"/></symbol>
+<symbol id="i-arrow" viewBox="0 0 16 16"><path d="M5 11l6-6M6 5h5v5"/></symbol>
+<symbol id="i-broken" viewBox="0 0 16 16"><path d="M1.5 3h6l-1 3 2 2-1 5h-6zM10 3h4.5v10H9l1-3.5-2-2z"/></symbol>
+<symbol id="i-play" viewBox="0 0 16 16"><path d="M4 2.5v11L13.5 8z"/></symbol>
+<symbol id="i-plug" viewBox="0 0 16 16"><path d="M5.5 1.5v3M10.5 1.5v3M3.5 4.5h9v3a4.5 4.5 0 0 1-9 0zM8 12v2.5"/></symbol>
+<symbol id="i-search" viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5l4 4"/></symbol>
+<symbol id="i-download" viewBox="0 0 16 16"><path d="M8 1.5v9M4.5 7L8 10.5 11.5 7M2 14h12"/></symbol>
+<symbol id="i-run" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.5" stroke-dasharray="3 2"/><path d="M8 4.5V8l2.5 1.5"/></symbol>
+</svg>
+<header class="app-header">
+  <a class="brand" href="mockups/pools.html" aria-label="datapool, accueil"><span class="brand-mark" aria-hidden="true">dp</span><span>data<b>pool</b></span></a>
+  <nav class="app-nav" aria-label="Navigation principale">
+    <a href="mockups/dashboard.html">Tableau de bord</a>
+    <a href="mockups/pools.html">Pools</a>
+    <a href="#">Corpus</a>
+    <a href="#">Domaines</a>
+  </nav>
+  <div class="app-user">
+    <span class="link-status">liaison ok</span>
+    <span class="who">admin-e2e <span class="chip">admin</span></span>
+    <button class="btn btn-ghost btn-sm theme-toggle" type="button" data-theme-toggle aria-pressed="false"><svg class="icon " aria-hidden="true"><use href="#i-sun"/></svg><span class="lbl">Clair</span></button>
+    <button class="btn btn-sm" type="button">Déconnexion</button>
+  </div>
+</header>
+<main class="page" id="main">
+  <div class="page-head"><div class="titles"><span class="eyebrow">Data Pool · bibliothèque</span><h1>Composants</h1>
+  <div class="meta"><span>tokens.css + ui.css</span><span>sombre par défaut · bascule clair en haut à droite</span></div></div></div>
+
+  <div class="section-title"><h2>Jetons</h2></div>
+  <div class="cols">
+    <section class="panel"><div class="panel-head"><h2>Surfaces et encre</h2></div><ul style="list-style:none;padding:0;margin:0;display:grid;gap:6px">
+      <li style="display:flex;align-items:center;gap:8px"><span style="width:28px;height:20px;border-radius:2px;background:var(--bg);box-shadow:0 0 0 1px var(--line-strong)"></span><code>--bg</code><span class="muted">page</span></li><li style="display:flex;align-items:center;gap:8px"><span style="width:28px;height:20px;border-radius:2px;background:var(--surface);box-shadow:0 0 0 1px var(--line-strong)"></span><code>--surface</code><span class="muted">panneaux</span></li><li style="display:flex;align-items:center;gap:8px"><span style="width:28px;height:20px;border-radius:2px;background:var(--surface-2);box-shadow:0 0 0 1px var(--line-strong)"></span><code>--surface-2</code><span class="muted">survol, champs</span></li><li style="display:flex;align-items:center;gap:8px"><span style="width:28px;height:20px;border-radius:2px;background:var(--ink);box-shadow:0 0 0 1px var(--line-strong)"></span><code>--ink</code><span class="muted">texte</span></li><li style="display:flex;align-items:center;gap:8px"><span style="width:28px;height:20px;border-radius:2px;background:var(--ink-2);box-shadow:0 0 0 1px var(--line-strong)"></span><code>--ink-2</code><span class="muted">secondaire</span></li><li style="display:flex;align-items:center;gap:8px"><span style="width:28px;height:20px;border-radius:2px;background:var(--muted);box-shadow:0 0 0 1px var(--line-strong)"></span><code>--muted</code><span class="muted">méta</span></li><li style="display:flex;align-items:center;gap:8px"><span style="width:28px;height:20px;border-radius:2px;background:var(--line-strong);box-shadow:0 0 0 1px var(--line-strong)"></span><code>--line-strong</code><span class="muted">bords de contrôle</span></li>
+    </ul></section>
+    <section class="panel"><div class="panel-head"><h2>Néon et statut</h2></div><ul style="list-style:none;padding:0;margin:0;display:grid;gap:6px">
+      <li style="display:flex;align-items:center;gap:8px"><span style="width:28px;height:20px;border-radius:2px;background:var(--accent);box-shadow:0 0 0 1px var(--line-strong)"></span><code>--accent</code><span class="muted">action, sélection de vue</span></li><li style="display:flex;align-items:center;gap:8px"><span style="width:28px;height:20px;border-radius:2px;background:var(--accent-2);box-shadow:0 0 0 1px var(--line-strong)"></span><code>--accent-2</code><span class="muted">focus, encoche</span></li><li style="display:flex;align-items:center;gap:8px"><span style="width:28px;height:20px;border-radius:2px;background:var(--link);box-shadow:0 0 0 1px var(--line-strong)"></span><code>--link</code><span class="muted">liens</span></li><li style="display:flex;align-items:center;gap:8px"><span style="width:28px;height:20px;border-radius:2px;background:var(--good);box-shadow:0 0 0 1px var(--line-strong)"></span><code>--good</code><span class="muted">ok</span></li><li style="display:flex;align-items:center;gap:8px"><span style="width:28px;height:20px;border-radius:2px;background:var(--warning);box-shadow:0 0 0 1px var(--line-strong)"></span><code>--warning</code><span class="muted">alerte</span></li><li style="display:flex;align-items:center;gap:8px"><span style="width:28px;height:20px;border-radius:2px;background:var(--critical);box-shadow:0 0 0 1px var(--line-strong)"></span><code>--critical</code><span class="muted">échec</span></li>
+    </ul></section>
+    <section class="panel"><div class="panel-head"><h2>Usage commercial (ordre fixe)</h2></div><ul style="list-style:none;padding:0;margin:0;display:grid;gap:6px">
+      <li style="display:flex;align-items:center;gap:8px"><span style="width:28px;height:20px;border-radius:2px;background:var(--usage-libre);box-shadow:0 0 0 1px var(--line-strong)"></span><code>--usage-libre</code><span class="muted">1 · libre · rond</span></li><li style="display:flex;align-items:center;gap:8px"><span style="width:28px;height:20px;border-radius:2px;background:var(--usage-sous-conditions);box-shadow:0 0 0 1px var(--line-strong)"></span><code>--usage-sous-conditions</code><span class="muted">2 · sous conditions · demi-rond</span></li><li style="display:flex;align-items:center;gap:8px"><span style="width:28px;height:20px;border-radius:2px;background:var(--usage-payant);box-shadow:0 0 0 1px var(--line-strong)"></span><code>--usage-payant</code><span class="muted">3 · payant · carré</span></li><li style="display:flex;align-items:center;gap:8px"><span style="width:28px;height:20px;border-radius:2px;background:var(--usage-non-commercial);box-shadow:0 0 0 1px var(--line-strong)"></span><code>--usage-non-commercial</code><span class="muted">4 · non commercial · triangle</span></li><li style="display:flex;align-items:center;gap:8px"><span style="width:28px;height:20px;border-radius:2px;background:var(--usage-a-qualifier);box-shadow:0 0 0 1px var(--line-strong)"></span><code>--usage-a-qualifier</code><span class="muted">à qualifier · gris, pointillé</span></li>
+    </ul><p class="muted" style="margin:6px 0 0;font-size:12px">Validé daltonisme (protan, deutan, tritan : ΔE ≥ 8 entre toutes les paires) et ≥ 3:1 sur la surface, dans les deux thèmes.</p></section>
+  </div>
+  <div class="panel" style="margin-top:12px">
+    <div style="display:flex;flex-wrap:wrap;gap:24px;align-items:baseline">
+      <span style="font-family:var(--font-display);font-size:26px;font-weight:600">Chakra Petch 600 — titres</span>
+      <span style="font-family:var(--font-display);font-size:16px">Chakra Petch 400 — navigation, boutons</span>
+      <span style="font-family:var(--font-mono);font-size:13px">JetBrains Mono — https://osf.io/m8fpz/ · 1 000 · psychologie-2025</span>
+      <span style="font-size:14px">Sans système — descriptions et texte courant.</span>
+    </div>
+  </div>
+
+  <div class="section-title"><h2>Badge d'usage commercial</h2></div>
+  <div class="panel">
+    <div style="display:flex;flex-wrap:wrap;gap:10px"><span class="usage" data-usage="libre"><span class="u-mark" aria-hidden="true"></span>Libre</span><span class="usage" data-usage="sous-conditions"><span class="u-mark" aria-hidden="true"></span>Sous conditions</span><span class="usage" data-usage="payant"><span class="u-mark" aria-hidden="true"></span>Payant</span><span class="usage" data-usage="non-commercial"><span class="u-mark" aria-hidden="true"></span>Non commercial</span><span class="usage" data-usage="a-qualifier"><span class="u-mark" aria-hidden="true"></span>À qualifier</span></div>
+    <p class="muted" style="margin:6px 0 0;font-size:12px">Libellé toujours visible ; forme distincte par usage (rond, demi-rond, carré, triangle, cercle pointillé) ; « à qualifier » en gris, bord pointillé. Texte en encre, jamais dans la couleur de la série.</p>
+    <div style="margin-top:16px;max-width:560px"><div class="stackbar" role="img" aria-label="Libre : 168, Sous conditions : 121, Payant : 22, Non commercial : 37, À qualifier : 64">
+  <span class="seg-u" data-usage="libre" style="flex-grow:168" title="Libre : 168 liens (41 %)"></span><span class="seg-u" data-usage="sous-conditions" style="flex-grow:121" title="Sous conditions : 121 liens (29 %)"></span><span class="seg-u" data-usage="payant" style="flex-grow:22" title="Payant : 22 liens (5 %)"></span><span class="seg-u" data-usage="non-commercial" style="flex-grow:37" title="Non commercial : 37 liens (9 %)"></span><span class="seg-u" data-usage="a-qualifier" style="flex-grow:64" title="À qualifier : 64 liens (16 %)"></span>
+</div>
+<ul class="legend">
+  <li><span class="u-mark" data-usage="libre" aria-hidden="true"></span><span class="name">Libre</span><strong>168</strong><span class="pct">41%</span></li>
+  <li><span class="u-mark" data-usage="sous-conditions" aria-hidden="true"></span><span class="name">Sous conditions</span><strong>121</strong><span class="pct">29%</span></li>
+  <li><span class="u-mark" data-usage="payant" aria-hidden="true"></span><span class="name">Payant</span><strong>22</strong><span class="pct">5%</span></li>
+  <li><span class="u-mark" data-usage="non-commercial" aria-hidden="true"></span><span class="name">Non commercial</span><strong>37</strong><span class="pct">9%</span></li>
+  <li><span class="u-mark" data-usage="a-qualifier" aria-hidden="true"></span><span class="name">À qualifier</span><strong>64</strong><span class="pct">16%</span></li>
+</ul></div>
+    <p class="muted" style="margin:6px 0 0;font-size:12px">Barre empilée : ordre fixe, 2 px d’écart, « à qualifier » hachuré ; légende chiffrée, valeur exacte au survol (title) et aria-label.</p>
+  </div>
+
+  <div class="section-title"><h2>Copier les N liens</h2></div>
+  <div class="cols">
+    <section class="panel"><div class="panel-head"><h2>Repos (interactif)</h2></div><div class="copy" data-copy data-count="412" data-format="txt">
+  <div class="copy-split">
+    <button class="btn btn-primary" type="button" data-copy-main><svg class="icon " aria-hidden="true"><use href="#i-copy"/></svg>Copier les <span class="count">412</span> liens</button>
+    <button class="btn btn-primary" type="button" data-copy-toggle aria-haspopup="menu" aria-expanded="false" aria-controls="c1-menu" aria-label="Format de copie : URLs"><span class="fmt">URLs</span><svg class="icon sm" aria-hidden="true"><use href="#i-chevron"/></svg></button>
+  </div>
+  <div class="menu" id="c1-menu" role="menu" aria-label="Format de copie" hidden>
+    <div class="menu-label eyebrow">Format du presse-papiers</div>
+    <button class="menu-item" type="button" role="menuitemradio" data-fmt="txt" aria-checked="true"><span class="radio" aria-hidden="true"></span><b>URLs seules<span class="default">par défaut</span></b><span class="sample">https://osf.io/m8fpz/</span></button>
+    <button class="menu-item" type="button" role="menuitemradio" data-fmt="md" aria-checked="false"><span class="radio" aria-hidden="true"></span><b>Markdown</b><span class="sample">- [Titre](https://osf.io/m8fpz/)</span></button>
+    <button class="menu-item" type="button" role="menuitemradio" data-fmt="csv" aria-checked="false"><span class="radio" aria-hidden="true"></span><b>CSV</b><span class="sample">rank,title,url,domain,usage</span></button>
+  </div>
+  <span class="copy-status" role="status" hidden></span>
+</div><p class="muted" style="margin:6px 0 0;font-size:12px">Le bouton principal copie tout le pool via l’export de l’API, au format choisi. Le chevron ouvre le menu de format ; le choix est mémorisé.</p></section>
+    <section class="panel" style="min-height:300px"><div class="panel-head"><h2>Menu ouvert</h2></div><div class="copy" data-copy data-count="412" data-format="txt">
+  <div class="copy-split">
+    <button class="btn btn-primary" type="button" data-copy-main><svg class="icon " aria-hidden="true"><use href="#i-copy"/></svg>Copier les <span class="count">412</span> liens</button>
+    <button class="btn btn-primary" type="button" data-copy-toggle aria-haspopup="menu" aria-expanded="true" aria-controls="c2-menu" aria-label="Format de copie : URLs"><span class="fmt">URLs</span><svg class="icon sm" aria-hidden="true"><use href="#i-chevron"/></svg></button>
+  </div>
+  <div class="menu" id="c2-menu" role="menu" aria-label="Format de copie">
+    <div class="menu-label eyebrow">Format du presse-papiers</div>
+    <button class="menu-item" type="button" role="menuitemradio" data-fmt="txt" aria-checked="true"><span class="radio" aria-hidden="true"></span><b>URLs seules<span class="default">par défaut</span></b><span class="sample">https://osf.io/m8fpz/</span></button>
+    <button class="menu-item" type="button" role="menuitemradio" data-fmt="md" aria-checked="false"><span class="radio" aria-hidden="true"></span><b>Markdown</b><span class="sample">- [Titre](https://osf.io/m8fpz/)</span></button>
+    <button class="menu-item" type="button" role="menuitemradio" data-fmt="csv" aria-checked="false"><span class="radio" aria-hidden="true"></span><b>CSV</b><span class="sample">rank,title,url,domain,usage</span></button>
+  </div>
+  <span class="copy-status" role="status" hidden></span>
+</div></section>
+    <section class="panel"><div class="panel-head"><h2>En cours</h2></div><div class="copy" data-copy data-count="1000" data-format="txt">
+  <div class="copy-split">
+    <button class="btn btn-primary" type="button" data-copy-main aria-busy="true"><svg class="icon " aria-hidden="true"><use href="#i-copy"/></svg>Copier les <span class="count">1 000</span> liens</button>
+    <button class="btn btn-primary" type="button" data-copy-toggle aria-haspopup="menu" aria-expanded="false" aria-controls="c3-menu" aria-label="Format de copie : URLs"><span class="fmt">URLs</span><svg class="icon sm" aria-hidden="true"><use href="#i-chevron"/></svg></button>
+  </div>
+  <div class="menu" id="c3-menu" role="menu" aria-label="Format de copie" hidden>
+    <div class="menu-label eyebrow">Format du presse-papiers</div>
+    <button class="menu-item" type="button" role="menuitemradio" data-fmt="txt" aria-checked="true"><span class="radio" aria-hidden="true"></span><b>URLs seules<span class="default">par défaut</span></b><span class="sample">https://osf.io/m8fpz/</span></button>
+    <button class="menu-item" type="button" role="menuitemradio" data-fmt="md" aria-checked="false"><span class="radio" aria-hidden="true"></span><b>Markdown</b><span class="sample">- [Titre](https://osf.io/m8fpz/)</span></button>
+    <button class="menu-item" type="button" role="menuitemradio" data-fmt="csv" aria-checked="false"><span class="radio" aria-hidden="true"></span><b>CSV</b><span class="sample">rank,title,url,domain,usage</span></button>
+  </div>
+  <span class="copy-status busy" role="status"><svg class="icon sm" aria-hidden="true"><use href="#i-run"/></svg>Préparation de 1 000 liens…</span>
+</div><p class="muted" style="margin:6px 0 0;font-size:12px">Pendant l’appel à /export : bouton aria-busy, message en pointillés.</p></section>
+    <section class="panel"><div class="panel-head"><h2>Confirmé</h2></div><div class="copy" data-copy data-count="412" data-format="md">
+  <div class="copy-split">
+    <button class="btn btn-primary" type="button" data-copy-main><svg class="icon " aria-hidden="true"><use href="#i-copy"/></svg>Copier les <span class="count">412</span> liens</button>
+    <button class="btn btn-primary" type="button" data-copy-toggle aria-haspopup="menu" aria-expanded="false" aria-controls="c4-menu" aria-label="Format de copie : Markdown"><span class="fmt">Markdown</span><svg class="icon sm" aria-hidden="true"><use href="#i-chevron"/></svg></button>
+  </div>
+  <div class="menu" id="c4-menu" role="menu" aria-label="Format de copie" hidden>
+    <div class="menu-label eyebrow">Format du presse-papiers</div>
+    <button class="menu-item" type="button" role="menuitemradio" data-fmt="txt" aria-checked="false"><span class="radio" aria-hidden="true"></span><b>URLs seules<span class="default">par défaut</span></b><span class="sample">https://osf.io/m8fpz/</span></button>
+    <button class="menu-item" type="button" role="menuitemradio" data-fmt="md" aria-checked="true"><span class="radio" aria-hidden="true"></span><b>Markdown</b><span class="sample">- [Titre](https://osf.io/m8fpz/)</span></button>
+    <button class="menu-item" type="button" role="menuitemradio" data-fmt="csv" aria-checked="false"><span class="radio" aria-hidden="true"></span><b>CSV</b><span class="sample">rank,title,url,domain,usage</span></button>
+  </div>
+  <span class="copy-status ok" role="status"><svg class="icon sm" aria-hidden="true"><use href="#i-check"/></svg>412 liens copiés · Markdown</span>
+</div><p class="muted" style="margin:6px 0 0;font-size:12px">role="status" : annoncé par les lecteurs d’écran. Reste 4 s, puis s’efface.</p></section>
+    <section class="panel"><div class="panel-head"><h2>Erreur</h2></div><div class="copy" data-copy data-count="187" data-format="txt">
+  <div class="copy-split">
+    <button class="btn btn-primary" type="button" data-copy-main><svg class="icon " aria-hidden="true"><use href="#i-copy"/></svg>Copier les <span class="count">187</span> liens</button>
+    <button class="btn btn-primary" type="button" data-copy-toggle aria-haspopup="menu" aria-expanded="false" aria-controls="c5-menu" aria-label="Format de copie : URLs"><span class="fmt">URLs</span><svg class="icon sm" aria-hidden="true"><use href="#i-chevron"/></svg></button>
+  </div>
+  <div class="menu" id="c5-menu" role="menu" aria-label="Format de copie" hidden>
+    <div class="menu-label eyebrow">Format du presse-papiers</div>
+    <button class="menu-item" type="button" role="menuitemradio" data-fmt="txt" aria-checked="true"><span class="radio" aria-hidden="true"></span><b>URLs seules<span class="default">par défaut</span></b><span class="sample">https://osf.io/m8fpz/</span></button>
+    <button class="menu-item" type="button" role="menuitemradio" data-fmt="md" aria-checked="false"><span class="radio" aria-hidden="true"></span><b>Markdown</b><span class="sample">- [Titre](https://osf.io/m8fpz/)</span></button>
+    <button class="menu-item" type="button" role="menuitemradio" data-fmt="csv" aria-checked="false"><span class="radio" aria-hidden="true"></span><b>CSV</b><span class="sample">rank,title,url,domain,usage</span></button>
+  </div>
+  <span class="copy-status err" role="status"><svg class="icon sm" aria-hidden="true"><use href="#i-alert"/></svg><span>Copie refusée par le navigateur — <a href="#">télécharger le fichier</a></span></span>
+</div><p class="muted" style="margin:6px 0 0;font-size:12px">Presse-papiers refusé (contexte non sécurisé, permission) : message + repli par téléchargement du fichier.</p></section>
+  </div>
+
+  <div class="section-title"><h2>Carte de lien — vue flux</h2><span class="eyebrow">ligne de 28 px</span></div>
+  <div style="margin-bottom:10px"><ol class="flux"><li class="row">
+  <span class="rank">1</span>
+  <span class="fav"><img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%226%22%20fill%3D%22%234c6280%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2221.5%22%20font-family%3D%22Arial%2CHelvetica%2Csans-serif%22%20font-weight%3D%22700%22%20font-size%3D%2220%22%20fill%3D%22%23fff%22%20text-anchor%3D%22middle%22%3EP%3C%2Ftext%3E%3C%2Fsvg%3E" alt="" width="16" height="16"></span>
+  <a class="title" href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0318842" target="_blank" rel="noopener noreferrer" title="Sleep restriction and next-day emotional reactivity: a multi-site experience-sampling study">Sleep restriction and next-day emotional reactivity: a multi-site experience-sampling study</a>
+  <span class="url" title="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0318842"><span class="scheme">https://</span><span class="host">journals.plos.org</span>/plosone/article?id=10.1371/journal.pone.0318842</span>
+  <span class="usage" data-usage="libre"><span class="u-mark" aria-hidden="true"></span>Libre</span>
+</li></ol><p class="muted" style="margin:6px 0 0;font-size:12px">Nominal : favicon en cache, titre, URL, usage</p></div>
+<div style="margin-bottom:10px"><ol class="flux"><li class="row">
+  <span class="rank">14</span>
+  <span class="fav" title="Page"><svg class="icon " aria-hidden="true"><use href="#i-page"/></svg></span>
+  <a class="title" href="https://www.cairn.info/revue-bulletin-de-psychologie-2025-2-page-133.htm" target="_blank" rel="noopener noreferrer" title="Attachement adulte et usage des applications de rencontre">Attachement adulte et usage des applications de rencontre</a>
+  <span class="url" title="https://www.cairn.info/revue-bulletin-de-psychologie-2025-2-page-133.htm"><span class="scheme">https://</span><span class="host">www.cairn.info</span>/revue-bulletin-de-psychologie-2025-2-page-133.htm</span>
+  <span class="usage" data-usage="payant"><span class="u-mark" aria-hidden="true"></span>Payant</span>
+</li></ol><p class="muted" style="margin:6px 0 0;font-size:12px">Sans favicon : pictogramme du type</p></div>
+<div style="margin-bottom:10px"><ol class="flux"><li class="row">
+  <span class="rank">5</span>
+  <span class="fav"><img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%226%22%20fill%3D%22%23e5322d%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2222%22%20font-family%3D%22Arial%2CHelvetica%2Csans-serif%22%20font-weight%3D%22700%22%20font-size%3D%2220%22%20fill%3D%22%23fff%22%20text-anchor%3D%22middle%22%3E%E2%96%B6%3C%2Ftext%3E%3C%2Fsvg%3E" alt="" width="16" height="16"></span>
+  <a class="title" href="https://www.youtube.com/watch?v=Qm2v7HfLx0s" target="_blank" rel="noopener noreferrer" title="Conférence — Biais cognitifs et décision médicale"><span class="kind" title="Vidéo"><svg class="icon sm" aria-hidden="true"><use href="#i-video"/></svg><span class="sr-only">Vidéo : </span></span>Conférence — Biais cognitifs et décision médicale</a>
+  <span class="url" title="https://www.youtube.com/watch?v=Qm2v7HfLx0s"><span class="scheme">https://</span><span class="host">www.youtube.com</span>/watch?v=Qm2v7HfLx0s</span>
+  <span class="usage" data-usage="a-qualifier"><span class="u-mark" aria-hidden="true"></span>À qualifier</span>
+</li></ol><p class="muted" style="margin:6px 0 0;font-size:12px">Vidéo : pictogramme devant le titre</p></div>
+<div style="margin-bottom:10px"><ol class="flux"><li class="row">
+  <span class="rank">12</span>
+  <span class="fav"><img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%226%22%20fill%3D%22%232a6496%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2221.5%22%20font-family%3D%22Arial%2CHelvetica%2Csans-serif%22%20font-weight%3D%22700%22%20font-size%3D%2211%22%20fill%3D%22%23fff%22%20text-anchor%3D%22middle%22%3Eosf%3C%2Ftext%3E%3C%2Fsvg%3E" alt="" width="16" height="16"></span>
+  <a class="title untitled" href="https://osf.io/download/6731f0c2a1b4e2001d9f42c7/" target="_blank" rel="noopener noreferrer" title="Sans titre : https://osf.io/download/6731f0c2a1b4e2001d9f42c7/">osf.io/download/6731f0c2a1b4e2001d9f42c7/</a>
+  <span class="url" title="https://osf.io/download/6731f0c2a1b4e2001d9f42c7/"><span class="scheme">https://</span><span class="host">osf.io</span>/download/6731f0c2a1b4e2001d9f42c7/</span>
+  <span class="usage" data-usage="non-commercial"><span class="u-mark" aria-hidden="true"></span>Non commercial</span>
+</li></ol><p class="muted" style="margin:6px 0 0;font-size:12px">Sans titre : l’URL le remplace (monospace)</p></div>
+<div style="margin-bottom:10px"><ol class="flux"><li class="row">
+  <span class="rank">9</span>
+  <span class="fav"><img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%226%22%20fill%3D%22%23087f5b%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2221.5%22%20font-family%3D%22Arial%2CHelvetica%2Csans-serif%22%20font-weight%3D%22700%22%20font-size%3D%2214%22%20fill%3D%22%23fff%22%20text-anchor%3D%22middle%22%3Eca%3C%2Ftext%3E%3C%2Fsvg%3E" alt="" width="16" height="16"></span>
+  <a class="title" href="https://www.cambridge.org/core/journals/psychological-medicine/article/mindfulness-school-university-meta-analysis/9E1B2C0F7A" target="_blank" rel="noopener noreferrer" title="Revue systématique et méta-analyse des interventions brèves de pleine conscience en milieu scolaire et universitaire : effets sur l'anxiété, la régulation émotionnelle, l'attention soutenue et le bien-être subjectif, avec analyse des modérateurs (âge, durée, format en ligne ou présentiel) sur 112 essais contrôlés publiés entre 2010 et 2025">Revue systématique et méta-analyse des interventions brèves de pleine conscience en milieu scolaire et universitaire : effets sur l'anxiété, la régulation émotionnelle, l'attention soutenue et le bien-être subjectif, avec analyse des modérateurs (âge, durée, format en ligne ou présentiel) sur 112 essais contrôlés publiés entre 2010 et 2025</a>
+  <span class="url" title="https://www.cambridge.org/core/journals/psychological-medicine/article/mindfulness-school-university-meta-analysis/9E1B2C0F7A"><span class="scheme">https://</span><span class="host">www.cambridge.org</span>/core/journals/psychological-medicine/article/mindfulness-school-university-meta-analysis/9E1B2C0F7A</span>
+  <span class="usage" data-usage="sous-conditions"><span class="u-mark" aria-hidden="true"></span>Sous conditions</span>
+</li></ol><p class="muted" style="margin:6px 0 0;font-size:12px">Titre de 300 caractères : une ligne, ellipse, titre complet au survol</p></div>
+  <p class="muted" style="margin:6px 0 0;font-size:12px">Colonnes : rang · favicon (ou pictogramme) · titre (lien, nouvel onglet) · URL complète (clic = sélection entière, user-select: all) · usage. Sous 960 px l’URL disparaît de la ligne ; sous 720 px la ligne passe sur deux lignes (titre / URL + usage).</p>
+
+  <div class="section-title"><h2>Carte de lien — vue grille</h2><span class="eyebrow">vignette 16:10</span></div>
+  <ol class="cards">
+    <li class="card">
+  <div class="thumb"><span class="rank-tag">#1</span><span class="kind-tag"><svg class="icon sm" aria-hidden="true"><use href="#i-image"/></svg>Image</span><img src="mockups/media/forest.svg" alt="" loading="lazy" width="320" height="200"></div>
+  <div class="body">
+    <a class="title" href="https://www.flickr.com/photos/vosges_light/53810247731/" target="_blank" rel="noopener noreferrer" title="Brume matinale dans une hêtraie, contre-jour">Brume matinale dans une hêtraie, contre-jour</a>
+    <p class="desc">CC BY-NC 2.0 — 6000×4000, Vosges, octobre.</p>
+    <span class="url" title="https://www.flickr.com/photos/vosges_light/53810247731/"><span class="scheme">https://</span><span class="host">www.flickr.com</span>/photos/vosges_light/53810247731/</span>
+    <div class="foot"><span class="usage" data-usage="sous-conditions"><span class="u-mark" aria-hidden="true"></span>Sous conditions</span></div>
+  </div>
+</li>
+<li class="card">
+  <div class="thumb"><span class="rank-tag">#2</span><span class="kind-tag"><svg class="icon sm" aria-hidden="true"><use href="#i-video"/></svg>Vidéo</span><img src="mockups/media/leaves.svg" alt="" loading="lazy" width="320" height="200"><span class="play" aria-hidden="true"><svg class="icon " aria-hidden="true"><use href="#i-play"/></svg></span></div>
+  <div class="body">
+    <a class="title" href="https://www.youtube.com/watch?v=Lr9kQ2bT0xE" target="_blank" rel="noopener noreferrer" title="Tutoriel : entraîner un LoRA de textures avec kohya_ss (2025)">Tutoriel : entraîner un LoRA de textures avec kohya_ss (2025)</a>
+    <p class="desc">Vidéo de 38 min : jeu de données, légendes, réglages.</p>
+    <span class="url" title="https://www.youtube.com/watch?v=Lr9kQ2bT0xE"><span class="scheme">https://</span><span class="host">www.youtube.com</span>/watch?v=Lr9kQ2bT0xE</span>
+    <div class="foot"><span class="usage" data-usage="a-qualifier"><span class="u-mark" aria-hidden="true"></span>À qualifier</span></div>
+  </div>
+</li>
+<li class="card">
+  <div class="thumb fallback"><span class="rank-tag">#3</span><img class="big-fav" src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%226%22%20fill%3D%22%23ffb000%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2221.5%22%20font-family%3D%22Arial%2CHelvetica%2Csans-serif%22%20font-weight%3D%22700%22%20font-size%3D%2214%22%20fill%3D%22%23fff%22%20text-anchor%3D%22middle%22%3Ehf%3C%2Ftext%3E%3C%2Fsvg%3E" alt="" width="44" height="44"><span class="host">huggingface.co</span><span class="why">Pas de vignette</span></div>
+  <div class="body">
+    <a class="title" href="https://huggingface.co/datasets/geoforest/canopy-drone-2400" target="_blank" rel="noopener noreferrer" title="Forest canopy dataset — 2 400 drone captures">Forest canopy dataset — 2 400 drone captures</a>
+    <p class="desc">CC BY-NC 4.0, annotations par essence.</p>
+    <span class="url" title="https://huggingface.co/datasets/geoforest/canopy-drone-2400"><span class="scheme">https://</span><span class="host">huggingface.co</span>/datasets/geoforest/canopy-drone-2400</span>
+    <div class="foot"><span class="usage" data-usage="non-commercial"><span class="u-mark" aria-hidden="true"></span>Non commercial</span></div>
+  </div>
+</li>
+<li class="card">
+  <div class="thumb fallback"><span class="rank-tag">#4</span><span class="kind-tag"><svg class="icon sm" aria-hidden="true"><use href="#i-pdf"/></svg>PDF</span><svg class="icon lg" aria-hidden="true"><use href="#i-pdf"/></svg><span class="host">researchgate.net</span><span class="why">Pas de vignette</span></div>
+  <div class="body">
+    <a class="title" href="https://www.researchgate.net/publication/389112406_forest_lora" target="_blank" rel="noopener noreferrer" title="Forest LoRA training notes">Forest LoRA training notes</a>
+    <p class="desc empty">Aucune description.</p>
+    <span class="url" title="https://www.researchgate.net/publication/389112406_forest_lora"><span class="scheme">https://</span><span class="host">www.researchgate.net</span>/publication/389112406_forest_lora</span>
+    <div class="foot"><span class="usage" data-usage="a-qualifier"><span class="u-mark" aria-hidden="true"></span>À qualifier</span></div>
+  </div>
+</li>
+<li class="card">
+  <div class="thumb fallback broken"><span class="rank-tag">#5</span><span class="kind-tag"><svg class="icon sm" aria-hidden="true"><use href="#i-image"/></svg>Image</span><svg class="icon lg" aria-hidden="true"><use href="#i-broken"/></svg><span class="why">Vignette indisponible</span><span class="host">polyhaven.com</span></div>
+  <div class="body">
+    <a class="title" href="https://polyhaven.com/a/pine_needles_ground_02" target="_blank" rel="noopener noreferrer" title="Pine needles ground 02">Pine needles ground 02</a>
+    <p class="desc">CC0, 4K.</p>
+    <span class="url" title="https://polyhaven.com/a/pine_needles_ground_02"><span class="scheme">https://</span><span class="host">polyhaven.com</span>/a/pine_needles_ground_02</span>
+    <div class="foot"><span class="usage" data-usage="libre"><span class="u-mark" aria-hidden="true"></span>Libre</span></div>
+  </div>
+</li>
+<li class="card">
+  <div class="thumb"><span class="rank-tag">#6</span><span class="kind-tag"><svg class="icon sm" aria-hidden="true"><use href="#i-image"/></svg>Image</span><img src="mockups/media/bark2.svg" alt="" loading="lazy" width="320" height="200"></div>
+  <div class="body">
+    <a class="title untitled" href="https://commons.wikimedia.org/wiki/File:Sequoia_trunk_detail_IMG_4471.jpg" target="_blank" rel="noopener noreferrer" title="Sans titre">commons.wikimedia.org/wiki/File:Sequoia_trunk_detail_IMG_4471.jpg</a>
+    <p class="desc empty">Aucune description.</p>
+    <span class="url" title="https://commons.wikimedia.org/wiki/File:Sequoia_trunk_detail_IMG_4471.jpg"><span class="scheme">https://</span><span class="host">commons.wikimedia.org</span>/wiki/File:Sequoia_trunk_detail_IMG_4471.jpg</span>
+    <div class="foot"><span class="usage" data-usage="sous-conditions"><span class="u-mark" aria-hidden="true"></span>Sous conditions</span></div>
+  </div>
+</li>
+<li class="card">
+  <div class="thumb"><span class="rank-tag">#7</span><img src="mockups/media/herbarium.svg" alt="" loading="lazy" width="320" height="200"></div>
+  <div class="body">
+    <a class="title" href="https://www.cambridge.org/core/journals/psychological-medicine/article/mindfulness-school-university-meta-analysis/9E1B2C0F7A" target="_blank" rel="noopener noreferrer" title="Revue systématique et méta-analyse des interventions brèves de pleine conscience en milieu scolaire et universitaire : effets sur l'anxiété, la régulation émotionnelle, l'attention soutenue et le bien-être subjectif, avec analyse des modérateurs (âge, durée, format en ligne ou présentiel) sur 112 essais contrôlés publiés entre 2010 et 2025">Revue systématique et méta-analyse des interventions brèves de pleine conscience en milieu scolaire et universitaire : effets sur l'anxiété, la régulation émotionnelle, l'attention soutenue et le bien-être subjectif, avec analyse des modérateurs (âge, durée, format en ligne ou présentiel) sur 112 essais contrôlés publiés entre 2010 et 2025</a>
+    <p class="desc">Méta-analyse de 112 essais contrôlés randomisés.</p>
+    <span class="url" title="https://www.cambridge.org/core/journals/psychological-medicine/article/mindfulness-school-university-meta-analysis/9E1B2C0F7A"><span class="scheme">https://</span><span class="host">www.cambridge.org</span>/core/journals/psychological-medicine/article/mindfulness-school-university-meta-analysis/9E1B2C0F7A</span>
+    <div class="foot"><span class="usage" data-usage="payant"><span class="u-mark" aria-hidden="true"></span>Payant</span></div>
+  </div>
+</li>
+  </ol>
+  <ol style="list-style:none;padding:0;margin:8px 0 0;display:grid;gap:2px"><li class="muted" style="font-size:12px"><span class="mono">#1</span> Vignette en cache</li><li class="muted" style="font-size:12px"><span class="mono">#2</span> Vidéo : vignette + lecture (ouvre le lien, pas d’iframe)</li><li class="muted" style="font-size:12px"><span class="mono">#3</span> Sans image : favicon agrandi</li><li class="muted" style="font-size:12px"><span class="mono">#4</span> Sans image ni favicon : pictogramme du type</li><li class="muted" style="font-size:12px"><span class="mono">#5</span> Image cassée (onerror) : repli explicite</li><li class="muted" style="font-size:12px"><span class="mono">#6</span> Sans titre ni description</li><li class="muted" style="font-size:12px"><span class="mono">#7</span> Titre très long : 2 lignes, ellipse</li></ol>
+
+  <div class="section-title"><h2>Bascule de vue</h2></div>
+  <div class="panel" style="display:flex;gap:16px;flex-wrap:wrap;align-items:center">
+    <div class="seg" role="group" aria-label="Affichage des liens" data-demo><button type="button" aria-pressed="true"><svg class="icon sm" aria-hidden="true"><use href="#i-list"/></svg>Flux</button><button type="button" aria-pressed="false"><svg class="icon sm" aria-hidden="true"><use href="#i-grid"/></svg>Grille</button></div>
+    <span class="muted" style="font-size:12px">Mémorisée par pool (localStorage). L’état actif est porté par aria-pressed, un soulignement et la couleur.</span>
+  </div>
+
+  <div class="section-title"><h2>Tuile de chiffre</h2></div>
+  <div class="tiles">
+    <div class="tile ">
+  <span class="eyebrow">URLs connues</span>
+  <span class="value">48 213</span>
+  <span class="sub"><span class="up">+231</span> aujourd’hui</span>
+  
+  
+</div>
+    <div class="tile ">
+  <span class="eyebrow">Classées</span>
+  <span class="value">39 870</span>
+  <span class="sub">82,7 % du corpus</span>
+  <span class="bar" aria-hidden="true"><span style="width:82.7%"></span></span>
+  
+</div>
+    <a class="tile " href="#">
+  <span class="eyebrow">Pools</span>
+  <span class="value">7</span>
+  <span class="sub">tuile-lien</span>
+  
+  <span class="go" aria-hidden="true"><svg class="icon sm" aria-hidden="true"><use href="#i-arrow"/></svg></span>
+</a>
+    <a class="tile warn" href="#">
+  <span class="eyebrow">À qualifier</span>
+  <span class="value">642</span>
+  <span class="sub">avertissement</span>
+  
+  <span class="go" aria-hidden="true"><svg class="icon sm" aria-hidden="true"><use href="#i-arrow"/></svg></span>
+</a>
+    <a class="tile alert" href="#">
+  <span class="eyebrow"><svg class="icon sm" aria-hidden="true"><use href="#i-alert"/></svg>En erreur</span>
+  <span class="value">407</span>
+  <span class="sub">alerte : pictogramme + barre</span>
+  
+  <span class="go" aria-hidden="true"><svg class="icon sm" aria-hidden="true"><use href="#i-arrow"/></svg></span>
+</a>
+  </div>
+
+  <div class="section-title"><h2>Statuts</h2></div>
+  <div class="panel" style="display:flex;gap:10px;flex-wrap:wrap">
+    <span class="status ok"><svg class="icon sm" aria-hidden="true"><use href="#i-check"/></svg>ok</span><span class="status failed"><svg class="icon sm" aria-hidden="true"><use href="#i-x"/></svg>échec</span><span class="status running"><svg class="icon sm" aria-hidden="true"><use href="#i-run"/></svg>en cours</span><span class="status warn"><svg class="icon sm" aria-hidden="true"><use href="#i-alert"/></svg>alerte</span><span class="status idle">jamais</span><span class="chip">read</span><span class="chip primary">principal</span>
+  </div>
+
+  <div class="section-title"><h2>Pagination</h2></div>
+  <div class="panel" style="display:grid;gap:8px">
+    <nav class="pager" aria-label="Pagination">
+  <span class="range">1–50 sur 412</span>
+  <ol><li><span class="pg" aria-disabled="true">‹<span class="sr-only"> Précédent</span></span></li><li><span class="pg" aria-current="page">1</span></li><li><a class="pg" href="#" aria-label="Page 2">2</a></li><li><span class="pg gap" aria-hidden="true">…</span></li><li><a class="pg" href="#" aria-label="Page 9">9</a></li><li><a class="pg" href="#" rel="next">›<span class="sr-only"> Suivant</span></a></li></ol>
+</nav><nav class="pager" aria-label="Pagination">
+  <span class="range">151–200 sur 412</span>
+  <ol><li><a class="pg" href="#" rel="prev">‹<span class="sr-only"> Précédent</span></a></li><li><a class="pg" href="#" aria-label="Page 1">1</a></li><li><span class="pg gap" aria-hidden="true">…</span></li><li><a class="pg" href="#" aria-label="Page 3">3</a></li><li><span class="pg" aria-current="page">4</span></li><li><a class="pg" href="#" aria-label="Page 5">5</a></li><li><span class="pg gap" aria-hidden="true">…</span></li><li><a class="pg" href="#" aria-label="Page 9">9</a></li><li><a class="pg" href="#" rel="next">›<span class="sr-only"> Suivant</span></a></li></ol>
+</nav><nav class="pager" aria-label="Pagination">
+  <span class="range">401–412 sur 412</span>
+  <ol><li><a class="pg" href="#" rel="prev">‹<span class="sr-only"> Précédent</span></a></li><li><a class="pg" href="#" aria-label="Page 1">1</a></li><li><span class="pg gap" aria-hidden="true">…</span></li><li><a class="pg" href="#" aria-label="Page 8">8</a></li><li><span class="pg" aria-current="page">9</span></li><li><span class="pg" aria-disabled="true">›<span class="sr-only"> Suivant</span></span></li></ol>
+</nav><nav class="pager" aria-label="Pagination">
+  <span class="range">1–23 sur 23</span>
+  <ol><li><span class="pg" aria-disabled="true">‹<span class="sr-only"> Précédent</span></span></li><li><span class="pg" aria-current="page">1</span></li><li><span class="pg" aria-disabled="true">›<span class="sr-only"> Suivant</span></span></li></ol>
+</nav>
+    <p class="muted" style="margin:6px 0 0;font-size:12px">Plage en monospace + pages ; « ‹ › » avec libellé pour les lecteurs d’écran ; cibles de 32 px (44 px au tactile).</p>
+  </div>
+
+  <div class="section-title"><h2>Champs et boutons</h2></div>
+  <div class="panel" style="display:grid;gap:14px;max-width:520px">
+    <label class="field"><span>URL de l'API</span><input class="input" type="url" value="https://api.webpool.example/api/v1"></label>
+    <label class="field"><span>Jeton</span><input class="input" type="password" value="xxxxxxxx" aria-invalid="true"><small>État invalide : bord critique + message.</small></label>
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-primary">Primaire</button><button class="btn">Secondaire</button><button class="btn btn-ghost">Discret</button><button class="btn" disabled>Désactivé</button></div>
+  </div>
+</main>
+<script>
+(function () {
+  // Bascule de thème (mémorisée).
+  document.querySelectorAll('[data-theme-toggle]').forEach(function (b) {
+    var sync = function () { var l = document.documentElement.getAttribute('data-theme') === 'light'; b.setAttribute('aria-pressed', String(l)); b.querySelector('.lbl').textContent = l ? 'Sombre' : 'Clair'; };
+    sync();
+    b.addEventListener('click', function () {
+      var l = document.documentElement.getAttribute('data-theme') === 'light';
+      if (l) document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', 'light');
+      localStorage.setItem('dp-theme', l ? 'dark' : 'light'); sync();
+    });
+  });
+
+  // Copier les N liens : menu de format + confirmation (démonstration).
+  var FMT = { txt: 'URLs', md: 'Markdown', csv: 'CSV' };
+  document.querySelectorAll('[data-copy]').forEach(function (root) {
+    var count = Number(root.getAttribute('data-count'));
+    var main = root.querySelector('[data-copy-main]'), toggle = root.querySelector('[data-copy-toggle]');
+    var menu = root.querySelector('.menu'), status = root.querySelector('.copy-status');
+    var fmt = root.getAttribute('data-format') || 'txt';
+    var nf = new Intl.NumberFormat('fr-FR');
+    function close() { menu.hidden = true; toggle.setAttribute('aria-expanded', 'false'); }
+    function show(cls, html) { status.className = 'copy-status ' + cls; status.innerHTML = html; status.hidden = false; }
+    toggle.addEventListener('click', function () {
+      var open = menu.hidden; menu.hidden = !open; toggle.setAttribute('aria-expanded', String(open));
+      if (open) (menu.querySelector('[aria-checked="true"]') || menu.querySelector('[role=menuitemradio]')).focus();
+    });
+    menu.querySelectorAll('[role=menuitemradio]').forEach(function (item) {
+      item.addEventListener('click', function () {
+        menu.querySelectorAll('[role=menuitemradio]').forEach(function (i) { i.setAttribute('aria-checked', String(i === item)); });
+        fmt = item.getAttribute('data-fmt'); toggle.querySelector('.fmt').textContent = FMT[fmt]; close(); toggle.focus();
+      });
+    });
+    root.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !menu.hidden) { close(); toggle.focus(); } });
+    document.addEventListener('click', function (e) { if (!root.contains(e.target)) close(); });
+    main.addEventListener('click', function () {
+      show('busy', '<svg class="icon sm" aria-hidden="true"><use href="#i-run"/></svg>Préparation de ' + nf.format(count) + ' liens…');
+      setTimeout(function () {
+        var text = 'https://exemple.org/1\nhttps://exemple.org/2';
+        var done = function () { show('ok', '<svg class="icon sm" aria-hidden="true"><use href="#i-check"/></svg>' + nf.format(count) + ' liens copiés · ' + FMT[fmt]); };
+        var fail = function () { show('err', '<svg class="icon sm" aria-hidden="true"><use href="#i-alert"/></svg><span>Copie refusée par le navigateur — <a href="#">télécharger le fichier</a></span>'); };
+        if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fail); else done();
+      }, 450);
+    });
+  });
+
+  // Bascules segmentées de démonstration (components.html).
+  document.querySelectorAll('.seg[data-demo] button').forEach(function (b) {
+    b.addEventListener('click', function () { b.parentElement.querySelectorAll('button').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); }); });
+  });
+})();
+</script>
+</body>
+</html>

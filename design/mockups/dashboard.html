@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tableau de bord · datapool</title>
+<script>(function(){var q=new URLSearchParams(location.search).get('theme');var t=q||localStorage.getItem('dp-theme');if(t==='light')document.documentElement.setAttribute('data-theme','light');})();</script>
+<link rel="stylesheet" href="../tokens.css">
+<link rel="stylesheet" href="../ui.css">
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<symbol id="i-page" viewBox="0 0 16 16"><path d="M4 1.5h5.5L13 5v9.5H4z"/><path d="M9.5 1.5V5H13M6 8h5M6 10.5h5M6 13h3"/></symbol>
+<symbol id="i-image" viewBox="0 0 16 16"><rect x="1.5" y="2.5" width="13" height="11" rx="1"/><circle cx="5.5" cy="6" r="1.3"/><path d="M1.5 12l4-4 3 3 2-2 4 4"/></symbol>
+<symbol id="i-video" viewBox="0 0 16 16"><rect x="1.5" y="3" width="13" height="10" rx="1"/><path d="M6.5 5.8v4.4L10.3 8z"/></symbol>
+<symbol id="i-pdf" viewBox="0 0 16 16"><path d="M3 1.5h6.5L13 5v9.5H3z"/><path d="M9.5 1.5V5H13"/><path d="M5 9h1.3a1 1 0 0 1 0 2H5V8m3.5 3V8h.8a1.5 1.5 0 0 1 0 3zm3-3h-1.2v3m0-1.5h1"/></symbol>
+<symbol id="i-copy" viewBox="0 0 16 16"><rect x="5" y="5" width="9" height="9" rx="1"/><path d="M11 5V2.5a1 1 0 0 0-1-1H2.5a1 1 0 0 0-1 1V10a1 1 0 0 0 1 1H5"/></symbol>
+<symbol id="i-chevron" viewBox="0 0 16 16"><path d="M4 6l4 4 4-4"/></symbol>
+<symbol id="i-check" viewBox="0 0 16 16"><path d="M2.5 8.5l3.5 3.5 7.5-8"/></symbol>
+<symbol id="i-alert" viewBox="0 0 16 16"><path d="M8 1.8l6.5 12H1.5z"/><path d="M8 6.5v3.2M8 11.6v.1"/></symbol>
+<symbol id="i-x" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.5"/><path d="M5.7 5.7l4.6 4.6M10.3 5.7l-4.6 4.6"/></symbol>
+<symbol id="i-list" viewBox="0 0 16 16"><path d="M1.5 3.5h13M1.5 6.5h13M1.5 9.5h13M1.5 12.5h13"/></symbol>
+<symbol id="i-grid" viewBox="0 0 16 16"><rect x="1.5" y="1.5" width="5.5" height="5.5"/><rect x="9" y="1.5" width="5.5" height="5.5"/><rect x="1.5" y="9" width="5.5" height="5.5"/><rect x="9" y="9" width="5.5" height="5.5"/></symbol>
+<symbol id="i-sun" viewBox="0 0 16 16"><circle cx="8" cy="8" r="3"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3 3l1.4 1.4M11.6 11.6L13 13M3 13l1.4-1.4M11.6 4.4L13 3"/></symbol>
+<symbol id="i-moon" viewBox="0 0 16 16"><path d="M13.5 10A6 6 0 0 1 6 2.5a6 6 0 1 0 7.5 7.5z"/></symbol>
+<symbol id="i-arrow" viewBox="0 0 16 16"><path d="M5 11l6-6M6 5h5v5"/></symbol>
+<symbol id="i-broken" viewBox="0 0 16 16"><path d="M1.5 3h6l-1 3 2 2-1 5h-6zM10 3h4.5v10H9l1-3.5-2-2z"/></symbol>
+<symbol id="i-play" viewBox="0 0 16 16"><path d="M4 2.5v11L13.5 8z"/></symbol>
+<symbol id="i-plug" viewBox="0 0 16 16"><path d="M5.5 1.5v3M10.5 1.5v3M3.5 4.5h9v3a4.5 4.5 0 0 1-9 0zM8 12v2.5"/></symbol>
+<symbol id="i-search" viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5l4 4"/></symbol>
+<symbol id="i-download" viewBox="0 0 16 16"><path d="M8 1.5v9M4.5 7L8 10.5 11.5 7M2 14h12"/></symbol>
+<symbol id="i-run" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.5" stroke-dasharray="3 2"/><path d="M8 4.5V8l2.5 1.5"/></symbol>
+</svg>
+<header class="app-header">
+  <a class="brand" href="pools.html" aria-label="datapool, accueil"><span class="brand-mark" aria-hidden="true">dp</span><span>data<b>pool</b></span></a>
+  <nav class="app-nav" aria-label="Navigation principale">
+    <a href="dashboard.html" aria-current="page">Tableau de bord</a>
+    <a href="pools.html">Pools</a>
+    <a href="#">Corpus</a>
+    <a href="#">Domaines</a>
+  </nav>
+  <div class="app-user">
+    <span class="link-status">liaison ok</span>
+    <span class="who">admin-e2e <span class="chip">admin</span></span>
+    <button class="btn btn-ghost btn-sm theme-toggle" type="button" data-theme-toggle aria-pressed="false"><svg class="icon " aria-hidden="true"><use href="#i-sun"/></svg><span class="lbl">Clair</span></button>
+    <button class="btn btn-sm" type="button">Déconnexion</button>
+  </div>
+</header>
+<main class="page" id="main">
+  <div class="page-head">
+    <div class="titles">
+      <h1>Tableau de bord</h1>
+      <div class="meta"><span>corpus webpool</span><span>dernier cycle : 30 oct. 2026, 23:30</span><span class="fresh-ok">● cycle en cours</span></div>
+    </div>
+  </div>
+
+  <div class="section-title"><h2>Corpus</h2><span class="eyebrow">URLs</span></div>
+  <div class="tiles">
+    <div class="tile ">
+  <span class="eyebrow">URLs connues</span>
+  <span class="value">48 213</span>
+  <span class="sub"><span class="up">+231</span> aujourd’hui</span>
+  
+  
+</div>
+    <div class="tile ">
+  <span class="eyebrow">Classées</span>
+  <span class="value">39 870</span>
+  <span class="sub">82,7 % du corpus</span>
+  <span class="bar" aria-hidden="true"><span style="width:82.7%"></span></span>
+  
+</div>
+    <div class="tile warn">
+  <span class="eyebrow">En attente</span>
+  <span class="value">6 412</span>
+  <span class="sub">file de normalisation</span>
+  
+  
+</div>
+    <div class="tile ">
+  <span class="eyebrow">Doublons</span>
+  <span class="value">1 524</span>
+  <span class="sub">canonisés</span>
+  
+  
+</div>
+    <a class="tile alert" href="#">
+  <span class="eyebrow"><svg class="icon sm" aria-hidden="true"><use href="#i-alert"/></svg>En erreur</span>
+  <span class="value">407</span>
+  <span class="sub">96 depuis 17:14</span>
+  
+  <span class="go" aria-hidden="true"><svg class="icon sm" aria-hidden="true"><use href="#i-arrow"/></svg></span>
+</a>
+  </div>
+
+  <div class="section-title"><h2>Pools, domaines, exploration</h2></div>
+  <div class="tiles">
+    <a class="tile " href="pools.html">
+  <span class="eyebrow">Pools</span>
+  <span class="value">7</span>
+  <span class="sub">2 083 liens matérialisés</span>
+  
+  <span class="go" aria-hidden="true"><svg class="icon sm" aria-hidden="true"><use href="#i-arrow"/></svg></span>
+</a>
+    <a class="tile " href="#">
+  <span class="eyebrow">Domaines</span>
+  <span class="value">3 118</span>
+  <span class="sub">profils d’usage</span>
+  
+  <span class="go" aria-hidden="true"><svg class="icon sm" aria-hidden="true"><use href="#i-arrow"/></svg></span>
+</a>
+    <a class="tile warn" href="#">
+  <span class="eyebrow">Domaines à qualifier</span>
+  <span class="value">642</span>
+  <span class="sub">20,6 % des domaines</span>
+  
+  <span class="go" aria-hidden="true"><svg class="icon sm" aria-hidden="true"><use href="#i-arrow"/></svg></span>
+</a>
+    <div class="tile ">
+  <span class="eyebrow">Requêtes actives</span>
+  <span class="value">86</span>
+  <span class="sub">24 lancées ce soir</span>
+  
+  
+</div>
+    <div class="tile ">
+  <span class="eyebrow">Requêtes épuisées</span>
+  <span class="value">214</span>
+  
+  
+  
+</div>
+    <div class="tile ">
+  <span class="eyebrow">Vignettes en cache</span>
+  <span class="value">31 904</span>
+  <span class="sub">812 Mo / 2 Go</span>
+  <span class="bar" aria-hidden="true"><span style="width:40.6%"></span></span>
+  
+</div>
+  </div>
+
+  <div class="cols" style="margin-top:24px">
+    <section class="panel" aria-labelledby="cu-h">
+      <div class="panel-head"><h2 id="cu-h">Usage commercial du corpus</h2><span class="eyebrow">39 870 URLs classées</span></div>
+      <div class="stackbar" role="img" aria-label="Libre : 12840, Sous conditions : 9715, Payant : 3310, Non commercial : 4022, À qualifier : 9983">
+  <span class="seg-u" data-usage="libre" style="flex-grow:12840" title="Libre : 12 840 URLs (32 %)"></span><span class="seg-u" data-usage="sous-conditions" style="flex-grow:9715" title="Sous conditions : 9 715 URLs (24 %)"></span><span class="seg-u" data-usage="payant" style="flex-grow:3310" title="Payant : 3 310 URLs (8 %)"></span><span class="seg-u" data-usage="non-commercial" style="flex-grow:4022" title="Non commercial : 4 022 URLs (10 %)"></span><span class="seg-u" data-usage="a-qualifier" style="flex-grow:9983" title="À qualifier : 9 983 URLs (25 %)"></span>
+</div>
+<ul class="legend">
+  <li><span class="u-mark" data-usage="libre" aria-hidden="true"></span><span class="name">Libre</span><strong>12 840</strong><span class="pct">32%</span></li>
+  <li><span class="u-mark" data-usage="sous-conditions" aria-hidden="true"></span><span class="name">Sous conditions</span><strong>9 715</strong><span class="pct">24%</span></li>
+  <li><span class="u-mark" data-usage="payant" aria-hidden="true"></span><span class="name">Payant</span><strong>3 310</strong><span class="pct">8%</span></li>
+  <li><span class="u-mark" data-usage="non-commercial" aria-hidden="true"></span><span class="name">Non commercial</span><strong>4 022</strong><span class="pct">10%</span></li>
+  <li><span class="u-mark" data-usage="a-qualifier" aria-hidden="true"></span><span class="name">À qualifier</span><strong>9 983</strong><span class="pct">25%</span></li>
+</ul>
+    </section>
+    <section class="panel" aria-labelledby="dq-h">
+      <div class="panel-head"><h2 id="dq-h">Domaines à qualifier, par volume</h2><span class="eyebrow">top 6</span></div>
+      <ul class="barlist">
+  <li title="youtube.com : 1204 liens"><span class="name">youtube.com</span><span class="track"><span class="fill" style="width:100.0%"></span></span><span class="val">1204</span></li>
+  <li title="researchgate.net : 688 liens"><span class="name">researchgate.net</span><span class="track"><span class="fill" style="width:57.1%"></span></span><span class="val">688</span></li>
+  <li title="atlasobscura.com : 341 liens"><span class="name">atlasobscura.com</span><span class="track"><span class="fill" style="width:28.3%"></span></span><span class="val">341</span></li>
+  <li title="culture.ru : 198 liens"><span class="name">culture.ru</span><span class="track"><span class="fill" style="width:16.4%"></span></span><span class="val">198</span></li>
+  <li title="vimeo.com : 176 liens"><span class="name">vimeo.com</span><span class="track"><span class="fill" style="width:14.6%"></span></span><span class="val">176</span></li>
+  <li title="reddit.com : 154 liens"><span class="name">reddit.com</span><span class="track"><span class="fill" style="width:12.8%"></span></span><span class="val">154</span></li>
+</ul>
+    </section>
+  </div>
+
+  <div class="section-title"><h2>Derniers runs</h2><span class="eyebrow">2 échecs · 1 alerte</span></div>
+  <div class="panel flush table-wrap">
+    <table class="table">
+      <thead><tr><th>#</th><th>Type</th><th>Statut</th><th class="hide-sm">Début</th><th class="num">Durée</th><th>Détail</th></tr></thead>
+      <tbody>
+<tr><td class="mono">4821</td><td class="mono">cycle</td><td><span class="status running"><svg class="icon sm" aria-hidden="true"><use href="#i-run"/></svg>en cours</span></td><td class="mono nowrap hide-sm">30/10/2026 23:30</td><td class="num">—</td><td class="detail" title="{&quot;step&quot;:&quot;media&quot;,&quot;done&quot;:182,&quot;of&quot;:640}">{&quot;step&quot;:&quot;media&quot;,&quot;done&quot;:182,&quot;of&quot;:640}</td></tr>
+<tr><td class="mono">4820</td><td class="mono">media</td><td><span class="status ok"><svg class="icon sm" aria-hidden="true"><use href="#i-check"/></svg>ok</span></td><td class="mono nowrap hide-sm">30/10/2026 23:02</td><td class="num">4 min</td><td class="detail" title="{&quot;thumbs&quot;:418,&quot;favicons&quot;:37,&quot;skipped&quot;:12,&quot;bytes&quot;:&quot;10,4 Mo&quot;}">{&quot;thumbs&quot;:418,&quot;favicons&quot;:37,&quot;skipped&quot;:12,&quot;bytes&quot;:&quot;10,4 Mo&quot;}</td></tr>
+<tr class="failed"><td class="mono">4819</td><td class="mono">discover</td><td><span class="status failed"><svg class="icon sm" aria-hidden="true"><use href="#i-x"/></svg>échec</span></td><td class="mono nowrap hide-sm">30/10/2026 22:47</td><td class="num">41 s</td><td class="detail err" title="HTTP 429 Too Many Requests — flickr.com (3 tentatives, reprise à 23:47)">HTTP 429 Too Many Requests — flickr.com (3 tentatives, reprise à 23:47)</td></tr>
+<tr><td class="mono">4818</td><td class="mono">classify</td><td><span class="status ok"><svg class="icon sm" aria-hidden="true"><use href="#i-check"/></svg>ok</span></td><td class="mono nowrap hide-sm">30/10/2026 22:30</td><td class="num">6 min</td><td class="detail" title="{&quot;classified&quot;:612,&quot;themes&quot;:1408,&quot;low_confidence&quot;:37}">{&quot;classified&quot;:612,&quot;themes&quot;:1408,&quot;low_confidence&quot;:37}</td></tr>
+<tr><td class="mono">4817</td><td class="mono">normalize</td><td><span class="status ok"><svg class="icon sm" aria-hidden="true"><use href="#i-check"/></svg>ok</span></td><td class="mono nowrap hide-sm">30/10/2026 22:18</td><td class="num">9 min</td><td class="detail" title="{&quot;fetched&quot;:640,&quot;redirects&quot;:88,&quot;errors&quot;:14}">{&quot;fetched&quot;:640,&quot;redirects&quot;:88,&quot;errors&quot;:14}</td></tr>
+<tr><td class="mono">4816</td><td class="mono">materialize</td><td><span class="status ok"><svg class="icon sm" aria-hidden="true"><use href="#i-check"/></svg>ok</span></td><td class="mono nowrap hide-sm">30/10/2026 21:14</td><td class="num">12,8 s</td><td class="detail" title="{&quot;pools&quot;:6,&quot;items&quot;:2083,&quot;changed&quot;:[&quot;lora-foret-textures&quot;,&quot;psychologie-2025&quot;]}">{&quot;pools&quot;:6,&quot;items&quot;:2083,&quot;changed&quot;:[&quot;lora-foret-textures&quot;,&quot;psychologie-2025&quot;]}</td></tr>
+<tr><td class="mono">4815</td><td class="mono">ingest</td><td><span class="status ok"><svg class="icon sm" aria-hidden="true"><use href="#i-check"/></svg>ok</span></td><td class="mono nowrap hide-sm">30/10/2026 21:02</td><td class="num">2 min</td><td class="detail" title="{&quot;providers&quot;:[&quot;brave&quot;,&quot;flickr&quot;,&quot;europeana&quot;],&quot;new_urls&quot;:231,&quot;duplicates&quot;:57}">{&quot;providers&quot;:[&quot;brave&quot;,&quot;flickr&quot;,&quot;europeana&quot;],&quot;new_urls&quot;:231,&quot;duplicates&quot;:57}</td></tr>
+<tr><td class="mono">4814</td><td class="mono">discover</td><td><span class="status ok"><svg class="icon sm" aria-hidden="true"><use href="#i-check"/></svg>ok</span></td><td class="mono nowrap hide-sm">30/10/2026 20:45</td><td class="num">3 min</td><td class="detail" title="{&quot;queries&quot;:24,&quot;exhausted&quot;:3,&quot;results&quot;:1840}">{&quot;queries&quot;:24,&quot;exhausted&quot;:3,&quot;results&quot;:1840}</td></tr>
+<tr class="failed"><td class="mono">4813</td><td class="mono">media</td><td><span class="status failed"><svg class="icon sm" aria-hidden="true"><use href="#i-x"/></svg>échec</span></td><td class="mono nowrap hide-sm">30/10/2026 18:02</td><td class="num">1 min</td><td class="detail err" title="ENOSPC: plus d’espace disque dans var/media (quota 2 Go atteint)">ENOSPC: plus d’espace disque dans var/media (quota 2 Go atteint)</td></tr>
+<tr><td class="mono">4812</td><td class="mono">classify</td><td><span class="status ok"><svg class="icon sm" aria-hidden="true"><use href="#i-check"/></svg>ok</span></td><td class="mono nowrap hide-sm">30/10/2026 17:30</td><td class="num">5 min</td><td class="detail" title="{&quot;classified&quot;:498,&quot;themes&quot;:1122,&quot;low_confidence&quot;:22}">{&quot;classified&quot;:498,&quot;themes&quot;:1122,&quot;low_confidence&quot;:22}</td></tr>
+<tr><td class="mono">4811</td><td class="mono">normalize</td><td><span class="status warn"><svg class="icon sm" aria-hidden="true"><use href="#i-alert"/></svg>alerte</span></td><td class="mono nowrap hide-sm">30/10/2026 17:14</td><td class="num">11 min</td><td class="detail" title="{&quot;fetched&quot;:702,&quot;errors&quot;:96,&quot;note&quot;:&quot;taux d’erreur 13,7 %&quot;}">{&quot;fetched&quot;:702,&quot;errors&quot;:96,&quot;note&quot;:&quot;taux d’erreur 13,7 %&quot;}</td></tr>
+<tr><td class="mono">4810</td><td class="mono">cycle</td><td><span class="status ok"><svg class="icon sm" aria-hidden="true"><use href="#i-check"/></svg>ok</span></td><td class="mono nowrap hide-sm">30/10/2026 12:00</td><td class="num">38 min</td><td class="detail" title="{&quot;steps&quot;:6,&quot;new_urls&quot;:412,&quot;pools_changed&quot;:3}">{&quot;steps&quot;:6,&quot;new_urls&quot;:412,&quot;pools_changed&quot;:3}</td></tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+<script>
+(function () {
+  // Bascule de thème (mémorisée).
+  document.querySelectorAll('[data-theme-toggle]').forEach(function (b) {
+    var sync = function () { var l = document.documentElement.getAttribute('data-theme') === 'light'; b.setAttribute('aria-pressed', String(l)); b.querySelector('.lbl').textContent = l ? 'Sombre' : 'Clair'; };
+    sync();
+    b.addEventListener('click', function () {
+      var l = document.documentElement.getAttribute('data-theme') === 'light';
+      if (l) document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', 'light');
+      localStorage.setItem('dp-theme', l ? 'dark' : 'light'); sync();
+    });
+  });
+
+  // Copier les N liens : menu de format + confirmation (démonstration).
+  var FMT = { txt: 'URLs', md: 'Markdown', csv: 'CSV' };
+  document.querySelectorAll('[data-copy]').forEach(function (root) {
+    var count = Number(root.getAttribute('data-count'));
+    var main = root.querySelector('[data-copy-main]'), toggle = root.querySelector('[data-copy-toggle]');
+    var menu = root.querySelector('.menu'), status = root.querySelector('.copy-status');
+    var fmt = root.getAttribute('data-format') || 'txt';
+    var nf = new Intl.NumberFormat('fr-FR');
+    function close() { menu.hidden = true; toggle.setAttribute('aria-expanded', 'false'); }
+    function show(cls, html) { status.className = 'copy-status ' + cls; status.innerHTML = html; status.hidden = false; }
+    toggle.addEventListener('click', function () {
+      var open = menu.hidden; menu.hidden = !open; toggle.setAttribute('aria-expanded', String(open));
+      if (open) (menu.querySelector('[aria-checked="true"]') || menu.querySelector('[role=menuitemradio]')).focus();
+    });
+    menu.querySelectorAll('[role=menuitemradio]').forEach(function (item) {
+      item.addEventListener('click', function () {
+        menu.querySelectorAll('[role=menuitemradio]').forEach(function (i) { i.setAttribute('aria-checked', String(i === item)); });
+        fmt = item.getAttribute('data-fmt'); toggle.querySelector('.fmt').textContent = FMT[fmt]; close(); toggle.focus();
+      });
+    });
+    root.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !menu.hidden) { close(); toggle.focus(); } });
+    document.addEventListener('click', function (e) { if (!root.contains(e.target)) close(); });
+    main.addEventListener('click', function () {
+      show('busy', '<svg class="icon sm" aria-hidden="true"><use href="#i-run"/></svg>Préparation de ' + nf.format(count) + ' liens…');
+      setTimeout(function () {
+        var text = 'https://exemple.org/1\nhttps://exemple.org/2';
+        var done = function () { show('ok', '<svg class="icon sm" aria-hidden="true"><use href="#i-check"/></svg>' + nf.format(count) + ' liens copiés · ' + FMT[fmt]); };
+        var fail = function () { show('err', '<svg class="icon sm" aria-hidden="true"><use href="#i-alert"/></svg><span>Copie refusée par le navigateur — <a href="#">télécharger le fichier</a></span>'); };
+        if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fail); else done();
+      }, 450);
+    });
+  });
+
+  // Bascules segmentées de démonstration (components.html).
+  document.querySelectorAll('.seg[data-demo] button').forEach(function (b) {
+    b.addEventListener('click', function () { b.parentElement.querySelectorAll('button').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); }); });
+  });
+})();
+</script>
+</body>
+</html>
