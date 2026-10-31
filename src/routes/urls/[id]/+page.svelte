@@ -3,6 +3,8 @@
   import { page } from '$app/state';
   import ExternalLink from '#lib/components/ExternalLink.svelte';
   import Icon from '#lib/components/Icon.svelte';
+  import MediaThumb from '#lib/components/MediaThumb.svelte';
+  import { enrich } from '#lib/explore.ts';
   import UsageBadge from '#lib/components/UsageBadge.svelte';
   import { fmtDate, fmtScore, urlStatusLabel } from '#lib/format.ts';
   import { copyText } from '#lib/copy.ts';
@@ -40,16 +42,33 @@
   {#if u}
     {@const link = u.canonical_url ?? u.raw_url ?? ''}
     {@const s = STATUS[u.status ?? ''] ?? { cls: 'idle', icon: 'page' }}
+    {@const media = enrich(
+      {
+        rank: 0,
+        url: link,
+        title: u.title ?? null,
+        domain: u.domain ?? '',
+        usage_commercial: u.usage_commercial ?? null,
+        description: u.description,
+        media_type: u.media_type,
+        source: u.source,
+        thumbnail: u.thumbnail,
+        favicon: u.favicon,
+      },
+      session.client!.mediaUrl,
+    )}
     <div class="url-hero">
-      <!-- vignette en cache : phase 3 ; d'ici là, le repli -->
-      <div class="thumb fallback"><Icon name="page" /><span class="host">{u.domain ?? ''}</span><span class="why">pas de vignette</span></div>
+      <MediaThumb link={media} rank={false} />
       <div>
         <div class="meta" style="margin:0 0 6px">
           <span class="status {s.cls}"><Icon name={s.icon} small />{urlStatusLabel(u.status)}</span>
           <UsageBadge usage={u.usage_commercial} />
           {#if u.http_status}<span class="chip">HTTP {u.http_status}</span>{/if}
+          {#if u.lang}<span class="chip">{u.lang}</span>{/if}
+          {#if u.site_name}<span class="chip">{u.site_name}</span>{/if}
         </div>
         <h1>{u.title || link}</h1>
+        {#if u.description}<p class="desc">{u.description}</p>{/if}
         <div class="url-full" title="Cliquer pour sélectionner l'URL complète">{link}</div>
         <div class="actions" style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center">
           <ExternalLink url={link}><span class="btn btn-sm"><Icon name="arrow" small />Ouvrir le site</span></ExternalLink>

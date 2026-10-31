@@ -49,6 +49,8 @@ export function createClient(conn: Connection, fetchFn: typeof fetch = fetch) {
   const seg = encodeURIComponent;
 
   return {
+    // Chemin de média de l'API (`/api/v1/media/…`) → URL absolue, ou null.
+    mediaUrl: (path: string | null | undefined) => (path ? new URL(path, conn.baseUrl).href : null),
     me: () => get<Schemas['Me']>('/me'),
     pools: () => get<{ items: Schemas['PoolSummary'][] }>('/pools'),
     pool: (slug: string) => get<Schemas['Pool']>(`/pools/${seg(slug)}`),

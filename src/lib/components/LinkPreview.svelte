@@ -30,6 +30,7 @@
   </div>
   <MediaThumb {link} />
   <h2>{link.title || link.url}</h2>
+  {#if link.description}<p>{link.description}</p>{/if}
   <div class="url-full">{link.url}</div>
   <dl class="kv">
     <dt>rang</dt><dd class="mono">#{link.rank}</dd>

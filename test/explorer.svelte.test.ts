@@ -8,7 +8,10 @@ import { page } from './mocks/app-state';
 
 const items = [
   { rank: 1, url: 'https://www.flickr.com/photos/u/1', title: 'Moss bark', domain: 'flickr.com', usage_commercial: 'sous-conditions', id: 11 },
-  { rank: 2, url: 'https://unsplash.com/photos/x', title: 'Forest path', domain: 'unsplash.com', usage_commercial: 'libre', id: 12 },
+  {
+    rank: 2, url: 'https://unsplash.com/photos/x', title: 'Forest path', domain: 'unsplash.com', usage_commercial: 'libre', id: 12,
+    description: 'Sentier en sous-bois', media_type: 'image', source: 'stock', thumbnail: '/api/v1/media/t.webp', favicon: '/api/v1/media/f.webp',
+  },
   { rank: 3, url: 'https://github.com/a/b', title: 'LoRA scripts', domain: 'github.com', usage_commercial: 'libre', id: 13 },
   { rank: 4, url: 'https://www.youtube.com/watch?v=1', title: 'LoRA video', domain: 'youtube.com', usage_commercial: null, id: 14 },
   { rank: 5, url: 'https://unsplash.com/photos/y', title: null, domain: 'unsplash.com', usage_commercial: 'libre', id: 15 },
@@ -190,6 +193,8 @@ describe('PoolExplorer', () => {
 
     click(el.querySelector('.item .peek'));
     expect(clean(el.querySelector('.xp-preview h2'))).toBe('Forest path');
+    expect(clean(el.querySelector('.xp-preview h2 + p'))).toBe('Sentier en sous-bois');
+    expect(el.querySelector('.xp-preview .thumb img')?.getAttribute('src')).toBe('http://api.test/api/v1/media/t.webp');
     expect(el.querySelector('.xp')?.classList.contains('has-preview')).toBe(true);
     el.querySelector<HTMLButtonElement>('.xp-preview .actions button')!.click();
     await vi.waitFor(() => expect(clean(el.querySelector('.xp-preview [role=status]'))).toBe('URL copiée'));

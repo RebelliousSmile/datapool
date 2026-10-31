@@ -1,5 +1,5 @@
 ---
-status: in-progress
+status: done
 ---
 
 <!-- Fill or omit these sections; never add, rename, or reorder one. -->
@@ -64,6 +64,10 @@ flowchart TD
 | `WEBPOOL_MEDIA_DIR` hors du dossier remplacé au déploiement (`~/www/webpool-data/media` sur alwaysdata). | Le swap de `deploy:code` ne doit pas effacer le cache. |
 | Favicon par domaine (64 px), une seule source : apple-touch-icon, puis icône PNG, puis `.ico`, puis `/favicon.ico`. | Un seul téléchargement par site ; les PNG se réduisent proprement, les `.ico` modernes contiennent un PNG. |
 | `sharp` (binaires précompilés linux-x64) comme seule nouvelle dépendance. | Le staging de déploiement installe en Linux natif (`pnpm install --prod`), alwaysdata est linux-x64 glibc. |
+
+## Vérification (2026-10-31)
+
+Site local de 11 pages (aperçus JPEG, icône PNG, vidéo, PDF, image directe, image manquante) parcouru par `normalize` en ligne puis `webpool media` : 9 vignettes et 2 favicons en cache (480 px / 64 px, WebP), l'image manquante tracée `failed` (« HTTP 404 »), la page sans aperçu servie par la vignette du provider. datapool, client admin et `read` : vignettes, favicons et descriptions affichés en confort, compact, grille et aperçu, onglets par type de l'API (Pages, Images, Vidéos, PDF), tuile « Vignettes en cache » ; aucune erreur console ni requête échouée.
 
 ## Acceptance
 
