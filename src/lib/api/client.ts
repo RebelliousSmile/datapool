@@ -30,12 +30,23 @@ export function buildUrl(baseUrl: string, path: string, query: Query = {}): stri
 }
 
 export function createClient(conn: Connection, fetchFn: typeof fetch = fetch) {
-  async function request(path: string, query?: Query): Promise<Response> {
+  // GET par défaut ; un corps part en JSON (POST /requests).
+  async function request(path: string, query?: Query, init: { method?: string; body?: unknown } = {}): Promise<Response> {
     let res: Response;
     try {
-      res = await fetchFn(buildUrl(conn.baseUrl, path, query), {
-        headers: { Authorization: `Bearer ${conn.token}` },
-      });
+      res = await fetchFn(
+        buildUrl(conn.baseUrl, path, query),
+        init.method
+          ? {
+              method: init.method,
+              headers: {
+                Authorization: `Bearer ${conn.token}`,
+                ...(init.body === undefined ? {} : { 'Content-Type': 'application/json' }),
+              },
+              ...(init.body === undefined ? {} : { body: JSON.stringify(init.body) }),
+            }
+          : { headers: { Authorization: `Bearer ${conn.token}` } },
+      );
     } catch {
       throw new ApiError(0, 'network', `API injoignable : ${conn.baseUrl}`);
     }
@@ -46,6 +57,8 @@ export function createClient(conn: Connection, fetchFn: typeof fetch = fetch) {
     return res;
   }
   const get = async <T>(path: string, query?: Query): Promise<T> => (await request(path, query)).json();
+  const send = async <T>(method: string, path: string, body?: unknown): Promise<T> =>
+    (await request(path, undefined, { method, body })).json();
   const seg = encodeURIComponent;
 
   return {
@@ -62,6 +75,13 @@ export function createClient(conn: Connection, fetchFn: typeof fetch = fetch) {
     domains: (query: Query) => get<Page<Schemas['Domain']>>('/admin/domains', query),
     queries: (query: Query) => get<Page<Schemas['SearchQuery']>>('/admin/queries', query),
     runs: (query: Query) => get<Page<Schemas['Run']>>('/admin/runs', query),
+    // Recherches payantes : prix, portefeuilles, achat et annulation.
+    billing: () => get<Schemas['Billing']>('/billing'),
+    billingEntries: (query: Query) => get<Page<Schemas['WalletEntry']>>('/billing/entries', query),
+    requests: (query: Query) => get<Page<Schemas['SearchRequest']>>('/requests', query),
+    createRequest: (input: Schemas['SearchRequestInput']) => send<Schemas['RequestReceipt']>('POST', '/requests', input),
+    cancelRequest: (id: number) => send<Schemas['CancelReceipt']>('DELETE', `/requests/${seg(String(id))}`),
+    adminRequests: (query: Query) => get<Page<Schemas['SearchRequest']>>('/admin/requests', query),
     // Le jeton passe par l'en-tête : un simple lien ne suffit pas.
     exportPool: async (slug: string, format: 'json' | 'csv' | 'md') =>
       (await request(`/admin/pools/${seg(slug)}/export`, { format })).blob(),

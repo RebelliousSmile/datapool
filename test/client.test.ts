@@ -73,6 +73,35 @@ describe('createClient', () => {
     ]);
   });
 
+  it('recherches : GET, POST en JSON, DELETE', async () => {
+    const calls: { url: string; init: RequestInit }[] = [];
+    const fetchFn = (async (url: string, init: RequestInit) => {
+      calls.push({ url: url.replace('http://h/api/v1', ''), init });
+      return new Response(JSON.stringify({}), { status: 200 });
+    }) as unknown as typeof fetch;
+    const api = createClient(conn, fetchFn);
+    await api.billing();
+    await api.billingEntries({ community: 'atelier' });
+    await api.requests({ status: 'queued' });
+    await api.adminRequests({ limit: 5 });
+    await api.createRequest({ query: 'q', provider: 'brave', pages: 2 });
+    await api.cancelRequest(12);
+    expect(calls.map((c) => c.url)).toEqual([
+      '/billing',
+      '/billing/entries?community=atelier',
+      '/requests?status=queued',
+      '/admin/requests?limit=5',
+      '/requests',
+      '/requests/12',
+    ]);
+    expect(calls[4].init).toEqual({
+      method: 'POST',
+      headers: { Authorization: 'Bearer wp_x', 'Content-Type': 'application/json' },
+      body: '{"query":"q","provider":"brave","pages":2}',
+    });
+    expect(calls[5].init).toEqual({ method: 'DELETE', headers: { Authorization: 'Bearer wp_x' } });
+  });
+
   it("rend absolus les chemins de médias de l'API", () => {
     const api = createClient({ baseUrl: 'https://api.ex/api/v1', token: 'x' });
     expect(api.mediaUrl('/api/v1/media/a.webp')).toBe('https://api.ex/api/v1/media/a.webp');

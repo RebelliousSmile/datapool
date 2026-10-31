@@ -12,12 +12,17 @@ pools, corpus, domaines et activité du pipeline, lus par l'API HTTP de webpool
 |---|---|---|
 | Tableau de bord | admin | volumes du corpus, pools, domaines à qualifier, frontière d'exploration, derniers runs |
 | Pools | admin, read | pools visibles ; détail en **outil de recherche** : barre de requête à jetons (`type:image usage:libre`, `/` pour y aller), facettes comptées (type de média, source, usage, domaine), onglets de segments, « Grouper par » avec « Copier ce groupe », trois densités (confort, compact, grille), aperçu d'un lien, vues enregistrées ; **copie ou téléchargement de la sélection** (URLs seules par défaut, Markdown, CSV). État dans l'URL (liens partageables). Chaque lien montre sa vignette et le favicon de son site (servis par le cache de webpool), sa description, son type de média et sa famille de source. Pour l'admin : fiche de chaque lien, synthèse, définition et export |
+| Recherches | admin, read | soldes en giri (portefeuille personnel crédité par un don, communautés avec rôle, plafond et dépense sur 30 jours), achat d'une recherche (requête, provider, pages, pool visé, payeur) avec son prix et le solde après achat, historique (statut, giri dépensés après remboursement, liens trouvés, nouveaux et entrés dans le pool), annulation d'une recherche en attente ; les propriétaires voient les recherches de leur communauté. Accessible depuis un pool par « ajouter une recherche à ce pool » |
 | Corpus | admin | URLs filtrées (texte, statut, thème, domaine), triées par date, qualité ou pertinence ; copie ou téléchargement de la sélection (5 000 liens au plus, plafond annoncé) |
 | Fiche URL | admin | sources (requête, provider, rang), thèmes, facettes, pools |
 | Domaines | admin | registre, filtré par usage commercial (dont « à qualifier ») |
 
-Un client `read` (un client de webpool à qui l'on a accordé des pools) ne voit que
-ses pools, sans définition ni scores.
+Un client `read` (un client de webpool à qui l'on a accordé des pools, ou membre
+d'une communauté) ne voit que ses pools, sans définition ni scores. Les pools
+sont gratuits ; les recherches se paient en giri, voir
+[webpool](https://github.com/RebelliousSmile/webpool#recherches-payantes--dons-et-giri).
+
+![Recherches](docs/recherches.png)
 
 ## Direction artistique
 
@@ -134,6 +139,7 @@ SvelteKit 3, Svelte 5, Vite 8. Alias `#lib/*` déclaré dans `imports` de
 | `src/lib/api/schema.d.ts` | Types générés depuis `openapi.json` |
 | `src/lib/session.svelte.ts` | Connexion : URL, jeton, client courant |
 | `src/lib/format.ts` | Nombres, dates, usage commercial (ordre, forme, couleur), pagination, découpe d'URL |
+| `src/lib/billing.ts` | Recherches payantes (fonctions pures) : giri et euros, payeurs possibles pour un pool, devis avant achat |
 | `src/lib/copy.ts` | Copie d'une liste : chargement de toutes les pages, formats, presse-papiers |
 | `src/lib/explore.ts` | Explorateur (fonctions pures) : filtres, effectifs par facette, jetons, suggestions, groupes, état ↔ URL |
 | `src/lib/kinds.ts` | Type de média et famille de source déduits localement : repli quand l'API ne les donne pas (API antérieure à la phase 3) |

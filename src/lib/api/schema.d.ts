@@ -716,7 +716,7 @@ export interface paths {
                     limit?: components["parameters"]["limit"];
                     offset?: components["parameters"]["offset"];
                     /** @description Type */
-                    kind?: "ingest" | "normalize" | "classify" | "pool" | "explore";
+                    kind?: "ingest" | "normalize" | "classify" | "pool" | "explore" | "media" | "request";
                     /** @description Statut */
                     status?: "running" | "done" | "failed";
                 };
@@ -734,6 +734,271 @@ export interface paths {
                     content: {
                         "application/json": components["schemas"]["Page"] & {
                             items: components["schemas"]["Run"][];
+                        };
+                    };
+                };
+                400: components["responses"]["BadRequest"];
+                401: components["responses"]["Unauthorized"];
+                403: components["responses"]["Forbidden"];
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/billing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Prix des recherches et portefeuilles du client (personnel, communautés) */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Billing"];
+                    };
+                };
+                401: components["responses"]["Unauthorized"];
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/billing/entries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Grand livre du portefeuille personnel, ou d'une communauté pour ses propriétaires */
+        get: {
+            parameters: {
+                query?: {
+                    limit?: components["parameters"]["limit"];
+                    offset?: components["parameters"]["offset"];
+                    /** @description Communauté dont le client est propriétaire (`owner`) ; absent : le client lui-même */
+                    community?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Page"] & {
+                            items: components["schemas"]["WalletEntry"][];
+                        };
+                    };
+                };
+                400: components["responses"]["BadRequest"];
+                401: components["responses"]["Unauthorized"];
+                404: components["responses"]["NotFound"];
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Recherches du client, ou de la communauté pour ses propriétaires, plus récentes d'abord */
+        get: {
+            parameters: {
+                query?: {
+                    limit?: components["parameters"]["limit"];
+                    offset?: components["parameters"]["offset"];
+                    /** @description Communauté dont le client est propriétaire (`owner`) ; absent : le client lui-même */
+                    community?: string;
+                    /** @description Statut */
+                    status?: "queued" | "running" | "done" | "failed" | "cancelled";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Page"] & {
+                            items: components["schemas"]["SearchRequest"][];
+                        };
+                    };
+                };
+                400: components["responses"]["BadRequest"];
+                401: components["responses"]["Unauthorized"];
+                404: components["responses"]["NotFound"];
+            };
+        };
+        put?: never;
+        /** Achète une recherche : prix débité d'avance, exécution par la tâche `webpool requests run`, pages non lancées remboursées */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SearchRequestInput"];
+                };
+            };
+            responses: {
+                /** @description Recherche inscrite et payée */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["RequestReceipt"];
+                    };
+                };
+                400: components["responses"]["BadRequest"];
+                401: components["responses"]["Unauthorized"];
+                402: components["responses"]["PaymentRequired"];
+                404: components["responses"]["NotFound"];
+                /** @description Corps de plus de 8 Ko */
+                413: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Corps autre que application/json */
+                415: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                429: components["responses"]["TooManyRequests"];
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/requests/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Annule une recherche encore en attente, remboursée en entier */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Annulée */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["CancelReceipt"];
+                    };
+                };
+                400: components["responses"]["BadRequest"];
+                401: components["responses"]["Unauthorized"];
+                404: components["responses"]["NotFound"];
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Toutes les recherches payantes, plus récentes d'abord */
+        get: {
+            parameters: {
+                query?: {
+                    limit?: components["parameters"]["limit"];
+                    offset?: components["parameters"]["offset"];
+                    /** @description Statut */
+                    status?: "queued" | "running" | "done" | "failed" | "cancelled";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Page"] & {
+                            items: components["schemas"]["SearchRequest"][];
                         };
                     };
                 };
@@ -1014,6 +1279,108 @@ export interface components {
             /** Format: date-time */
             finished_at?: string | null;
         };
+        Price: {
+            provider: string;
+            /** @description giri par appel (une page) */
+            unit_price: number;
+            /** @description pages achetables par recherche (1 pour OpenRouter, qui ne pagine pas) */
+            max_pages: number;
+        };
+        CommunityWallet: {
+            slug: string;
+            label: string;
+            /** @enum {string} */
+            role: "owner" | "member";
+            /** @description giri de la communauté */
+            balance: number;
+            /** @description plafond du membre en giri sur 30 jours glissants, null : sans plafond */
+            monthly_limit: number | null;
+            /** @description giri dépensés par le membre sur 30 jours, remboursements déduits */
+            spent_30d: number;
+            /** @description pools de la communauté, seuls payables par son portefeuille */
+            pools: string[];
+        };
+        Billing: {
+            /** @description giri crédités pour 1 € de don ou d'achat */
+            giri_per_eur: number;
+            /** @description page de don ou d'achat de giri */
+            funding_url: string | null;
+            /** @description recherches en attente au plus par client */
+            max_queued: number;
+            prices: components["schemas"]["Price"][];
+            personal: {
+                balance: number;
+            };
+            communities: components["schemas"]["CommunityWallet"][];
+        };
+        WalletEntry: {
+            id: number;
+            /** @description giri, positif au crédit */
+            delta: number;
+            /** @enum {string} */
+            kind: "donation" | "purchase" | "debit" | "refund" | "adjustment";
+            /** @description montant reçu, en centimes d'euro (don, achat) */
+            amount_cents?: number | null;
+            /** @description référence du paiement reçu */
+            reference?: string | null;
+            search_request_id?: number | null;
+            /** @description client qui a dépensé */
+            client?: string | null;
+            note?: string | null;
+            /** Format: date-time */
+            created_at: string;
+        };
+        SearchRequest: {
+            id: number;
+            client: string;
+            provider: string;
+            query: string;
+            pages: number;
+            /** @description pool visé */
+            pool: string | null;
+            /** @description communauté qui paie, null : portefeuille personnel */
+            community: string | null;
+            unit_price: number;
+            /** @description giri débités à l'achat */
+            price: number;
+            /** @description giri rendus (pages non lancées, échec, annulation) */
+            refunded: number;
+            /** @enum {string} */
+            status: "queued" | "running" | "done" | "failed" | "cancelled";
+            calls_done: number;
+            results: number;
+            new_urls: number;
+            new_domains: number;
+            /** @description URLs de la recherche présentes dans le pool visé après refresh */
+            in_pool: number | null;
+            error: string | null;
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            started_at: string | null;
+            /** Format: date-time */
+            finished_at: string | null;
+        };
+        SearchRequestInput: {
+            query: string;
+            /** @description un des providers de `GET /billing` */
+            provider: string;
+            /** @default 1 */
+            pages: number;
+            /** @description pool visé (visible par le client) ; requis pour payer avec une communauté */
+            pool?: string;
+            /** @description communauté dont le portefeuille paie ; absent : portefeuille personnel */
+            community?: string;
+        };
+        RequestReceipt: {
+            request: components["schemas"]["SearchRequest"];
+            /** @description solde du portefeuille débité */
+            balance: number;
+        };
+        CancelReceipt: {
+            request: components["schemas"]["SearchRequest"];
+            refunded: number;
+        };
     };
     responses: {
         /** @description Paramètre invalide */
@@ -1045,6 +1412,24 @@ export interface components {
         };
         /** @description Introuvable */
         NotFound: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["Error"];
+            };
+        };
+        /** @description Solde insuffisant (`insufficient_balance`) ou plafond du membre atteint (`spend_limit`) */
+        PaymentRequired: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["Error"];
+            };
+        };
+        /** @description Trop de recherches en attente pour ce client (`too_many_queued`) */
+        TooManyRequests: {
             headers: {
                 [name: string]: unknown;
             };
