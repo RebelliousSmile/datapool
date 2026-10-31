@@ -2,7 +2,7 @@
 // signale débordements horizontaux et chevauchements de texte, compte les lignes
 // visibles de la vue flux, et enregistre les captures dans design/screenshots/.
 // Usage : node design/tools/shoot.mjs [filtre]
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, readdirSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 
@@ -14,8 +14,8 @@ const OUT = `${DESIGN}screenshots/`;
 mkdirSync(OUT, { recursive: true });
 
 const PAGES = [
-  'mockups/connexion.html', 'mockups/connexion-erreur.html', 'mockups/pools.html', 'mockups/pool-flux.html', 'mockups/pool-grille.html',
-  'mockups/pool-spb.html', 'mockups/pool-spb-flux.html', 'mockups/dashboard.html', 'mockups/url.html', 'components.html',
+  ...['mockups', 'proposals'].flatMap((d) => readdirSync(`${DESIGN}${d}`).filter((f) => f.endsWith('.html')).map((f) => `${d}/${f}`)),
+  'components.html',
 ];
 const VIEWPORTS = [['desktop', 1366, 768], ['mobile', 390, 844]];
 const THEMES = ['dark', 'light'];
@@ -67,7 +67,7 @@ for (const file of PAGES.filter((p) => !filter || p.includes(filter))) {
         return { out: [...new Set(out)], rows };
       });
 
-      const name = `${file.replace(/^mockups\//, '').replace('.html', '')}--${vp}-${theme}`;
+      const name = `${file.replace(/^(mockups|proposals)\//, '').replace('.html', '')}--${vp}-${theme}`;
       await page.screenshot({ path: `${OUT}${name}.png`, fullPage: true });
       if (report.rows != null) {
         // Capture « un écran » de la vue flux, liste remontée sous l'en-tête.
