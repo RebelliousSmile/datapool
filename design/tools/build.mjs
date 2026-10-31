@@ -385,7 +385,7 @@ ${rows}
 function loginPage({ error = false } = {}) {
   const body = `<main class="jack" id="main">
   <form class="panel jack-panel" onsubmit="event.preventDefault()">
-    <p class="terminal-line">&gt; datapool v0.1 · terminal d'accès au pool<br>&gt; <span class="ok">canal chiffré</span> · aucune ressource tierce chargée</p>
+    <p class="terminal-line">&gt; datapool v0.1 · terminal d'accès au pool<br>&gt; <span class="ok">page autonome</span> · aucune ressource tierce chargée</p>
     <h1 class="jack-title" style="margin:16px 0 4px">data<b>pool</b></h1>
     <p class="secondary" style="margin:0 0 20px">Branchez-vous sur l'API webpool. Le jeton se crée avec <code>webpool client add</code>.</p>
     <div style="display:grid;gap:14px">
@@ -484,11 +484,11 @@ function urlPage() {
   <div class="section-title"><h2>Sources</h2><span class="eyebrow">3 découvertes</span></div>
   <div class="panel flush table-wrap">
     <table class="table">
-      <thead><tr><th>Provider</th><th>Requête</th><th class="num">Rang SERP</th><th>Découverte</th></tr></thead>
+      <thead><tr><th>Provider</th><th>Requête</th><th class="num hide-sm">Rang SERP</th><th>Découverte</th></tr></thead>
       <tbody>
-        <tr><td class="mono">brave</td><td>musée insolite saint-pétersbourg souterrain</td><td class="num">4</td><td class="mono nowrap">12 oct. 2026, 21:03</td></tr>
-        <tr><td class="mono">brave</td><td>vodokanal water tower museum st petersburg</td><td class="num">1</td><td class="mono nowrap">14 oct. 2026, 21:05</td></tr>
-        <tr><td class="mono">europeana</td><td>водонапорная башня Петербург</td><td class="num">—</td><td class="mono nowrap">19 oct. 2026, 20:47</td></tr>
+        <tr><td class="mono">brave</td><td>musée insolite saint-pétersbourg souterrain</td><td class="num hide-sm">4</td><td class="mono nowrap">12 oct. 2026, 21:03</td></tr>
+        <tr><td class="mono">brave</td><td>vodokanal water tower museum st petersburg</td><td class="num hide-sm">1</td><td class="mono nowrap">14 oct. 2026, 21:05</td></tr>
+        <tr><td class="mono">europeana</td><td>водонапорная башня Петербург</td><td class="num hide-sm">—</td><td class="mono nowrap">19 oct. 2026, 20:47</td></tr>
       </tbody>
     </table>
   </div>
@@ -565,7 +565,7 @@ function componentsPage() {
     </ul></section>
     <section class="panel"><div class="panel-head"><h2>Usage commercial (ordre fixe)</h2></div><ul style="list-style:none;padding:0;margin:0;display:grid;gap:6px">
       ${swatch('--usage-libre', '1 · libre · rond')}${swatch('--usage-sous-conditions', '2 · sous conditions · demi-rond')}${swatch('--usage-payant', '3 · payant · carré')}${swatch('--usage-non-commercial', '4 · non commercial · triangle')}${swatch('--usage-a-qualifier', 'à qualifier · gris, pointillé')}
-    </ul>${spec('Validé daltonisme (protan, deutan, tritan : ΔE ≥ 9,5 entre toutes les paires) et ≥ 3:1 sur la surface, dans les deux thèmes.')}</section>
+    </ul>${spec('Validé daltonisme (protan, deutan, tritan : ΔE ≥ 8 entre toutes les paires) et ≥ 3:1 sur la surface, dans les deux thèmes.')}</section>
   </div>
   <div class="panel" style="margin-top:12px">
     <div style="display:flex;flex-wrap:wrap;gap:24px;align-items:baseline">
