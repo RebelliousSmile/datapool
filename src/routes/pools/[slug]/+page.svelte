@@ -1,15 +1,23 @@
 <script lang="ts">
+  import { resolve } from '$app/paths';
   import { page } from '$app/state';
   import BarList from '#lib/components/BarList.svelte';
   import Pager from '#lib/components/Pager.svelte';
   import UsageBar from '#lib/components/UsageBar.svelte';
   import { fmtDate, fmtNumber, fmtScore, usageLabel } from '#lib/format.ts';
+  import ExternalLink from '#lib/components/ExternalLink.svelte';
   import { session } from '#lib/session.svelte.ts';
 
   const LIMIT = 50;
   const slug = $derived(page.params.slug ?? '');
   let offset = $state(0);
   let exportError = $state('');
+
+  // Passer d'un pool à l'autre réutilise la page : on repart du début.
+  $effect.pre(() => {
+    void slug;
+    offset = 0;
+  });
 
   const pool = $derived(session.client?.pool(slug));
   const items = $derived(session.client?.poolItems(slug, { limit: LIMIT, offset }));
@@ -22,14 +30,15 @@
       a.href = URL.createObjectURL(blob);
       a.download = `${slug}.${format}`;
       a.click();
-      URL.revokeObjectURL(a.href);
+      // libéré après coup : certains navigateurs annulent un téléchargement révoqué trop tôt
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
     } catch (err) {
       exportError = (err as Error).message;
     }
   }
 </script>
 
-<p><a href="/pools">← Pools</a></p>
+<p><a href={resolve('/pools')}>← Pools</a></p>
 
 {#await pool}
   <p class="muted">Chargement…</p>
@@ -90,8 +99,8 @@
             <tr>
               <td class="num">{it.rank}</td>
               <td class="url">
-                <a href={it.url} target="_blank" rel="noopener noreferrer">{it.title || it.url}</a>
-                {#if session.isAdmin && it.id}<a class="muted fiche" href={`/urls/${it.id}`}>fiche</a>{/if}
+                <ExternalLink url={it.url}>{it.title || it.url}</ExternalLink>
+                {#if session.isAdmin && it.id}<a class="muted fiche" href={resolve('/urls/[id]', { id: String(it.id) })}>fiche</a>{/if}
               </td>
               <td>{it.domain}</td>
               <td>{usageLabel(it.usage_commercial)}</td>

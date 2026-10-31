@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { resolve } from '$app/paths';
   import { fmtDate, fmtNumber } from '#lib/format.ts';
   import { session } from '#lib/session.svelte.ts';
 
@@ -16,7 +17,7 @@
       <tbody>
         {#each res?.items ?? [] as p (p.slug)}
           <tr>
-            <td><a href={`/pools/${encodeURIComponent(p.slug)}`}>{p.label}</a></td>
+            <td><a href={resolve('/pools/[slug]', { slug: p.slug })}>{p.label}</a></td>
             <td class="secondary"><code>{p.slug}</code></td>
             <td class="num">{fmtNumber(p.items)}</td>
             <td>{p.refreshed_at ? fmtDate(p.refreshed_at) : 'jamais'}</td>

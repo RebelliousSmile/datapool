@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { resolve } from '$app/paths';
   import { page } from '$app/state';
   import Pager from '#lib/components/Pager.svelte';
   import { fmtDate, fmtNumber, USAGE, usageLabel } from '#lib/format.ts';
@@ -53,7 +54,8 @@
         <tbody>
           {#each res.items as d (d.domain)}
             <tr>
-              <td><a href={`/corpus?domain=${encodeURIComponent(d.domain ?? '')}`}>{d.domain}</a></td>
+              <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- resolve() plus une query string -->
+              <td><a href={`${resolve('/corpus')}?domain=${encodeURIComponent(d.domain ?? '')}`}>{d.domain}</a></td>
               <td class="num">{fmtNumber(d.urls)}</td>
               <td>{usageLabel(d.usage_commercial)}{#if d.note}<div class="muted">{d.note}</div>{/if}</td>
               <td class="secondary">{d.first_query ?? '—'}</td>

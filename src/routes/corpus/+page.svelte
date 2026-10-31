@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { resolve } from '$app/paths';
   import { page } from '$app/state';
   import Pager from '#lib/components/Pager.svelte';
   import { fmtDate, fmtNumber, fmtScore } from '#lib/format.ts';
@@ -72,7 +73,7 @@
         <tbody>
           {#each res.items as u (u.id)}
             <tr>
-              <td class="url"><a href={`/urls/${u.id}`}>{u.title || u.url}</a></td>
+              <td class="url"><a href={resolve('/urls/[id]', { id: String(u.id) })}>{u.title || u.url}</a></td>
               <td>{u.domain ?? '—'}</td>
               <td>{u.status}</td>
               <td>{u.primary_theme ?? '—'}</td>

@@ -61,9 +61,20 @@ pnpm api:types      # → src/lib/api/schema.d.ts (versionné, ne pas éditer)
 ## Développement
 
 ```bash
+pnpm lint           # ESLint (TypeScript, Svelte)
 pnpm check          # svelte-check (types)
-pnpm test           # vitest : client d'API et mise en forme
+pnpm test           # vitest : client d'API, session, mise en forme, composants (jsdom)
+pnpm test:coverage  # idem avec couverture de src/lib et planchers (rapport dans coverage/)
 ```
+
+La CI (`.github/workflows/ci.yml`, Node 22 et 24) enchaîne lint, check,
+couverture et build. Les pages (`src/routes`) dépendent du routeur SvelteKit :
+elles ne sont pas couvertes par vitest, seulement par `pnpm check`.
+
+Les liens vers les sites du corpus passent par `ExternalLink`, qui ne rend
+cliquables que les URLs http(s) : une URL brute `javascript:` ne doit jamais
+s'exécuter dans la page qui porte le jeton. Les liens internes passent par
+`resolve()` de `$app/paths`.
 
 SvelteKit 3, Svelte 5, Vite 8. Alias `#lib/*` déclaré dans `imports` de
 `package.json`.
@@ -74,7 +85,7 @@ SvelteKit 3, Svelte 5, Vite 8. Alias `#lib/*` déclaré dans `imports` de
 | `src/lib/api/schema.d.ts` | Types générés depuis `openapi.json` |
 | `src/lib/session.svelte.ts` | Connexion : URL, jeton, client courant |
 | `src/lib/format.ts` | Nombres, dates, usage commercial (ordre et couleurs fixes) |
-| `src/lib/components/` | Formulaire de connexion, pagination, graphiques |
+| `src/lib/components/` | Formulaire de connexion, pagination, graphiques, lien externe filtré |
 | `src/routes/` | Écrans |
 
 ## Licence

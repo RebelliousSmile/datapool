@@ -14,6 +14,12 @@ export function fmtDuration(start: string | null | undefined, end: string | null
   return s < 60 ? `${s.toFixed(1)} s` : `${Math.round(s / 60)} min`;
 }
 
+// Lien externe : seuls http(s) sont rendus cliquables. Une URL du corpus peut
+// être brute (ingérée, jamais normalisée) : un `javascript:` exécuterait du code
+// dans la page qui porte le jeton.
+export const safeHref = (url: string | null | undefined): string | undefined =>
+  url && /^https?:\/\//i.test(url) ? url : undefined;
+
 // Usage commercial : ordre fixe des couleurs (une valeur garde toujours la
 // même), « à qualifier » en gris neutre.
 export const USAGE = [

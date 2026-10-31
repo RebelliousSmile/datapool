@@ -1,19 +1,21 @@
 <script lang="ts">
+  import { resolve } from '$app/paths';
   import { page } from '$app/state';
   import { fmtDate, fmtScore, usageLabel } from '#lib/format.ts';
+  import ExternalLink from '#lib/components/ExternalLink.svelte';
   import { session } from '#lib/session.svelte.ts';
 
   const url = $derived(session.client?.url(page.params.id ?? ''));
 </script>
 
-<p><a href="/corpus">← Corpus</a></p>
+<p><a href={resolve('/corpus')}>← Corpus</a></p>
 
 {#await url}
   <p class="muted">Chargement…</p>
 {:then u}
   {#if u}
     <h1 class="url">{u.title || u.canonical_url || u.raw_url}</h1>
-    <p class="url"><a href={u.canonical_url ?? u.raw_url} target="_blank" rel="noopener noreferrer">{u.canonical_url ?? u.raw_url}</a></p>
+    <p class="url"><ExternalLink url={u.canonical_url ?? u.raw_url}>{u.canonical_url ?? u.raw_url}</ExternalLink></p>
 
     <div class="grid">
       <div class="card tile"><div class="value">{u.status}</div><div class="label">statut</div></div>
@@ -24,7 +26,7 @@
     </div>
 
     {#if u.error}<p class="error">Erreur : {u.error}</p>{/if}
-    {#if u.duplicate_of}<p>Doublon de <a href={`/urls/${u.duplicate_of}`}>#{u.duplicate_of}</a>.</p>{/if}
+    {#if u.duplicate_of}<p>Doublon de <a href={resolve('/urls/[id]', { id: String(u.duplicate_of) })}>#{u.duplicate_of}</a>.</p>{/if}
 
     <h2>Sources</h2>
     <div class="card">
@@ -76,7 +78,7 @@
           <table>
             <tbody>
               {#each u.pools ?? [] as p (p.slug)}
-                <tr><td><a href={`/pools/${encodeURIComponent(p.slug ?? '')}`}>{p.slug}</a></td><td class="num">rang {p.rank}</td></tr>
+                <tr><td><a href={resolve('/pools/[slug]', { slug: p.slug ?? '' })}>{p.slug}</a></td><td class="num">rang {p.rank}</td></tr>
               {:else}
                 <tr><td class="muted">Dans aucun pool.</td></tr>
               {/each}

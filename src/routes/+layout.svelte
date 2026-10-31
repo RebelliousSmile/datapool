@@ -1,47 +1,53 @@
 <script lang="ts">
+  import { resolve } from '$app/paths';
   import '../app.css';
   import { page } from '$app/state';
   import ConnectForm from '#lib/components/ConnectForm.svelte';
   import { session } from '#lib/session.svelte.ts';
 
   let { children } = $props();
-  const restoring = session.restore();
+
+  // Reprise de la connexion enregistrée. Une API injoignable n'empêche pas de
+  // se reconnecter depuis le formulaire.
+  let ready = $state(false);
+  let restoreError = $state('');
+  session
+    .restore()
+    .catch((err: Error) => (restoreError = err.message))
+    .finally(() => (ready = true));
 
   const links = $derived([
-    { href: '/', label: 'Tableau de bord', admin: true },
-    { href: '/pools', label: 'Pools', admin: false },
-    { href: '/corpus', label: 'Corpus', admin: true },
-    { href: '/domains', label: 'Domaines', admin: true },
+    { href: resolve('/'), label: 'Tableau de bord', admin: true },
+    { href: resolve('/pools'), label: 'Pools', admin: false },
+    { href: resolve('/corpus'), label: 'Corpus', admin: true },
+    { href: resolve('/domains'), label: 'Domaines', admin: true },
   ].filter((l) => session.isAdmin || !l.admin));
 
   const current = (href: string) =>
-    href === '/' ? page.url.pathname === '/' : page.url.pathname.startsWith(href);
+    href === resolve('/') ? page.url.pathname === href : page.url.pathname.startsWith(href);
 </script>
 
-{#await restoring}
+{#if !ready}
   <p class="muted center">Connexion…</p>
-{:then}
-  {#if session.me}
-    <header>
-      <nav>
-        <strong>datapool</strong>
-        {#each links as l (l.href)}
-          <a href={l.href} aria-current={current(l.href) ? 'page' : undefined}>{l.label}</a>
-        {/each}
-      </nav>
-      <span class="secondary">
-        {session.me.name} <span class="badge">{session.me.scope}</span>
-        <button onclick={() => session.disconnect()}>Déconnexion</button>
-      </span>
-    </header>
-    <main>{@render children()}</main>
-  {:else}
-    <ConnectForm />
-  {/if}
-{:catch err}
-  <p class="error center" role="alert">{err.message}</p>
+{:else if session.me}
+  <header>
+    <nav>
+      <strong>datapool</strong>
+      {#each links as l (l.href)}
+        <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- href déjà passé par resolve() dans links -->
+        <a href={l.href} aria-current={current(l.href) ? 'page' : undefined}>{l.label}</a>
+      {/each}
+    </nav>
+    <span class="secondary">
+      {session.me.name} <span class="badge">{session.me.scope}</span>
+      <button onclick={() => session.disconnect()}>Déconnexion</button>
+    </span>
+  </header>
+  <main>{@render children()}</main>
+{:else}
+  {#if restoreError}<p class="error center" role="alert">{restoreError}</p>{/if}
   <ConnectForm />
-{/await}
+{/if}
 
 <style>
   header {

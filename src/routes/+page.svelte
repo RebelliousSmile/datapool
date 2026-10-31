@@ -1,11 +1,12 @@
 <script lang="ts">
+  import { resolve } from '$app/paths';
   import { goto } from '$app/navigation';
   import { fmtDate, fmtDuration, fmtNumber } from '#lib/format.ts';
   import { session } from '#lib/session.svelte.ts';
 
   // Un client read n'a pas de tableau de bord : ses pools sont la page d'accueil.
   $effect(() => {
-    if (!session.isAdmin) goto('/pools', { replaceState: true });
+    if (!session.isAdmin) goto(resolve('/pools'), { replaceState: true });
   });
 
   const data = $derived(
@@ -35,9 +36,10 @@
 
     <h2>Pools, domaines, exploration</h2>
     <div class="grid">
-      <a class="card tile" href="/pools"><div class="value">{fmtNumber(stats.pools)}</div><div class="label">pools</div></a>
-      <a class="card tile" href="/domains"><div class="value">{fmtNumber(stats.domain_profile?.total)}</div><div class="label">domaines</div></a>
-      <a class="card tile" href="/domains?to_qualify=true"><div class="value">{fmtNumber(stats.domain_profile?.to_qualify)}</div><div class="label">domaines à qualifier</div></a>
+      <a class="card tile" href={resolve('/pools')}><div class="value">{fmtNumber(stats.pools)}</div><div class="label">pools</div></a>
+      <a class="card tile" href={resolve('/domains')}><div class="value">{fmtNumber(stats.domain_profile?.total)}</div><div class="label">domaines</div></a>
+      <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- resolve() plus une query string -->
+      <a class="card tile" href={`${resolve('/domains')}?to_qualify=true`}><div class="value">{fmtNumber(stats.domain_profile?.to_qualify)}</div><div class="label">domaines à qualifier</div></a>
       <div class="card tile"><div class="value">{fmtNumber(count(stats.search_query, 'active'))}</div><div class="label">requêtes actives</div></div>
       <div class="card tile"><div class="value">{fmtNumber(count(stats.search_query, 'exhausted'))}</div><div class="label">requêtes épuisées</div></div>
     </div>
