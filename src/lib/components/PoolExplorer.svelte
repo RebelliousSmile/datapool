@@ -19,7 +19,7 @@
     type XLink,
     type XState,
   } from '#lib/explore.ts';
-  import { fmtDate, fmtNumber } from '#lib/format.ts';
+  import { countOf, fmtDate, fmtNumber } from '#lib/format.ts';
   import { MEDIA } from '#lib/kinds.ts';
   import { session } from '#lib/session.svelte.ts';
   import { loadViews, removeView, saveView, type SavedView } from '#lib/views.ts';
@@ -115,7 +115,7 @@
   async function copyGroup(value: string, members: XLink[]) {
     try {
       await copyText(formatLinks(members, getCopyFormat()));
-      groupStatus[value] = `${fmtNumber(members.length)} liens copiés`;
+      groupStatus[value] = `${countOf(members.length, 'lien')} ${members.length > 1 ? 'copiés' : 'copié'}`;
     } catch (err) {
       groupStatus[value] = (err as Error).message;
     }
@@ -178,7 +178,7 @@
       <SegmentTabs {xs} links={all} onchange={update} />
       <div class="xp-bar">
         <span class="xp-count" aria-live="polite">
-          {fmtNumber(visible.length)} liens{#if visible.length !== all.length}&nbsp;<span class="muted">sur {fmtNumber(all.length)}</span>{/if}
+          {countOf(visible.length, 'lien')}{#if visible.length !== all.length}&nbsp;<span class="muted">sur {fmtNumber(all.length)}</span>{/if}
         </span>
         <button class="btn btn-sm btn-filters" type="button" aria-controls="xp-side" aria-expanded={width < 1100 ? sideOpen : side} onclick={toggleSide}>
           <Icon name="sliders" small />Filtres <span class="badge-n">{activeCount(xs) || ''}</span>
@@ -220,7 +220,7 @@
             <h2 class="xp-gh">
               {#if xs.group === 'usage'}<span class="u-mark" data-usage={g.value} aria-hidden="true"></span>
               {:else if xs.group === 'media' && mediaIcon(g.value)}<Icon name={mediaIcon(g.value)!} small />{/if}
-              {labelOf(xs.group, g.value)}<span class="cnt">{fmtNumber(g.links.length)} liens</span>
+              {labelOf(xs.group, g.value)}<span class="cnt">{countOf(g.links.length, 'lien')}</span>
               <button class="btn btn-ghost btn-sm" type="button" onclick={() => copyGroup(g.value, g.links)}>
                 <Icon name="copy" small />Copier ce groupe
               </button>

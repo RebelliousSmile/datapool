@@ -1,7 +1,9 @@
 <script lang="ts">
   import { resolve } from '$app/paths';
   import { page } from '$app/state';
+  import CopyLinks from '#lib/components/CopyLinks.svelte';
   import Icon from '#lib/components/Icon.svelte';
+  import { COPY_CAP, fetchAllUrls } from '#lib/copy.ts';
   import Pager from '#lib/components/Pager.svelte';
   import { fmtDate, fmtNumber, fmtScore, urlStatusLabel } from '#lib/format.ts';
   import { session } from '#lib/session.svelte.ts';
@@ -26,6 +28,8 @@
       { slug: t.slug ?? '', label: `${'  '.repeat(depth)}${t.label}`, urls: t.urls ?? 0 },
       ...flatten(t.children ?? [], depth + 1),
     ]);
+
+  const hasFilters = $derived(Object.entries(filters).some(([k, v]) => k !== 'order' && v !== ''));
 
   function apply(event: SubmitEvent) {
     event.preventDefault();
@@ -72,7 +76,16 @@
   <p class="terminal-line">&gt; chargement<span class="caret" aria-hidden="true"></span></p>
 {:then res}
   {#if res}
-    <div class="section-title"><h2>URLs</h2><span class="eyebrow">{fmtNumber(res.total)} correspondent</span></div>
+    <div class="list-toolbar">
+      <div class="section-title" style="margin:0;flex:1"><h2>URLs</h2><span class="eyebrow">{fmtNumber(res.total)} correspondent</span></div>
+      <CopyLinks
+        slug="corpus"
+        count={Math.min(res.total, COPY_CAP)}
+        capped={res.total > COPY_CAP}
+        filtered={hasFilters}
+        load={() => fetchAllUrls(session.client!, filters)}
+      />
+    </div>
     <div class="panel flush table-wrap">
       <table class="table">
         <thead>

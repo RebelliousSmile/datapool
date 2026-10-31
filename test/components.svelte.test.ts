@@ -13,7 +13,7 @@ import { enrich } from '../src/lib/explore';
 import CopyLinks from '../src/lib/components/CopyLinks.svelte';
 import Icon from '../src/lib/components/Icon.svelte';
 import { theme } from '../src/lib/theme.svelte.ts';
-import { fetchAllLinks } from '../src/lib/copy';
+import { fetchAllLinks, type CopyLink } from '../src/lib/copy';
 import { session } from '../src/lib/session.svelte.ts';
 
 let mounted: ReturnType<typeof mount>[] = [];
@@ -258,7 +258,7 @@ describe('médias', () => {
 
 describe('CopyLinks', () => {
   const page = (items: unknown[], total: number) => new Response(JSON.stringify({ items, total, limit: 500, offset: 0 }));
-  const links = [
+  const links: CopyLink[] = [
     { rank: 1, url: 'https://a.test/', title: 'A', domain: 'a.test', usage_commercial: 'libre' },
     { rank: 2, url: 'https://b.test/', title: 'B', domain: 'b.test', usage_commercial: null },
   ];
@@ -315,6 +315,72 @@ describe('CopyLinks', () => {
     expect(localStorage.getItem('datapool.copyFormat')).toBe('csv');
     expect(toggle.getAttribute('aria-label')).toBe('Format de copie : CSV');
     expect(el.querySelector('[aria-checked=true]')?.textContent).toContain('CSV');
+  });
+
+  it('télécharge la sélection au format choisi depuis le menu', async () => {
+    URL.createObjectURL = vi.fn(() => 'blob:sel');
+    URL.revokeObjectURL = vi.fn();
+    const names: string[] = [];
+    const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (this: HTMLAnchorElement) {
+      names.push(this.download);
+    });
+    localStorage.setItem('datapool.copyFormat', 'md');
+    const el = render(CopyLinks, { slug: 'p', count: 2, load: () => links });
+    expect(clean(el.querySelector('.menu-item.download .sample'))).toBe('p.md');
+    el.querySelectorAll<HTMLButtonElement>('.copy-split button')[1].click();
+    flushSync();
+    el.querySelector<HTMLButtonElement>('.menu-item.download')!.click();
+    await vi.waitFor(() => {
+      flushSync();
+      expect(clean(el.querySelector('.copy-status'))).toBe('2 liens téléchargés · MD');
+    });
+    expect(names).toEqual(['p.md']);
+    expect((el.querySelector('[role=menu]') as HTMLElement).hidden).toBe(true);
+    click.mockRestore();
+  });
+
+  it('efface la confirmation après 4 s et ferme le menu au clic extérieur', async () => {
+    vi.stubGlobal('navigator', { clipboard: { writeText: vi.fn(async () => {}) } });
+    URL.createObjectURL = vi.fn(() => 'blob:x');
+    URL.revokeObjectURL = vi.fn();
+    const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+    const el = render(CopyLinks, { slug: 'p', count: 2, load: () => links });
+    vi.useFakeTimers();
+    for (const action of ['.copy-split button', '.menu-item.download']) {
+      el.querySelector<HTMLButtonElement>(action)!.click();
+      await vi.advanceTimersByTimeAsync(10);
+      flushSync();
+      expect((status(el) as HTMLElement).hidden).toBe(false);
+      await vi.advanceTimersByTimeAsync(4000);
+      flushSync();
+      expect((status(el) as HTMLElement).hidden).toBe(true);
+    }
+    vi.useRealTimers();
+    click.mockRestore();
+    el.querySelectorAll<HTMLButtonElement>('.copy-split button')[1].click();
+    flushSync();
+    expect((el.querySelector('[role=menu]') as HTMLElement).hidden).toBe(false);
+    document.body.click();
+    flushSync();
+    expect((el.querySelector('[role=menu]') as HTMLElement).hidden).toBe(true);
+  });
+
+  it('annonce un plafond et signale un téléchargement impossible', async () => {
+    const el = render(CopyLinks, {
+      slug: 'corpus',
+      count: 5000,
+      capped: true,
+      filtered: true,
+      load: async () => {
+        throw new Error('API injoignable');
+      },
+    });
+    expect(clean(el.querySelector('.copy-split button'))).toBe('Copier les 5 000 premiers liens filtrés');
+    el.querySelector<HTMLButtonElement>('.menu-item.download')!.click();
+    await vi.waitFor(() => {
+      flushSync();
+      expect(clean(el.querySelector('.copy-status.err'))).toBe('API injoignable');
+    });
   });
 
   it('propose de télécharger la liste quand le presse-papiers refuse', async () => {

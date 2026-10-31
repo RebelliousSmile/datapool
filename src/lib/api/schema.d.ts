@@ -29,6 +29,9 @@ export interface paths {
                     content: {
                         "application/json": {
                             ok?: boolean;
+                            version?: string;
+                            /** @description Commit déployé (fichier REVISION) ; null hors déploiement */
+                            revision?: string | null;
                         };
                     };
                 };
@@ -287,6 +290,56 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/pools/{slug}/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Export d'un pool visible, sans définition ni score
+         * @description `txt` : une URL par ligne, dans l'ordre de rang. Un pool non accordé répond 404. L'export admin (`/admin/pools/{slug}/export`) inclut définition et scores.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Format */
+                    format?: "json" | "csv" | "md" | "txt";
+                };
+                header?: never;
+                path: {
+                    slug: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Fichier */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": unknown;
+                        "text/csv": unknown;
+                        "text/markdown": unknown;
+                        "text/plain": unknown;
+                    };
+                };
+                400: components["responses"]["BadRequest"];
+                401: components["responses"]["Unauthorized"];
+                404: components["responses"]["NotFound"];
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/admin/stats": {
         parameters: {
             query?: never;
@@ -337,7 +390,7 @@ export interface paths {
             parameters: {
                 query?: {
                     /** @description Format */
-                    format?: "json" | "csv" | "md";
+                    format?: "json" | "csv" | "md" | "txt";
                 };
                 header?: never;
                 path: {
@@ -356,6 +409,7 @@ export interface paths {
                         "application/json": unknown;
                         "text/csv": unknown;
                         "text/markdown": unknown;
+                        "text/plain": unknown;
                     };
                 };
                 401: components["responses"]["Unauthorized"];
@@ -837,6 +891,8 @@ export interface components {
             thumbnail?: string | null;
             /** @description Chemin du favicon du domaine en cache (WebP 64 px) ; null si aucun */
             favicon?: string | null;
+            /** @enum {string|null} */
+            usage_commercial?: "libre" | "sous-conditions" | "payant" | "non-commercial" | null;
         };
         Url: {
             id?: number;

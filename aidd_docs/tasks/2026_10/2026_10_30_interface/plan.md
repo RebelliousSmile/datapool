@@ -21,7 +21,7 @@ status: draft
 | 1   | API de lecture webpool et clients par jeton — **faite** (commit webpool `ccr-628dc400-1uuej3`) | — |
 | 2   | Squelette datapool : connexion, tableau de bord, pools, corpus, fiche URL, domaines — **fait** (style provisoire, remplacé en phase 5) | — |
 | 3   | Médias des liens dans webpool : métadonnées, type de média, famille de source, vignettes et favicons en cache — **faite** | [`phase-3.md`](./phase-3.md) |
-| 4   | Représentation des liens et copie de liste — cartes, densités et copie de la sélection livrées par les phases 3 et 5 ; **en cours** : export de l'API pour les clients `read`, téléchargement de la sélection, copie du corpus filtré | [`phase-4.md`](./phase-4.md) |
+| 4   | Représentation des liens et copie de liste — cartes, densités et copie de la sélection livrées par les phases 3 et 5 ; puis export de l'API pour les clients `read`, téléchargement de la sélection et copie du corpus filtré — **faite** | [`phase-4.md`](./phase-4.md) |
 | 5   | Direction artistique « Data Pool » : v1 **intégrée** (3e5fa92) ; v2 « outil de recherche » (artefact « datapool — maquettes v2 », 8b63daa) **intégrée** ; restent comptes, recherche globale, cartes de pools | [`phase-5.md`](./phase-5.md) |
 | 6   | Mise en production alwaysdata : site statique datapool (fait, `main` 412fa95) ; site Node.js de l'API webpool, redémarrage après bascule, cache de médias — **préparée** (webpool 0b82fc4), procédure à dérouler depuis le poste | [`phase-6.md`](./phase-6.md) |
 

@@ -75,3 +75,6 @@ export const URL_STATUS_LABELS: Record<string, string> = {
   error: 'erreur',
 };
 export const urlStatusLabel = (status: string | null | undefined) => URL_STATUS_LABELS[status ?? ''] ?? String(status);
+
+// « 1 lien », « 2 liens » (nombre mis en forme) ; `plural` pour un pluriel irrégulier.
+export const countOf = (n: number, word: string, plural = `${word}s`) => `${fmtNumber(n)} ${n > 1 ? plural : word}`;

@@ -54,6 +54,43 @@ export async function fetchAllLinks(client: Client, slug: string, pageSize = 500
   }
 }
 
+// Copie du corpus filtré (admin) : non borné comme un pool, donc plafonné.
+export const COPY_CAP = 5000;
+
+// Toutes les pages d'une sélection du corpus (500 par appel), plafonnées à
+// `cap` ; le rang est la position dans la sélection.
+export async function fetchAllUrls(
+  client: Client,
+  query: Record<string, string | number>,
+  { cap = COPY_CAP, pageSize = 500 } = {},
+): Promise<CopyLink[]> {
+  const links: CopyLink[] = [];
+  for (let offset = 0; offset < cap; offset += pageSize) {
+    const page = await client.urls({ ...query, limit: Math.min(pageSize, cap - offset), offset });
+    for (const u of page.items) {
+      links.push({
+        rank: links.length + 1,
+        url: u.url ?? '',
+        title: u.title ?? null,
+        domain: u.domain ?? '',
+        usage_commercial: u.usage_commercial ?? null,
+      });
+    }
+    if (page.items.length === 0 || offset + pageSize >= page.total) break;
+  }
+  return links.slice(0, cap);
+}
+
+// Enregistre un texte comme fichier (lien temporaire, libéré après coup :
+// certains navigateurs annulent un téléchargement révoqué trop tôt).
+export function downloadText(text: string, filename: string): void {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text], { type: 'text/plain;charset=utf-8' }));
+  a.download = filename;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
 // Presse-papiers ; repli sur execCommand quand l'API est absente (contexte non
 // sécurisé). Lève une erreur si la copie est refusée.
 export async function copyText(text: string): Promise<void> {

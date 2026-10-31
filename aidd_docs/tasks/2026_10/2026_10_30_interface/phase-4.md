@@ -1,5 +1,5 @@
 ---
-status: in-progress
+status: done
 ---
 
 <!-- Fill or omit these sections; never add, rename, or reorder one. -->
@@ -52,6 +52,10 @@ flowchart TD
 | L'export de l'API est ouvert aux clients `read` sur leurs pools, sans définition ni score, avec le format `txt`. | Les clients qui appellent l'API directement (scripts, outils) obtiennent la liste en un appel, dans l'ordre de rang. Même règle que les items : les critères restent internes. |
 | Copie du corpus filtré (admin) plafonnée à 5 000 liens, plafond annoncé. | Le corpus n'est pas borné comme un pool ; dix appels de 500 au plus. |
 | Format par défaut : URLs seules. | Choix de l'utilisateur, 2026-10-30. |
+
+## Vérification (2026-10-31)
+
+API locale et datapool construit, Chromium : `GET /pools/demo-medias/export?format=txt` (client `read`) rend une URL par ligne dans l'ordre de rang, le CSV n'a pas de colonne score, un pool non accordé répond 404 ; corpus filtré (`?domain=localhost`) : « Copier les 4 liens filtrés » copie les 4 URLs, « Télécharger le fichier » enregistre `corpus.txt` identique ; pool filtré (usage à qualifier, images) : `demo-medias.md` ne contient que la sélection ; aucune erreur console. webpool : 321 tests ; datapool : 102 tests.
 
 ## Acceptance
 
