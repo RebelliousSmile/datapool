@@ -123,14 +123,15 @@
   let crew = $state('');
   let crewError = $state('');
   let crewNotice = $state('');
-  let newMember = $state({ name: '', role: 'member', limit: '' });
+  let newMember = $state({ name: '', limit: '' });
   const crewSlug = $derived(crew || owned[0]?.slug || '');
   const members = $derived.by(() => {
     void screen.version;
     return crewSlug ? session.client?.members(crewSlug) : undefined;
   });
 
-  async function saveMember(name: string, role: string, limitRaw: string | number | null) {
+  // Le rôle ne se donne pas : le propriétaire est le membre qui a versé le plus au pot.
+  async function saveMember(name: string, limitRaw: string | number | null) {
     crewError = '';
     crewNotice = '';
     const limit = parseLimit(limitRaw);
@@ -139,7 +140,7 @@
       return null;
     }
     try {
-      const res = await session.client!.setMember(crewSlug, name, { role: role as 'owner' | 'member', monthly_limit: limit });
+      const res = await session.client!.setMember(crewSlug, name, { monthly_limit: limit });
       await screen.refresh(session.client!);
       return res;
     } catch (err) {
@@ -151,9 +152,9 @@
   async function addMember(event: SubmitEvent) {
     event.preventDefault();
     const name = newMember.name.trim();
-    const res = name ? await saveMember(name, newMember.role, newMember.limit) : null;
+    const res = name ? await saveMember(name, newMember.limit) : null;
     if (res) {
-      newMember = { name: '', role: 'member', limit: '' };
+      newMember = { name: '', limit: '' };
       if (!res.accepted) crewNotice = `${name} est invité : il deviendra membre en acceptant l'invitation.`;
     }
   }
@@ -203,7 +204,7 @@
       {#each billing.invitations as inv (inv.slug)}
         <li class="panel invitation">
           <div>
-            <strong>{inv.label}</strong> vous invite comme {inv.role === 'owner' ? 'propriétaire' : 'membre'}
+            <strong>{inv.label}</strong> vous invite comme membre
             <div class="muted">
               {inv.monthly_limit === null ? 'sans plafond' : `plafond : ${fmtGiri(inv.monthly_limit)} sur 30 jours`} · le {fmtDate(inv.invited_at)}
             </div>
@@ -237,10 +238,14 @@
     </div>
     {#each billing.communities as c (c.slug)}
       <div class="tile">
-        <span class="eyebrow">{c.label} · {c.role === 'owner' ? 'propriétaire' : 'membre'}</span>
+        <span class="eyebrow"
+          >{c.label} · {c.role === 'owner' ? 'propriétaire' : 'membre'}</span
+        >
         <span class="value">{fmtGiri(c.balance)}</span>
         <span class="sub"
-          >{c.monthly_limit === null
+          >{c.role === 'owner'
+            ? 'propriétaire : plus gros apport au pot, sans plafond'
+            : c.monthly_limit === null
             ? 'sans plafond'
             : `${fmtGiri(c.spent_30d)} dépensés sur ${fmtGiri(c.monthly_limit)} en 30 jours`} · vos apports : {fmtGiri(c.contributed)} · pools :
           {c.pools.join(', ') || 'aucun'}</span
@@ -443,6 +448,11 @@
         <span class="eyebrow">{owned[0].label} · plafond en giri sur 30 jours, vide : aucun</span>
       {/if}
     </div>
+    <p class="muted">
+      Le propriétaire est le membre qui a versé le plus de giri au pot (ex æquo : tous les premiers ; tant que personne n'a
+      versé, le fondateur). Le rôle ne se donne pas : il change de mains quand un autre membre verse davantage. Un
+      propriétaire n'a pas de plafond et ne peut pas être retiré par un autre.
+    </p>
     <Async value={members}>
       {#snippet children(res)}
         <div class="panel flush table-wrap">
@@ -452,28 +462,35 @@
             </thead>
             <tbody>
               {#each res.items as m (m.name)}
-                {@const edit = { role: m.role, limit: m.monthly_limit === null ? '' : String(m.monthly_limit) }}
+                {@const edit = { limit: m.monthly_limit === null ? '' : String(m.monthly_limit) }}
+                {@const owner = m.role === 'owner'}
                 <tr>
                   <td class="mono"
                     >{m.name}{#if !m.accepted}<span class="chip">invité</span>{/if}{#if m.revoked}<span class="chip">révoqué</span>{/if}</td
                   >
                   <td>
-                    <label class="sr-only" for={`role-${m.name}`}>Rôle de {m.name}</label>
-                    <select class="input" id={`role-${m.name}`} bind:value={edit.role}>
-                      <option value="member">membre</option><option value="owner">propriétaire</option>
-                    </select>
+                    {#if owner}<span class="chip primary">propriétaire</span>{:else}membre{/if}{#if m.founder}<span
+                        class="chip"
+                        title="désigné par l'admin : propriétaire tant que personne n'a versé">fondateur</span
+                      >{/if}
                   </td>
                   <td>
-                    <label class="sr-only" for={`limit-${m.name}`}>Plafond de {m.name}</label>
-                    <input class="input" id={`limit-${m.name}`} inputmode="numeric" placeholder="aucun" bind:value={edit.limit} />
+                    {#if owner}
+                      <span class="muted">aucun</span>
+                    {:else}
+                      <label class="sr-only" for={`limit-${m.name}`}>Plafond de {m.name}</label>
+                      <input class="input" id={`limit-${m.name}`} inputmode="numeric" placeholder="aucun" bind:value={edit.limit} />
+                    {/if}
                   </td>
                   <td class="num">{fmtNumber(m.spent_30d)}</td>
                   <td class="num">{fmtNumber(m.contributed)}</td>
                   <td class="nowrap">
-                    <button class="btn btn-sm" type="button" onclick={() => saveMember(m.name, edit.role, edit.limit)}
-                      ><Icon name="check" small />Enregistrer</button
-                    >
-                    <button class="btn btn-sm btn-ghost" type="button" onclick={() => removeMember(m.name)}><Icon name="x" small />Retirer</button>
+                    {#if !owner}
+                      <button class="btn btn-sm" type="button" onclick={() => saveMember(m.name, edit.limit)}
+                        ><Icon name="check" small />Enregistrer</button
+                      >
+                      <button class="btn btn-sm btn-ghost" type="button" onclick={() => removeMember(m.name)}><Icon name="x" small />Retirer</button>
+                    {/if}
                   </td>
                 </tr>
               {/each}
@@ -482,10 +499,6 @@
         </div>
         <form class="filters" onsubmit={addMember}>
           <label class="field"><span>Inviter un client</span><input class="input" bind:value={newMember.name} required placeholder="nom du client" /></label>
-          <label class="field"
-            ><span>Rôle</span>
-            <select class="input" bind:value={newMember.role}><option value="member">membre</option><option value="owner">propriétaire</option></select>
-          </label>
           <label class="field"><span>Plafond</span><input class="input" inputmode="numeric" placeholder="aucun" bind:value={newMember.limit} /></label>
           <button class="btn btn-primary"><Icon name="user" small />Inviter</button>
         </form>

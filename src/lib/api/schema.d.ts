@@ -1107,7 +1107,7 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        /** Invite un client, ou change le rôle ou le plafond d'un membre (propriétaires seulement ; upsert partiel ; un invité devient membre en acceptant) */
+        /** Invite un client, ou change le plafond d'un membre (propriétaires seulement ; upsert partiel ; un invité devient membre en acceptant) */
         put: {
             parameters: {
                 query?: never;
@@ -1141,7 +1141,7 @@ export interface paths {
             };
         };
         post?: never;
-        /** Retire un membre (propriétaires seulement ; la communauté garde un propriétaire actif) */
+        /** Retire un membre (propriétaires seulement ; un propriétaire ne s'écarte pas, il part lui-même ; la communauté garde un propriétaire) */
         delete: {
             parameters: {
                 query?: never;
@@ -1262,7 +1262,7 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        /** Quitte la communauté (le dernier propriétaire actif ne peut pas) */
+        /** Quitte la communauté : un propriétaire qui part passe la main au plus gros apport suivant ; refusé s'il n'y aurait plus de propriétaire */
         delete: {
             parameters: {
                 query?: never;
@@ -1576,11 +1576,14 @@ export interface components {
         CommunityWallet: {
             slug: string;
             label: string;
-            /** @enum {string} */
+            /**
+             * @description owner : le membre qui a versé le plus de giri au pot (ex æquo : tous les premiers ; tant que personne n'a versé, le fondateur désigné par l'admin) ; calculé, il ne se donne pas
+             * @enum {string}
+             */
             role: "owner" | "member";
             /** @description giri de la communauté */
             balance: number;
-            /** @description plafond du membre en giri sur 30 jours glissants, null : sans plafond */
+            /** @description plafond effectif du membre en giri sur 30 jours glissants, null : sans plafond (toujours null pour le propriétaire) */
             monthly_limit: number | null;
             /** @description giri dépensés par le membre sur 30 jours, remboursements déduits */
             spent_30d: number;
@@ -1678,9 +1681,12 @@ export interface components {
         };
         CommunityMember: {
             name: string;
-            /** @enum {string} */
+            /**
+             * @description owner : le membre qui a versé le plus de giri au pot (ex æquo : tous les premiers ; tant que personne n'a versé, le fondateur désigné par l'admin) ; calculé, il ne se donne pas
+             * @enum {string}
+             */
             role: "owner" | "member";
-            /** @description plafond en giri sur 30 jours glissants, null : sans plafond */
+            /** @description plafond enregistré en giri sur 30 jours, null : sans plafond ; ne s'applique pas au propriétaire */
             monthly_limit: number | null;
             spent_30d: number;
             /** @description client révoqué */
@@ -1691,11 +1697,11 @@ export interface components {
             contributed: number;
             /** @description invitation acceptée ; un invité ne voit ni les pools ni le pot */
             accepted: boolean;
+            /** @description fondateur désigné par l'admin : propriétaire tant que personne n'a versé au pot */
+            founder: boolean;
         };
-        /** @description Upsert partiel : un champ absent garde sa valeur (nouveau membre : `member`, sans plafond) ; `monthly_limit: null` lève le plafond, 0 bloque la dépense. */
+        /** @description Upsert partiel : `monthly_limit` absent garde sa valeur (nouveau membre : WEBPOOL_MEMBER_DEFAULT_LIMIT), null lève le plafond, 0 bloque la dépense. Le rôle ne se donne pas (le propriétaire est le plus gros apport au pot) : un champ `role` est refusé. */
         CommunityMemberInput: {
-            /** @enum {string} */
-            role?: "owner" | "member";
             /** @description null ou absent : sans plafond */
             monthly_limit?: number | null;
         };
@@ -1710,7 +1716,10 @@ export interface components {
         Invitation: {
             slug: string;
             label: string;
-            /** @enum {string} */
+            /**
+             * @description owner : le membre qui a versé le plus de giri au pot (ex æquo : tous les premiers ; tant que personne n'a versé, le fondateur désigné par l'admin) ; calculé, il ne se donne pas
+             * @enum {string}
+             */
             role: "owner" | "member";
             monthly_limit: number | null;
             /** Format: date-time */

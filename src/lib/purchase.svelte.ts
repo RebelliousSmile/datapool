@@ -152,7 +152,7 @@ export class RequestsScreen {
   }
 
   // Accepter ou décliner une invitation, quitter une communauté. Erreur 400
-  // du dernier propriétaire actif affichée telle quelle.
+  // « plus de propriétaire » affichée telle quelle.
   async membership(api: ScreenApi, action: 'accept' | 'decline' | 'leave', slug: string) {
     if (this.isMembershipBusy(slug)) return;
     this.membershipBusy.push(slug);
