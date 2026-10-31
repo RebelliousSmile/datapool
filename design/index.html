@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>datapool — maquettes v2</title>
+<script>(function(){try{if(localStorage.getItem('dp-theme')==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}})();</script>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="ui.css">
+<style>
+  .hub { max-width: 1120px; margin: 0 auto; padding: 40px 24px 72px; }
+  .hub-top { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 32px; }
+  .hub h1 { font-size: 2.25rem; max-width: 22ch; }
+  .hub h1 b { color: var(--accent); font-weight: 600; }
+  .hub .lede { color: var(--ink-2); font-size: 1rem; max-width: 70ch; margin: 12px 0 0; }
+  .hub h2 { font-size: 1.25rem; margin: 40px 0 6px; }
+  .hub .sub { color: var(--ink-2); margin: 0 0 16px; max-width: 75ch; }
+  .links { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); }
+  .links a { position: relative; display: grid; align-content: start; gap: 4px; height: 100%; padding: 16px 18px; color: var(--ink); text-decoration: none; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); }
+  .links a:hover { border-color: var(--accent); box-shadow: var(--glow-accent); }
+  .links strong { font-family: var(--font-display); font-weight: 600; font-size: 1rem; display: flex; align-items: center; gap: 8px; }
+  .links span { color: var(--ink-2); font-size: 0.875rem; }
+  .links .tag { font: 600 11px var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--accent); }
+  .cmp { width: 100%; border-collapse: collapse; font-size: 0.875rem; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden; }
+  .cmp th, .cmp td { padding: 9px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+  .cmp thead th { background: var(--surface-2); font: 600 11px var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  .cmp td.s { text-align: center; font-family: var(--font-mono); width: 3.5rem; }
+  .cmp td.best { color: var(--accent); font-weight: 600; }
+  .cmp tr:last-child td { border-bottom: 0; font-weight: 600; }
+  .cmp td:last-child { color: var(--ink-2); }
+  .keep { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+  .keep li { display: grid; grid-template-columns: 4.5rem 1fr; gap: 12px; padding: 10px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-md); }
+  .keep .from { font: 600 12px var(--font-mono); color: var(--accent); }
+  .table-scroll { overflow-x: auto; }
+  .note { font-size: 0.8125rem; color: var(--muted); margin-top: 12px; }
+  @media (max-width: 720px) { .hub { padding: 24px 14px 56px; } .hub h1 { font-size: 1.6rem; } .cmp td:last-child, .cmp th:last-child { display: none; } }
+</style>
+</head>
+<body>
+<main class="hub">
+  <div class="hub-top">
+    <span class="brand"><span class="brand-mark" aria-hidden="true">dp</span><span>data<b>pool</b></span></span>
+    <button class="btn btn-ghost btn-sm" type="button" id="theme"><span class="lbl">Thème clair</span></button>
+  </div>
+  <span class="eyebrow">Direction artistique « Data Pool » · v2</span>
+  <h1>Un outil de recherche pour <b>explorer, filtrer et copier</b> des pools d’URLs</h1>
+  <p class="lede">Maquettes statiques de datapool : les pools de webpool se filtrent par type de média, source et usage commercial, se découpent en segments, se groupent, et se copient en entier ou par sélection. La v2 réunit le meilleur de trois propositions comparées ci-dessous. Les maquettes de pool sont interactives : cochez des filtres, tapez dans la barre de recherche, changez de densité, ouvrez un aperçu.</p>
+
+  <h2>Synthèse v2 — les écrans</h2>
+  <p class="sub">Données d’exemple réalistes ; les vignettes sont générées localement, à la place de celles que l’API servira depuis son cache.</p>
+  <ul class="links">
+    <li><a href="mockups/pools.html"><span class="tag">Accueil</span><strong>Vos pools</strong><span>Recherche dans tous les pools, cartes avec mosaïque, types de média et répartition d’usage.</span></a></li>
+    <li><a href="mockups/pool-lora.html"><span class="tag">Pool visuel</span><strong>LoRA — textures de forêt</strong><span>Densité Grille, facettes, onglets de segments par type.</span></a></li>
+    <li><a href="mockups/pool-lora-apercu.html"><span class="tag">Pool visuel</span><strong>Vue « Images libres » + aperçu</strong><span>Filtres en jetons, vue enregistrée, panneau d’aperçu d’un lien.</span></a></li>
+    <li><a href="mockups/pool-psychologie.html"><span class="tag">Pool textuel</span><strong>Psychologie 2025</strong><span>Densité Confort : vignette, titre, description, URL, source, usage.</span></a></li>
+    <li><a href="mockups/pool-psychologie-compact.html"><span class="tag">Pool textuel</span><strong>Densité Compact</strong><span>Le listing dense : 25 liens par écran sur un portable 1366×768.</span></a></li>
+    <li><a href="mockups/pool-psychologie-groupes.html"><span class="tag">Segmentation</span><strong>Groupé par source</strong><span>Filtre d’usage, groupes avec « Copier ce groupe ».</span></a></li>
+    <li><a href="mockups/pool-spb.html"><span class="tag">Segmentation</span><strong>Saint-Pétersbourg insolite</strong><span>Segmenté par source, groupé par type de média.</span></a></li>
+    <li><a href="mockups/pool-spb-recherche.html"><span class="tag">Recherche</span><strong>Suggestions de filtres</strong><span>La barre comprend type:, source:, usage:, domaine: ; suggestions comptées.</span></a></li>
+    <li><a href="mockups/pool-spb-filtres.html"><span class="tag">Mobile</span><strong>Feuille de filtres</strong><span>À ouvrir en largeur mobile : feuille du bas et « Afficher les N liens ».</span></a></li>
+    <li><a href="mockups/connexion.html"><span class="tag">Compte</span><strong>Connexion</strong><span>Par compte (e-mail, lien magique) ou par jeton d’API.</span></a></li>
+    <li><a href="mockups/inscription.html"><span class="tag">Compte</span><strong>Création de compte</strong><span>Nom, e-mail, mot de passe, code d’invitation aux pools partagés.</span></a></li>
+    <li><a href="mockups/connexion-jeton.html"><span class="tag">Compte</span><strong>Connexion par jeton</strong><span>Le mode actuel, avec l’état « jeton refusé ».</span></a></li>
+    <li><a href="mockups/dashboard.html"><span class="tag">Admin</span><strong>Tableau de bord</strong><span>Volumes du corpus, usage, domaines à qualifier, derniers runs dont échecs.</span></a></li>
+    <li><a href="mockups/url.html"><span class="tag">Admin</span><strong>Fiche d’une URL</strong><span>Média en cache, scores, sources, thèmes, facettes, pools.</span></a></li>
+    <li><a href="components.html"><span class="tag">Système</span><strong>Bibliothèque de composants</strong><span>Barre de requête, segments, facettes, trois densités et leurs états, copie, badges, jetons.</span></a></li>
+  </ul>
+
+  <h2>Les trois propositions comparées</h2>
+  <p class="sub">Même pool, même filtre (images, usage libre : 151 liens sur 412), trois façons de chercher.</p>
+  <ul class="links">
+    <li><a href="proposals/proposition-a.html"><span class="tag">A</span><strong>Console à facettes</strong><span>Panneau latéral permanent de cases comptées ; liste groupée par source avec copie par groupe.</span></a></li>
+    <li><a href="proposals/proposition-b.html"><span class="tag">B</span><strong>Requête intelligente</strong><span>Une barre où texte et filtres se combinent, suggestions, vues enregistrées, résultats aérés.</span></a></li>
+    <li><a href="proposals/proposition-c.html"><span class="tag">C</span><strong>Segments et aperçu</strong><span>Cartes de segments, filtres en pilules, grille de vignettes et aperçu à droite.</span></a></li>
+  </ul>
+
+  <h2 id="comparaison">Grille de comparaison</h2>
+  <p class="sub">Notes de 1 (faible) à 5 (fort), après lecture des captures aux deux tailles et dans les deux thèmes.</p>
+  <div class="table-scroll">
+  <table class="cmp">
+    <thead><tr><th>Critère</th><th>A</th><th>B</th><th>C</th><th>Commentaire</th></tr></thead>
+    <tbody>
+      <tr><td>Filtres faciles à trouver</td><td class="s best">5</td><td class="s">2</td><td class="s">4</td><td>A montre toutes les options et leurs effectifs ; la syntaxe de B ne se devine pas.</td></tr>
+      <tr><td>Vitesse pour un habitué</td><td class="s">3</td><td class="s best">5</td><td class="s">3</td><td>B se pilote au clavier.</td></tr>
+      <tr><td>Lecture de la composition du pool</td><td class="s">4</td><td class="s">1</td><td class="s best">5</td><td>C donne la répartition d’un coup d’œil.</td></tr>
+      <tr><td>Segmentation</td><td class="s">4</td><td class="s">3</td><td class="s best">5</td><td>Groupes de A utiles pour copier ; segments de C plus parlants.</td></tr>
+      <tr><td>Aération, calme visuel</td><td class="s">2</td><td class="s best">5</td><td class="s">3</td><td>B respire ; A est chargé.</td></tr>
+      <tr><td>Densité (20 à 30 liens par écran)</td><td class="s best">5</td><td class="s">2</td><td class="s">3</td><td>A garde le listing.</td></tr>
+      <tr><td>Pools visuels</td><td class="s">2</td><td class="s">3</td><td class="s best">5</td><td>Grille et aperçu de C.</td></tr>
+      <tr><td>Pools textuels</td><td class="s best">4</td><td class="s best">4</td><td class="s">2</td><td>Les descriptions de B aident.</td></tr>
+      <tr><td>Mobile</td><td class="s">2</td><td class="s best">5</td><td class="s">3</td><td></td></tr>
+      <tr><td>Copier une sélection</td><td class="s best">5</td><td class="s">4</td><td class="s">4</td><td>Copie filtrée et par groupe dans A.</td></tr>
+      <tr><td>Prépare les comptes</td><td class="s">2</td><td class="s best">5</td><td class="s">3</td><td>Les vues enregistrées justifient un compte.</td></tr>
+      <tr><td>Simplicité d’intégration (5 = simple)</td><td class="s">3</td><td class="s">3</td><td class="s">2</td><td>Effectifs par facette côté API pour A et C.</td></tr>
+      <tr><td>Total</td><td class="s">41</td><td class="s">42</td><td class="s">42</td><td>Aucune ne gagne seule.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2>Ce que la synthèse garde</h2>
+  <ul class="keep">
+    <li><span class="from">B</span><span>Barre de requête à jetons : tout filtre choisi à la souris y apparaît, la syntaxe s’apprend en regardant ; suggestions comptées, <kbd>/</kbd> pour y aller.</span></li>
+    <li><span class="from">A</span><span>Facettes comptées (type, source, usage, domaine) dans un panneau repliable ; tiroir sur tablette, feuille du bas sur mobile.</span></li>
+    <li><span class="from">C</span><span>Onglets de segments sur une ligne, « Segmenter par » type, source ou usage.</span></li>
+    <li><span class="from">A</span><span>« Grouper par » avec en-têtes collants et « Copier ce groupe ».</span></li>
+    <li><span class="from">B</span><span>Vues enregistrées, menu de compte, connexion et création de compte.</span></li>
+    <li><span class="from">A+B+C</span><span>Trois densités : Confort (par défaut), Compact (25 liens par écran), Grille (pools visuels).</span></li>
+    <li><span class="from">C</span><span>Panneau d’aperçu d’un lien, ouvert à la demande.</span></li>
+  </ul>
+  <p class="note">Écarté : la barre latérale permanente et chargée de A, la syntaxe comme seule porte d’entrée de B, les grandes cartes de segment de C et ses filtres sans effectifs.</p>
+  <p class="note">Dans les maquettes, type de média et famille de source sont déduits des URLs, et les effectifs sont extrapolés d’un échantillon au volume du pool ; l’API webpool devra fournir filtres, effectifs par facette et export filtré. Inspiration : le genre cyberpunk, sans rien reprendre d’une œuvre existante.</p>
+</main>
+<script>
+  (function () {
+    var b = document.getElementById('theme');
+    var sync = function () { b.querySelector('.lbl').textContent = document.documentElement.getAttribute('data-theme') === 'light' ? 'Thème sombre' : 'Thème clair'; };
+    sync();
+    b.addEventListener('click', function () {
+      var l = document.documentElement.getAttribute('data-theme') === 'light';
+      if (l) document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', 'light');
+      try { localStorage.setItem('dp-theme', l ? 'dark' : 'light'); } catch (e) {}
+      sync();
+    });
+  })();
+</script>
+</body>
+</html>

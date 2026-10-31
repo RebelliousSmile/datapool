@@ -85,7 +85,7 @@ export const SPRITE = `<svg width="0" height="0" style="position:absolute" aria-
 </svg>`;
 
 // ---------------------------------------------------------------- scripts des maquettes
-export const HEAD_SCRIPT = `<script>(function(){var q=new URLSearchParams(location.search).get('theme');var t=q||localStorage.getItem('dp-theme');if(t==='light')document.documentElement.setAttribute('data-theme','light');})();</script>`;
+export const HEAD_SCRIPT = `<script>(function(){var q=new URLSearchParams(location.search).get('theme');var t=q;try{t=t||localStorage.getItem('dp-theme');}catch(e){}if(t==='light')document.documentElement.setAttribute('data-theme','light');})();</script>`;
 
 export const BODY_SCRIPT = `<script>
 (function () {
@@ -96,7 +96,7 @@ export const BODY_SCRIPT = `<script>
     b.addEventListener('click', function () {
       var l = document.documentElement.getAttribute('data-theme') === 'light';
       if (l) document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', 'light');
-      localStorage.setItem('dp-theme', l ? 'dark' : 'light'); sync();
+      try { localStorage.setItem('dp-theme', l ? 'dark' : 'light'); } catch (e) {} sync();
     });
   });
 

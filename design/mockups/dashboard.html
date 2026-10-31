@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Tableau de bord · datapool</title>
-<script>(function(){var q=new URLSearchParams(location.search).get('theme');var t=q||localStorage.getItem('dp-theme');if(t==='light')document.documentElement.setAttribute('data-theme','light');})();</script>
+<script>(function(){var q=new URLSearchParams(location.search).get('theme');var t=q;try{t=t||localStorage.getItem('dp-theme');}catch(e){}if(t==='light')document.documentElement.setAttribute('data-theme','light');})();</script>
 <link rel="stylesheet" href="../tokens.css">
 <link rel="stylesheet" href="../ui.css">
 </head>
@@ -217,7 +217,7 @@
     b.addEventListener('click', function () {
       var l = document.documentElement.getAttribute('data-theme') === 'light';
       if (l) document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', 'light');
-      localStorage.setItem('dp-theme', l ? 'dark' : 'light'); sync();
+      try { localStorage.setItem('dp-theme', l ? 'dark' : 'light'); } catch (e) {} sync();
     });
   });
 

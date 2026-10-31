@@ -374,7 +374,7 @@ function componentsPage() {
   const list = (d) => `<ol class="items d-${d}">${states.map(([l], i) => item(l, i + 1)).join('')}</ol>`;
   const body = `<main class="xp-page" id="main">
   <div class="xp-head"><div><span class="eyebrow">Data Pool · bibliothèque v2</span><h1>Composants</h1>
-  <p class="lede">Synthèse des propositions A (facettes), B (requête) et C (segments) : voir <a href="proposals/comparaison.md">proposals/comparaison.md</a>.</p></div></div>
+  <p class="lede">Synthèse des propositions A (facettes), B (requête) et C (segments) : voir <a href="index.html#comparaison">la comparaison</a>.</p></div></div>
 
   <div class="section-title"><h2>Barre de requête à jetons</h2><span class="eyebrow">B</span></div>
   <div style="min-height:210px;max-width:820px"><div class="xp-query">
