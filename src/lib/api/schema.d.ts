@@ -1015,6 +1015,125 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/communities/{slug}/members": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Membres de la communauté, rôle, plafond et dépense sur 30 jours (propriétaires seulement) */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    slug: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            items: components["schemas"]["CommunityMember"][];
+                        };
+                    };
+                };
+                401: components["responses"]["Unauthorized"];
+                404: components["responses"]["NotFound"];
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/communities/{slug}/members/{name}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Ajoute un membre ou change son rôle et son plafond (propriétaires seulement ; la communauté garde un propriétaire actif) */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    slug: string;
+                    /** @description nom du client */
+                    name: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CommunityMemberInput"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["CommunityMemberSet"];
+                    };
+                };
+                400: components["responses"]["BadRequest"];
+                401: components["responses"]["Unauthorized"];
+                404: components["responses"]["NotFound"];
+            };
+        };
+        post?: never;
+        /** Retire un membre (propriétaires seulement ; la communauté garde un propriétaire actif) */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    slug: string;
+                    /** @description nom du client */
+                    name: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            community: string;
+                            name: string;
+                        };
+                    };
+                };
+                400: components["responses"]["BadRequest"];
+                401: components["responses"]["Unauthorized"];
+                404: components["responses"]["NotFound"];
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1041,6 +1160,8 @@ export interface components {
             /** Format: date-time */
             refreshed_at: string | null;
             items: number;
+            /** @description pool public : visible par tout client authentifié */
+            public: boolean;
         };
         Pool: {
             slug: string;
@@ -1065,6 +1186,8 @@ export interface components {
             created_at?: string | null;
             /** @description admin uniquement : définition réexécutable du pool */
             definition?: Record<string, never>;
+            /** @description pool public : visible par tout client authentifié */
+            public: boolean;
         };
         PoolItem: {
             rank: number;
@@ -1380,6 +1503,31 @@ export interface components {
         CancelReceipt: {
             request: components["schemas"]["SearchRequest"];
             refunded: number;
+        };
+        CommunityMember: {
+            name: string;
+            /** @enum {string} */
+            role: "owner" | "member";
+            /** @description plafond en giri sur 30 jours glissants, null : sans plafond */
+            monthly_limit: number | null;
+            spent_30d: number;
+            /** @description client révoqué */
+            revoked: boolean;
+            /** Format: date-time */
+            joined_at: string;
+        };
+        /** @description Upsert partiel : un champ absent garde sa valeur (nouveau membre : `member`, sans plafond) ; `monthly_limit: null` lève le plafond, 0 bloque la dépense. */
+        CommunityMemberInput: {
+            /** @enum {string} */
+            role?: "owner" | "member";
+            /** @description null ou absent : sans plafond */
+            monthly_limit?: number | null;
+        };
+        CommunityMemberSet: {
+            community: string;
+            name: string;
+            role: string;
+            monthly_limit: number | null;
         };
     };
     responses: {

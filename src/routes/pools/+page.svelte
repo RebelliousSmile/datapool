@@ -33,7 +33,10 @@
       <tbody>
         {#each items.filter(matches) as p (p.slug)}
           <tr>
-            <td class="name"><a href={resolve('/pools/[slug]', { slug: p.slug })}>{p.label}</a></td>
+            <td class="name"
+              ><a href={resolve('/pools/[slug]', { slug: p.slug })}>{p.label}</a>{#if p.public}
+                <span class="chip" title="visible par tout client">public</span>{/if}</td
+            >
             <td class="slug mono secondary">{p.slug}</td>
             <td class="num">{fmtNumber(p.items)}</td>
             <td class="nowrap"><span class="mono">{p.refreshed_at ? fmtDate(p.refreshed_at) : 'jamais'}</span></td>

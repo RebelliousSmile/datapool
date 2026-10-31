@@ -4,7 +4,7 @@
   import ExternalLink from '#lib/components/ExternalLink.svelte';
   import Icon from '#lib/components/Icon.svelte';
   import Pager from '#lib/components/Pager.svelte';
-  import { REQUEST_STATUS_LABELS, fmtEuros, fmtGiri, payersFor, quote, spentOn } from '#lib/billing.ts';
+  import { REQUEST_STATUS_LABELS, fmtEuros, fmtGiri, parseLimit, payersFor, quote, spentOn } from '#lib/billing.ts';
   import { fmtDate, fmtNumber } from '#lib/format.ts';
   import { session } from '#lib/session.svelte.ts';
   import type { Schemas } from '#lib/api/client.ts';
@@ -94,6 +94,53 @@
       reload += 1;
     } catch (err) {
       sendError = (err as Error).message;
+    }
+  }
+
+  // Membres d'une communauté possédée : rôle et plafond (champ vide : sans plafond).
+  let crew = $state('');
+  let crewReload = $state(0);
+  let crewError = $state('');
+  let newMember = $state({ name: '', role: 'member', limit: '' });
+  const crewSlug = $derived(crew || owned[0]?.slug || '');
+  const members = $derived.by(() => {
+    void crewReload;
+    return crewSlug ? session.client?.members(crewSlug) : undefined;
+  });
+
+  async function saveMember(name: string, role: string, limitRaw: string | number | null) {
+    crewError = '';
+    const limit = parseLimit(limitRaw);
+    if (limit === undefined) {
+      crewError = 'Plafond : un entier positif ou nul, ou vide pour aucun plafond.';
+      return false;
+    }
+    try {
+      await session.client!.setMember(crewSlug, name, { role: role as 'owner' | 'member', monthly_limit: limit });
+      crewReload += 1;
+      reload += 1;
+      return true;
+    } catch (err) {
+      crewError = (err as Error).message;
+      return false;
+    }
+  }
+
+  async function addMember(event: SubmitEvent) {
+    event.preventDefault();
+    if (newMember.name.trim() && (await saveMember(newMember.name.trim(), newMember.role, newMember.limit))) {
+      newMember = { name: '', role: 'member', limit: '' };
+    }
+  }
+
+  async function removeMember(name: string) {
+    crewError = '';
+    try {
+      await session.client!.removeMember(crewSlug, name);
+      crewReload += 1;
+      reload += 1;
+    } catch (err) {
+      crewError = (err as Error).message;
     }
   }
 
@@ -253,4 +300,70 @@
   {:catch err}
     <div class="alert-box err" role="alert"><Icon name="alert" small />{err.message}</div>
   {/await}
+
+  {#if owned.length}
+    <div class="section-title">
+      <h2>Membres</h2>
+      {#if owned.length > 1}
+        <label class="field"
+          ><span class="sr-only">Communauté</span>
+          <select class="input" bind:value={crew}>
+            {#each owned as c (c.slug)}<option value={c.slug}>{c.label}</option>{/each}
+          </select>
+        </label>
+      {:else}
+        <span class="eyebrow">{owned[0].label} · plafond en giri sur 30 jours, vide : aucun</span>
+      {/if}
+    </div>
+    {#await members}
+      <p class="terminal-line">&gt; chargement<span class="caret" aria-hidden="true"></span></p>
+    {:then res}
+      {#if res}
+        <div class="panel flush table-wrap">
+          <table class="table">
+            <thead>
+              <tr><th>Client</th><th>Rôle</th><th>Plafond</th><th class="num">Dépensé (30 j)</th><th><span class="sr-only">Actions</span></th></tr>
+            </thead>
+            <tbody>
+              {#each res.items as m (m.name)}
+                {@const edit = { role: m.role, limit: m.monthly_limit === null ? '' : String(m.monthly_limit) }}
+                <tr>
+                  <td class="mono">{m.name}{#if m.revoked}<span class="chip">révoqué</span>{/if}</td>
+                  <td>
+                    <label class="sr-only" for={`role-${m.name}`}>Rôle de {m.name}</label>
+                    <select class="input" id={`role-${m.name}`} bind:value={edit.role}>
+                      <option value="member">membre</option><option value="owner">propriétaire</option>
+                    </select>
+                  </td>
+                  <td>
+                    <label class="sr-only" for={`limit-${m.name}`}>Plafond de {m.name}</label>
+                    <input class="input" id={`limit-${m.name}`} inputmode="numeric" placeholder="aucun" bind:value={edit.limit} />
+                  </td>
+                  <td class="num">{fmtNumber(m.spent_30d)}</td>
+                  <td class="nowrap">
+                    <button class="btn btn-sm" type="button" onclick={() => saveMember(m.name, edit.role, edit.limit)}
+                      ><Icon name="check" small />Enregistrer</button
+                    >
+                    <button class="btn btn-sm btn-ghost" type="button" onclick={() => removeMember(m.name)}><Icon name="x" small />Retirer</button>
+                  </td>
+                </tr>
+              {/each}
+            </tbody>
+          </table>
+        </div>
+        <form class="filters" onsubmit={addMember}>
+          <label class="field"><span>Ajouter un client</span><input class="input" bind:value={newMember.name} required placeholder="nom du client" /></label>
+          <label class="field"
+            ><span>Rôle</span>
+            <select class="input" bind:value={newMember.role}><option value="member">membre</option><option value="owner">propriétaire</option></select>
+          </label>
+          <label class="field"><span>Plafond</span><input class="input" inputmode="numeric" placeholder="aucun" bind:value={newMember.limit} /></label>
+          <button class="btn btn-primary"><Icon name="user" small />Ajouter</button>
+        </form>
+      {/if}
+    {:catch err}
+      <div class="alert-box err" role="alert"><Icon name="alert" small />{err.message}</div>
+    {/await}
+    {#if crewError}<div class="alert-box err" role="alert"><Icon name="alert" small />{crewError}</div>{/if}
+  {/if}
 {/if}

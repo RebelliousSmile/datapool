@@ -75,3 +75,11 @@ export const REQUEST_STATUS_LABELS: Record<SearchRequest['status'], string> = {
 
 // giri finalement dépensés : prix moins remboursements.
 export const spentOn = (r: Pick<SearchRequest, 'price' | 'refunded'>) => r.price - r.refunded;
+
+// Plafond saisi par un propriétaire : vide → sans plafond (null), entier ≥ 0
+// sinon ; undefined si la saisie est invalide.
+export function parseLimit(raw: string | number | null | undefined): number | null | undefined {
+  const text = String(raw ?? '').trim();
+  if (text === '') return null;
+  return /^\d+$/.test(text) ? Number(text) : undefined;
+}

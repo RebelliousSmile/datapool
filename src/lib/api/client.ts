@@ -82,6 +82,12 @@ export function createClient(conn: Connection, fetchFn: typeof fetch = fetch) {
     createRequest: (input: Schemas['SearchRequestInput']) => send<Schemas['RequestReceipt']>('POST', '/requests', input),
     cancelRequest: (id: number) => send<Schemas['CancelReceipt']>('DELETE', `/requests/${seg(String(id))}`),
     adminRequests: (query: Query) => get<Page<Schemas['SearchRequest']>>('/admin/requests', query),
+    // Membres d'une communauté, pour ses propriétaires.
+    members: (slug: string) => get<{ items: Schemas['CommunityMember'][] }>(`/communities/${seg(slug)}/members`),
+    setMember: (slug: string, name: string, input: Schemas['CommunityMemberInput']) =>
+      send<Schemas['CommunityMemberSet']>('PUT', `/communities/${seg(slug)}/members/${seg(name)}`, input),
+    removeMember: (slug: string, name: string) =>
+      send<{ community: string; name: string }>('DELETE', `/communities/${seg(slug)}/members/${seg(name)}`),
     // Le jeton passe par l'en-tête : un simple lien ne suffit pas.
     exportPool: async (slug: string, format: 'json' | 'csv' | 'md') =>
       (await request(`/admin/pools/${seg(slug)}/export`, { format })).blob(),

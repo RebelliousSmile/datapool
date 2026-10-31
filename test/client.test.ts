@@ -86,6 +86,9 @@ describe('createClient', () => {
     await api.adminRequests({ limit: 5 });
     await api.createRequest({ query: 'q', provider: 'brave', pages: 2 });
     await api.cancelRequest(12);
+    await api.members('a b');
+    await api.setMember('atelier', 'bob', { monthly_limit: 10 });
+    await api.removeMember('atelier', 'bob');
     expect(calls.map((c) => c.url)).toEqual([
       '/billing',
       '/billing/entries?community=atelier',
@@ -93,7 +96,12 @@ describe('createClient', () => {
       '/admin/requests?limit=5',
       '/requests',
       '/requests/12',
+      '/communities/a%20b/members',
+      '/communities/atelier/members/bob',
+      '/communities/atelier/members/bob',
     ]);
+    expect(calls[7].init).toMatchObject({ method: 'PUT', body: '{"monthly_limit":10}' });
+    expect(calls[8].init).toMatchObject({ method: 'DELETE' });
     expect(calls[4].init).toEqual({
       method: 'POST',
       headers: { Authorization: 'Bearer wp_x', 'Content-Type': 'application/json' },

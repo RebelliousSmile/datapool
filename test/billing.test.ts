@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Schemas } from '../src/lib/api/client';
-import { REQUEST_STATUS_LABELS, fmtEuros, fmtGiri, payersFor, quote, spentOn } from '../src/lib/billing';
+import { REQUEST_STATUS_LABELS, fmtEuros, fmtGiri, parseLimit, payersFor, quote, spentOn } from '../src/lib/billing';
 
 const billing: Schemas['Billing'] = {
   giri_per_eur: 1000,
@@ -48,6 +48,15 @@ describe('recherches payantes', () => {
     expect(quote(billing, { provider: 'brave', pages: 1, payer: club })?.problem).toBe('Cette communauté ne paie que ses pools (aucun).');
     expect(quote(billing, { provider: 'file', pages: 1, payer: personal })).toBeNull();
     expect(quote(billing, { provider: 'brave', pages: 1, payer: undefined })).toBeNull();
+  });
+
+  it('plafond saisi : vide sans plafond, entier ≥ 0, sinon invalide', () => {
+    expect(parseLimit('')).toBeNull();
+    expect(parseLimit(null)).toBeNull();
+    expect(parseLimit(' 0 ')).toBe(0);
+    expect(parseLimit(250)).toBe(250);
+    expect(parseLimit('-1')).toBeUndefined();
+    expect(parseLimit('1,5')).toBeUndefined();
   });
 
   it('statuts et giri dépensés', () => {

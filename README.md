@@ -12,13 +12,14 @@ pools, corpus, domaines et activité du pipeline, lus par l'API HTTP de webpool
 |---|---|---|
 | Tableau de bord | admin | volumes du corpus, pools, domaines à qualifier, frontière d'exploration, derniers runs |
 | Pools | admin, read | pools visibles ; détail en **outil de recherche** : barre de requête à jetons (`type:image usage:libre`, `/` pour y aller), facettes comptées (type de média, source, usage, domaine), onglets de segments, « Grouper par » avec « Copier ce groupe », trois densités (confort, compact, grille), aperçu d'un lien, vues enregistrées ; **copie ou téléchargement de la sélection** (URLs seules par défaut, Markdown, CSV). État dans l'URL (liens partageables). Chaque lien montre sa vignette et le favicon de son site (servis par le cache de webpool), sa description, son type de média et sa famille de source. Pour l'admin : fiche de chaque lien, synthèse, définition et export |
-| Recherches | admin, read | soldes en giri (portefeuille personnel crédité par un don, communautés avec rôle, plafond et dépense sur 30 jours), achat d'une recherche (requête, provider, pages, pool visé, payeur) avec son prix et le solde après achat, historique (statut, giri dépensés après remboursement, liens trouvés, nouveaux et entrés dans le pool), annulation d'une recherche en attente ; les propriétaires voient les recherches de leur communauté. Accessible depuis un pool par « ajouter une recherche à ce pool » |
+| Recherches | admin, read | soldes en giri (portefeuille personnel crédité par un don, communautés avec rôle, plafond et dépense sur 30 jours), achat d'une recherche (requête, provider, pages, pool visé, payeur) avec son prix et le solde après achat, historique (statut, giri dépensés après remboursement, liens trouvés, nouveaux et entrés dans le pool), annulation d'une recherche en attente ; les propriétaires voient les recherches de leur communauté et gèrent ses membres (ajout, rôle, plafond, retrait). Accessible depuis un pool par « ajouter une recherche à ce pool » |
 | Corpus | admin | URLs filtrées (texte, statut, thème, domaine), triées par date, qualité ou pertinence ; copie ou téléchargement de la sélection (5 000 liens au plus, plafond annoncé) |
 | Fiche URL | admin | sources (requête, provider, rang), thèmes, facettes, pools |
 | Domaines | admin | registre, filtré par usage commercial (dont « à qualifier ») |
 
 Un client `read` (un client de webpool à qui l'on a accordé des pools, ou membre
-d'une communauté) ne voit que ses pools, sans définition ni scores. Les pools
+d'une communauté) ne voit que ses pools et les pools publics (marqués « public »),
+sans définition ni scores. Les pools
 sont gratuits ; les recherches se paient en giri, voir
 [webpool](https://github.com/RebelliousSmile/webpool#recherches-payantes--dons-et-giri).
 
