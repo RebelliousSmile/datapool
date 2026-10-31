@@ -1,8 +1,9 @@
 <script lang="ts">
   import { resolve } from '$app/paths';
   import { page } from '$app/state';
+  import Icon from '#lib/components/Icon.svelte';
   import Pager from '#lib/components/Pager.svelte';
-  import { fmtDate, fmtNumber, fmtScore } from '#lib/format.ts';
+  import { fmtDate, fmtNumber, fmtScore, urlStatusLabel } from '#lib/format.ts';
   import { session } from '#lib/session.svelte.ts';
   import type { Schemas } from '#lib/api/client.ts';
 
@@ -10,8 +11,9 @@
   const STATUSES = ['pending', 'normalized', 'classified', 'duplicate', 'error'];
 
   // Filtres saisis, appliqués à la validation du formulaire.
-  // `?domain=` (lien depuis les domaines) présélectionne le filtre.
-  let form = $state({ q: '', status: '', theme: '', domain: page.url.searchParams.get('domain') ?? '', order: 'recent' });
+  // `?domain=` et `?status=` (liens des domaines, du tableau de bord, d'une fiche) présélectionnent les filtres.
+  const param = (name: string) => page.url.searchParams.get(name) ?? '';
+  let form = $state({ q: '', status: param('status'), theme: '', domain: param('domain'), order: 'recent' });
   let filters = $state({ ...form });
   let offset = $state(0);
 
@@ -32,64 +34,72 @@
   }
 </script>
 
-<h1>Corpus</h1>
+<div class="page-head">
+  <div class="titles"><h1>Corpus</h1><div class="meta"><span>toutes les URLs collectées par webpool</span></div></div>
+</div>
 
 <form class="filters" onsubmit={apply}>
-  <label>Recherche <input bind:value={form.q} placeholder="titre ou URL" /></label>
-  <label>Statut
-    <select bind:value={form.status}>
+  <label class="field"><span>Recherche</span><input class="input" bind:value={form.q} placeholder="titre ou URL" /></label>
+  <label class="field"
+    ><span>Statut</span>
+    <select class="input" bind:value={form.status}>
       <option value="">tous</option>
-      {#each STATUSES as s (s)}<option value={s}>{s}</option>{/each}
+      {#each STATUSES as s (s)}<option value={s}>{urlStatusLabel(s)}</option>{/each}
     </select>
   </label>
-  <label>Thème
-    <select bind:value={form.theme}>
+  <label class="field"
+    ><span>Thème</span>
+    <select class="input" bind:value={form.theme}>
       <option value="">tous</option>
       {#await themes then res}
         {#each flatten(res?.items ?? []) as t (t.slug)}<option value={t.slug}>{t.label} ({t.urls})</option>{/each}
       {/await}
     </select>
   </label>
-  <label>Domaine <input bind:value={form.domain} placeholder="exemple.com" /></label>
-  <label>Ordre
-    <select bind:value={form.order}>
+  <label class="field"><span>Domaine</span><input class="input" bind:value={form.domain} placeholder="exemple.com" /></label>
+  <label class="field"
+    ><span>Ordre</span>
+    <select class="input" bind:value={form.order}>
       <option value="recent">plus récentes</option>
       <option value="quality">qualité</option>
       <option value="relevance">pertinence</option>
     </select>
   </label>
-  <button>Filtrer</button>
+  <button class="btn btn-primary"><Icon name="search" small />Filtrer</button>
 </form>
 
 {#await urls}
-  <p class="muted">Chargement…</p>
+  <p class="terminal-line">&gt; chargement<span class="caret" aria-hidden="true"></span></p>
 {:then res}
   {#if res}
-    <div class="card">
-      <table>
+    <div class="section-title"><h2>URLs</h2><span class="eyebrow">{fmtNumber(res.total)} correspondent</span></div>
+    <div class="panel flush table-wrap">
+      <table class="table">
         <thead>
-          <tr><th>URL</th><th>Domaine</th><th>Statut</th><th>Thème</th><th class="num">Pert.</th><th class="num">Qual.</th><th>Vue le</th></tr>
+          <tr>
+            <th>URL</th><th class="hide-sm">Domaine</th><th>Statut</th><th class="hide-sm">Thème</th>
+            <th class="num">Pert.</th><th class="num">Qual.</th><th class="hide-sm">Vue le</th>
+          </tr>
         </thead>
         <tbody>
           {#each res.items as u (u.id)}
             <tr>
-              <td class="url"><a href={resolve('/urls/[id]', { id: String(u.id) })}>{u.title || u.url}</a></td>
-              <td>{u.domain ?? '—'}</td>
-              <td>{u.status}</td>
-              <td>{u.primary_theme ?? '—'}</td>
+              <td class="cell-url"><a href={resolve('/urls/[id]', { id: String(u.id) })}>{u.title || u.url}</a></td>
+              <td class="mono hide-sm">{u.domain ?? '—'}</td>
+              <td class="mono">{urlStatusLabel(u.status)}</td>
+              <td class="mono hide-sm">{u.primary_theme ?? '—'}</td>
               <td class="num">{fmtScore(u.relevance_score)}</td>
               <td class="num">{fmtScore(u.quality_score)}</td>
-              <td>{fmtDate(u.first_seen_at)}</td>
+              <td class="mono nowrap hide-sm">{fmtDate(u.first_seen_at)}</td>
             </tr>
           {:else}
             <tr><td colspan="7" class="muted">Aucune URL.</td></tr>
           {/each}
         </tbody>
       </table>
-      <Pager total={res.total} limit={LIMIT} bind:offset />
     </div>
-    <p class="muted">{fmtNumber(res.total)} URLs correspondent.</p>
+    <Pager total={res.total} limit={LIMIT} bind:offset />
   {/if}
 {:catch err}
-  <p class="error" role="alert">{err.message}</p>
+  <div class="alert-box err" role="alert"><Icon name="alert" small />{err.message}</div>
 {/await}

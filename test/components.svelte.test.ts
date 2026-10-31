@@ -6,6 +6,11 @@ import ConnectForm from '../src/lib/components/ConnectForm.svelte';
 import ExternalLink from '../src/lib/components/ExternalLink.svelte';
 import Pager from '../src/lib/components/Pager.svelte';
 import UsageBar from '../src/lib/components/UsageBar.svelte';
+import UsageBadge from '../src/lib/components/UsageBadge.svelte';
+import LinkRow from '../src/lib/components/LinkRow.svelte';
+import CopyLinks from '../src/lib/components/CopyLinks.svelte';
+import Icon from '../src/lib/components/Icon.svelte';
+import { theme } from '../src/lib/theme.svelte.ts';
 import { session } from '../src/lib/session.svelte.ts';
 
 let mounted: ReturnType<typeof mount>[] = [];
@@ -24,6 +29,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 const text = (s: string) => createRawSnippet(() => ({ render: () => `<span>${s}</span>` }));
+// toutes les espaces (y compris insécables) ramenées à une espace simple
 const clean = (el: Element | null) => el?.textContent?.replace(/\s+/g, ' ').trim();
 
 describe('ExternalLink', () => {
@@ -46,13 +52,20 @@ describe('ExternalLink', () => {
 describe('UsageBar', () => {
   it('affiche segments et légende chiffrée dans l’ordre fixe', () => {
     const el = render(UsageBar, { rows: [{ usage: null, urls: 2 }, { usage: 'libre', urls: 2 }] });
-    expect(el.querySelectorAll('.seg')).toHaveLength(2);
-    expect([...el.querySelectorAll('.legend li')].map(clean)).toEqual(['Libre 2 50 %', 'À qualifier 2 50 %']);
-    expect(el.querySelector('.bar')?.getAttribute('aria-label')).toBe('Libre : 2, À qualifier : 2');
+    expect(el.querySelectorAll('.seg-u')).toHaveLength(2);
+    expect([...el.querySelectorAll('.seg-u')].map((s) => s.getAttribute('data-usage'))).toEqual(['libre', 'a-qualifier']);
+    const legend = [...el.querySelectorAll('.legend li')].map((li) =>
+      ['.name', 'strong', '.pct'].map((sel) => li.querySelector(sel)?.textContent),
+    );
+    expect(legend).toEqual([
+      ['Libre', '2', '50\u202f%'],
+      ['À qualifier', '2', '50\u202f%'],
+    ]);
+    expect(el.querySelector('.stackbar')?.getAttribute('aria-label')).toBe('Libre : 2, À qualifier : 2');
   });
 
   it('signale un pool vide', () => {
-    expect(render(UsageBar, { rows: [] }).textContent).toContain('Aucune URL.');
+    expect(render(UsageBar, { rows: [] }).textContent).toContain('Aucun lien.');
   });
 });
 
@@ -61,32 +74,45 @@ describe('BarList', () => {
     const el = render(BarList, { rows: [{ label: 'a.com', value: 4 }, { label: 'b.com', value: 1 }] });
     const widths = [...el.querySelectorAll<HTMLElement>('.fill')].map((f) => f.style.width);
     expect(widths).toEqual(['100%', '25%']);
-    expect(el.querySelector('tr')?.getAttribute('title')).toBe('a.com : 4 URLs');
+    expect(el.querySelector('li')?.getAttribute('title')).toBe('a.com : 4 liens');
   });
 });
 
 describe('Pager', () => {
-  it('borne la navigation', () => {
-    const props = $state({ total: 120, limit: 50, offset: 0 });
+  const range = (el: Element) => clean(el.querySelector('.range'));
+  const pages = (el: Element) => [...el.querySelectorAll('ol li')].map((li) => clean(li)).join(' ');
+  const button = (el: Element, label: string) =>
+    [...el.querySelectorAll<HTMLButtonElement>('button.pg')].find((b) => clean(b) === label || b.getAttribute('aria-label') === label)!;
+
+  it('numérote les pages avec ellipses et borne la navigation', () => {
+    const props = $state({ total: 1000, limit: 50, offset: 0 });
     const el = render(Pager, props);
-    const [prev, next] = el.querySelectorAll('button');
-    expect(clean(el.querySelector('span'))).toBe('1–50 sur 120');
-    expect(prev.disabled).toBe(true);
-    next.click();
+    expect(range(el)).toBe('1–50 sur 1 000');
+    expect(pages(el)).toBe('‹ 1 2 … 20 ›');
+    expect(button(el, 'Page précédente').getAttribute('aria-disabled')).toBe('true');
+    button(el, 'Page précédente').click();
+    expect(props.offset).toBe(0);
+
+    button(el, 'Page 20').click();
     flushSync();
-    expect(props.offset).toBe(50);
-    next.click();
+    expect(props.offset).toBe(950);
+    expect(range(el)).toBe('951–1 000 sur 1 000');
+    button(el, 'Page suivante').click();
+    expect(props.offset).toBe(950);
+
+    props.offset = 450;
     flushSync();
-    expect(clean(el.querySelector('span'))).toBe('101–120 sur 120');
-    expect(next.disabled).toBe(true);
-    prev.click();
+    expect(pages(el)).toBe('‹ 1 … 9 10 11 … 20 ›');
+    expect(el.querySelector('[aria-current=page]')?.textContent).toBe('10');
+    button(el, 'Page suivante').click();
     flushSync();
-    expect(props.offset).toBe(50);
+    expect(props.offset).toBe(500);
   });
 
-  it('affiche zéro résultat', () => {
+  it('ne propose pas de pages pour un seul écran', () => {
     const el = render(Pager, { total: 0, limit: 50, offset: 0 });
-    expect(clean(el.querySelector('span'))).toBe('0–0 sur 0');
+    expect(range(el)).toBe('0–0 sur 0');
+    expect(el.querySelector('ol')).toBeNull();
   });
 });
 
@@ -122,5 +148,143 @@ describe('ConnectForm', () => {
     await submit(el, () => el.querySelector('[role=alert]'));
     expect(el.querySelector('button')!.disabled).toBe(false);
     expect(el.querySelector('[role=alert]')?.textContent).toBe('Jeton refusé');
+    expect(el.querySelector('input[type=password]')?.getAttribute('aria-invalid')).toBe('true');
+  });
+
+  it('affiche le message transmis par le layout', () => {
+    const el = render(ConnectForm, { notice: 'API injoignable : http://x' });
+    expect(el.querySelector('[role=alert]')?.textContent).toBe('API injoignable : http://x');
+  });
+});
+
+describe('Icon et UsageBadge', () => {
+  it('référence le pictogramme du sprite', () => {
+    const el = render(Icon, { name: 'copy', small: true });
+    expect(el.querySelector('use')?.getAttribute('href')).toBe('#i-copy');
+    expect(el.querySelector('svg')?.classList.contains('sm')).toBe(true);
+  });
+
+  it('écrit toujours le libellé à côté du repère', () => {
+    expect(clean(render(UsageBadge, { usage: 'payant' }))).toBe('Payant');
+    const pending = render(UsageBadge, { usage: null }).querySelector('.usage')!;
+    expect(pending.getAttribute('data-usage')).toBe('a-qualifier');
+    expect(clean(pending)).toBe('À qualifier');
+  });
+});
+
+describe('LinkRow', () => {
+  const link = { rank: 3, url: 'https://ex.com/a/b?c=1', title: 'Titre', usage_commercial: 'libre' };
+
+  it('affiche rang, titre cliquable, URL découpée et usage', () => {
+    const el = render(LinkRow, { link });
+    expect(clean(el.querySelector('.rank'))).toBe('3');
+    const a = el.querySelector('a.title')!;
+    expect(a.getAttribute('href')).toBe(link.url);
+    expect(a.getAttribute('rel')).toBe('noopener noreferrer');
+    expect(el.querySelector('.url .host')?.textContent).toBe('ex.com');
+    expect(el.querySelector('.url')?.textContent).toBe(link.url);
+    expect(el.querySelector('.usage')?.getAttribute('data-usage')).toBe('libre');
+    expect(el.querySelector('.admin-link')).toBeNull();
+  });
+
+  it("remplace un titre absent par l'URL et lie la fiche pour l'admin", () => {
+    const el = render(LinkRow, { link: { ...link, title: null, id: 42 } });
+    expect(el.querySelector('.title')?.classList.contains('untitled')).toBe(true);
+    expect(clean(el.querySelector('.title'))).toBe(link.url);
+    expect(el.querySelector('.admin-link')?.getAttribute('href')).toBe('/urls/42');
+  });
+
+  it("n'ouvre pas un lien au schéma dangereux", () => {
+    const el = render(LinkRow, { link: { ...link, url: 'javascript:alert(1)' } });
+    expect(el.querySelector('a.title')).toBeNull();
+    expect(clean(el.querySelector('span.title'))).toBe('Titre');
+  });
+});
+
+describe('CopyLinks', () => {
+  const page = (items: unknown[], total: number) => new Response(JSON.stringify({ items, total, limit: 500, offset: 0 }));
+  const links = [
+    { rank: 1, url: 'https://a.test/', title: 'A', domain: 'a.test', usage_commercial: 'libre' },
+    { rank: 2, url: 'https://b.test/', title: 'B', domain: 'b.test', usage_commercial: null },
+  ];
+  const connect = async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ name: 'moi', scope: 'read' }))));
+    await session.connect({ baseUrl: 'http://api.test/api/v1', token: 'wp_x' });
+  };
+  const status = (el: Element) => el.querySelector('.copy-status')!;
+  afterEach(() => {
+    session.disconnect();
+    localStorage.clear();
+  });
+
+  it('copie tout le pool au format par défaut et confirme', async () => {
+    await connect();
+    const fetchFn = vi.fn(async () => page(links, 2));
+    vi.stubGlobal('fetch', fetchFn);
+    const writeText = vi.fn(async () => {});
+    vi.stubGlobal('navigator', { clipboard: { writeText } });
+    const el = render(CopyLinks, { slug: 'p', count: 2 });
+    expect(clean(el.querySelector('button'))).toBe('Copier les 2 liens');
+    el.querySelector<HTMLButtonElement>('button')!.click();
+    await vi.waitFor(() => {
+      flushSync();
+      expect(status(el).classList.contains('ok')).toBe(true);
+    });
+    expect(writeText).toHaveBeenCalledWith('https://a.test/\nhttps://b.test/\n');
+    expect(clean(status(el))).toBe('2 liens copiés · URLs');
+    expect(fetchFn).toHaveBeenCalledWith('http://api.test/api/v1/pools/p/items?limit=500&offset=0', expect.anything());
+  });
+
+  it('mémorise le format choisi dans le menu, fermé par Échap', async () => {
+    await connect();
+    const el = render(CopyLinks, { slug: 'p', count: 2 });
+    const toggle = el.querySelectorAll<HTMLButtonElement>('.copy-split button')[1];
+    const menu = el.querySelector('[role=menu]') as HTMLElement;
+    expect(menu.hidden).toBe(true);
+    toggle.click();
+    flushSync();
+    expect(menu.hidden).toBe(false);
+    expect(toggle.getAttribute('aria-expanded')).toBe('true');
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    flushSync();
+    expect(menu.hidden).toBe(true);
+
+    toggle.click();
+    flushSync();
+    [...el.querySelectorAll<HTMLButtonElement>('[role=menuitemradio]')].find((b) => b.textContent?.includes('CSV'))!.click();
+    flushSync();
+    expect(menu.hidden).toBe(true);
+    expect(localStorage.getItem('datapool.copyFormat')).toBe('csv');
+    expect(toggle.getAttribute('aria-label')).toBe('Format de copie : CSV');
+    expect(el.querySelector('[aria-checked=true]')?.textContent).toContain('CSV');
+  });
+
+  it('propose de télécharger la liste quand le presse-papiers refuse', async () => {
+    await connect();
+    vi.stubGlobal('fetch', vi.fn(async () => page(links, 2)));
+    vi.stubGlobal('navigator', { clipboard: { writeText: vi.fn(async () => { throw new Error('Permission refusée'); }) } });
+    URL.createObjectURL = vi.fn(() => 'blob:liste');
+    URL.revokeObjectURL = vi.fn();
+    const el = render(CopyLinks, { slug: 'p', count: 2 });
+    el.querySelector<HTMLButtonElement>('button')!.click();
+    await vi.waitFor(() => {
+      flushSync();
+      expect(status(el).classList.contains('err')).toBe(true);
+    });
+    expect(clean(status(el))).toBe('Permission refusée · télécharger la liste');
+    expect(status(el).querySelector('a')?.getAttribute('href')).toBe('blob:liste');
+    expect(status(el).querySelector('a')?.getAttribute('download')).toBe('p.txt');
+  });
+});
+
+describe('theme', () => {
+  it('bascule et mémorise le thème clair', () => {
+    expect(theme.light).toBe(false);
+    theme.toggle();
+    expect(document.documentElement.dataset.theme).toBe('light');
+    expect(localStorage.getItem('datapool.theme')).toBe('light');
+    theme.toggle();
+    expect(document.documentElement.dataset.theme).toBeUndefined();
+    expect(localStorage.getItem('datapool.theme')).toBe('dark');
   });
 });
