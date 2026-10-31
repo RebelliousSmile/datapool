@@ -12,6 +12,7 @@
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
+    "deploy:prod": "node scripts/deploy.mjs",
     "preview": "vite preview",
     "check": "svelte-kit sync && svelte-check",
     "test": "vitest run",

@@ -1,0 +1,97 @@
+{
+  "version": 2,
+  "owner": {
+    "plugin": "sc-js",
+    "scope": "root"
+  },
+  "manager": "pnpm",
+  "command": "pnpm run deploy:prod",
+  "workingDirectory": ".",
+  "source": {
+    "repository": ".",
+    "ref": "main",
+    "clean": true,
+    "dirtyPolicy": "not applicable; the script archives the committed HEAD via `git archive`, so uncommitted changes never ship (a dirty workspace only triggers a warning)"
+  },
+  "targets": [
+    {
+      "id": "ad",
+      "phase": "production",
+      "mode": "static",
+      "provider": "alwaysdata",
+      "executionContext": "workspace",
+      "lifecycleRevision": 1,
+      "guard": {
+        "kind": "file",
+        "reference": "~/deploy/datapool-ad/guard.json"
+      },
+      "lock": {
+        "key": "~/deploy/datapool-ad/lock",
+        "behavior": "fail"
+      },
+      "trigger": "manual",
+      "secretNames": [],
+      "invocation": {
+        "command": "pnpm run deploy:prod ad --apply",
+        "workingDirectory": ".",
+        "operations": [
+          "deploy:init",
+          "deploy:code"
+        ]
+      }
+    }
+  ],
+  "operations": [
+    {
+      "name": "deploy:init",
+      "surface": "code",
+      "authority": "local",
+      "phases": [
+        "production"
+      ],
+      "destructive": false,
+      "preconditions": [
+        "explicit target ad",
+        "reachable SSH host with the dedicated WSL key",
+        "guard absent or identical to {targetId: ad, phase: production, lifecycleRevision: 1}"
+      ],
+      "proof": [
+        "remote guard file equals target ad, production, lifecycle revision 1 (read and compared before any mutation)"
+      ],
+      "recovery": [
+        "remove the non-secret guard file only before any release uses lifecycle revision 1"
+      ]
+    },
+    {
+      "name": "deploy:code",
+      "surface": "code",
+      "authority": "local",
+      "phases": [
+        "production"
+      ],
+      "destructive": false,
+      "preconditions": [
+        "current branch is main (or --any-branch)",
+        "matching remote lifecycle guard",
+        "exclusive target lock (mkdir-based, fails immediately if held)",
+        "git archive of the commit, `pnpm install --frozen-lockfile` and `pnpm build` (VITE_WEBPOOL_API_URL = target apiUrl) succeed in a native Linux WSL staging directory (not DrvFs)",
+        "an alwaysdata static site whose root is ~/www/datapool (target-authoritative, configured in the admin, never deployed by this script)",
+        "~/www/webpool.env present on the target and its WEBPOOL_API_CORS_ORIGINS contains the siteUrl origin (read on the target by node; only that key leaves the file, never DATABASE_URL nor provider keys)"
+      ],
+      "proof": [
+        "rsync exits 0 into ~/www/datapool.new with --chmod=D755,F644",
+        "find over ~/www/datapool.new reports no directory other than 755 and no file other than 644",
+        "~/www/datapool.new holds index.html and the generated .htaccess (SPA fallback, CSP with the inline script hashes of index.html)",
+        "after the swap, GET siteUrl/ and siteUrl/pools answer 200 with exactly the generated Content-Security-Policy"
+      ],
+      "recovery": [
+        "swap ~/www/datapool.old back over ~/www/datapool; ~/www/datapool.old is only purged at the START of the next deploy:code, so it survives until then"
+      ],
+      "sync": {
+        "comparison": "content-hash",
+        "deletions": "mirror",
+        "resumable": true
+      }
+    }
+  ]
+}

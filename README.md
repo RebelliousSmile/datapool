@@ -57,6 +57,44 @@ de datapool doit figurer dans `WEBPOOL_API_CORS_ORIGINS` côté webpool.
 Le jeton étant lisible par les scripts de la page, l'interface ne charge aucune
 ressource tierce ; poser une `Content-Security-Policy` à l'hébergement.
 
+## Déploiement (alwaysdata)
+
+Même mécanique que webpool (`scripts/deploy.mjs`), pour un site statique.
+
+**Préparation, une fois :**
+
+- dans l'admin, *Web > Sites* : un site de type *Fichiers statiques* sur un
+  sous-domaine, racine `www/datapool` ;
+- côté webpool, l'origine du site dans `WEBPOOL_API_CORS_ORIGINS` de
+  `~/www/webpool.env` (sans `/` final), puis redémarrage du site de l'API ;
+- en local, la cible (fichier ignoré par git) ; la clé SSH de webpool convient :
+
+```bash
+cp deploy/targets.example.json deploy/targets.json   # host, user, sshKey, siteUrl, apiUrl…
+```
+
+**Déployer** depuis Windows (WSL avec Node, `rsync`, `ssh` et pnpm dans `~/.local/bin`) :
+
+```bash
+pnpm deploy:prod ad --check     # archive du commit + build en staging WSL, sans contacter la cible
+pnpm deploy:prod ad             # prévisualisation : garde, CORS de webpool, fichiers modifiés
+pnpm deploy:prod ad --apply     # livraison
+```
+
+Seul le commit `HEAD` de `main` part (`git archive`), jamais la copie de travail.
+Le build fige `apiUrl` dans `VITE_WEBPOOL_API_URL` et le script génère le
+`.htaccess` : repli de toutes les routes vers `index.html`, CSP (`connect-src` et
+`img-src` limités à l'API, empreintes des scripts en ligne de `index.html`),
+cache immuable pour `_app/immutable/`. Avant toute mutation, il lit sur la cible
+`WEBPOOL_API_CORS_ORIGINS` dans `~/www/webpool.env` (seule cette clé en sort) et
+refuse si l'origine du site n'y figure pas.
+
+`--apply`, sous verrou (`~/deploy/datapool-ad/lock`) et garde de cycle de vie :
+synchronise dans `~/www/datapool.new` (droits 755/644 vérifiés), bascule vers
+`~/www/datapool`, puis vérifie que `/` et `/pools` répondent 200 avec la CSP
+attendue. La version précédente reste dans `~/www/datapool.old` jusqu'au
+déploiement suivant ; la commande de restauration est affichée en fin de run.
+
 ## Contrat d'API
 
 Les types TypeScript de l'API sont générés depuis `webpool/openapi.json`, attendu

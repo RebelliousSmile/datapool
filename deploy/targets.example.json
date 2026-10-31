@@ -1,0 +1,13 @@
+{
+  "ad": {
+    "host": "ssh-<compte>.alwaysdata.net",
+    "user": "<compte>",
+    "sshKey": "~/.ssh/webpool_ci",
+    "appDir": "www/datapool",
+    "siteUrl": "https://datapool.<domaine>",
+    "apiUrl": "https://api.<domaine>/api/v1",
+    "webpoolEnvFile": "www/webpool.env",
+    "nodeVersion": "24",
+    "lifecycleRevision": 1
+  }
+}

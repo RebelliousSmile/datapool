@@ -5,3 +5,4 @@ build/
 .env.*
 !.env.example
 coverage/
+deploy/targets.json
