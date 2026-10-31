@@ -8,6 +8,7 @@ import Pager from '../src/lib/components/Pager.svelte';
 import UsageBar from '../src/lib/components/UsageBar.svelte';
 import UsageBadge from '../src/lib/components/UsageBadge.svelte';
 import ResultItem from '../src/lib/components/ResultItem.svelte';
+import MediaThumb from '../src/lib/components/MediaThumb.svelte';
 import { enrich } from '../src/lib/explore';
 import CopyLinks from '../src/lib/components/CopyLinks.svelte';
 import Icon from '../src/lib/components/Icon.svelte';
@@ -190,7 +191,7 @@ describe('ResultItem', () => {
     expect(el.querySelector('.url .host')?.textContent).toBe('www.youtube.com');
     expect(clean(el.querySelector('.src'))).toBe('Plateformes vidéo');
     expect(el.querySelector('.usage')?.getAttribute('data-usage')).toBe('libre');
-    expect(el.querySelector('.kind-tag')?.textContent).toContain('vidéo');
+    expect(el.querySelector('.kind-tag')?.textContent).toContain('Vidéo');
     el.querySelector<HTMLButtonElement>('.peek')!.click();
     expect(onpeek).toHaveBeenCalledWith(link);
   });
@@ -206,6 +207,52 @@ describe('ResultItem', () => {
     const el = render(ResultItem, { link: enrich({ ...base, url: 'javascript:alert(1)' }), onpeek: () => {} });
     expect(el.querySelector('a.item-title')).toBeNull();
     expect(clean(el.querySelector('span.item-title'))).toBe('Titre');
+  });
+});
+
+describe('médias', () => {
+  const base = { rank: 1, url: 'https://ex.com/a', title: 'T', domain: 'ex.com', usage_commercial: null };
+  const api = (patch: Record<string, unknown>) => enrich({ ...base, ...patch } as never, (p) => (p ? `https://api.test${p}` : null));
+
+  it('affiche la vignette du cache, avec lecture pour une vidéo', () => {
+    const el = render(MediaThumb, { link: api({ thumbnail: '/api/v1/media/a.webp', media_type: 'video' }) });
+    const img = el.querySelector('img')!;
+    expect(img.getAttribute('src')).toBe('https://api.test/api/v1/media/a.webp');
+    expect(img.getAttribute('loading')).toBe('lazy');
+    expect(el.querySelector('.play')).not.toBeNull();
+    expect(el.querySelector('.thumb')?.classList.contains('fallback')).toBe(false);
+  });
+
+  it('bascule sur le repli « indisponible » quand la vignette ne se charge pas', () => {
+    const el = render(MediaThumb, { link: api({ thumbnail: '/api/v1/media/a.webp', favicon: '/api/v1/media/f.webp' }) });
+    el.querySelector('img')!.dispatchEvent(new Event('error'));
+    flushSync();
+    const thumb = el.querySelector('.thumb')!;
+    expect(thumb.classList.contains('broken')).toBe(true);
+    expect(clean(thumb.querySelector('.why'))).toBe('Vignette indisponible');
+    expect(thumb.querySelector('use')?.getAttribute('href')).toBe('#i-broken');
+  });
+
+  it('sans vignette : favicon agrandi, puis pictogramme du type', () => {
+    const el = render(MediaThumb, { link: api({ favicon: '/api/v1/media/f.webp', media_type: 'pdf' }), rank: false });
+    expect(el.querySelector('.big-fav')?.getAttribute('src')).toBe('https://api.test/api/v1/media/f.webp');
+    expect(el.querySelector('.rank-tag')).toBeNull();
+    el.querySelector('.big-fav')!.dispatchEvent(new Event('error'));
+    flushSync();
+    expect(el.querySelector('.big-fav')).toBeNull();
+    expect([...el.querySelectorAll('use')].map((u) => u.getAttribute('href'))).toContain('#i-pdf');
+    expect(clean(el.querySelector('.why'))).toBe('Pas de vignette');
+  });
+
+  it("montre favicon et description dans la liste, pictogramme si le favicon échoue", () => {
+    const el = render(ResultItem, { link: api({ favicon: '/api/v1/media/f.webp', description: 'Une description' }), onpeek: () => {} });
+    expect(clean(el.querySelector('.item-desc'))).toBe('Une description');
+    const fav = el.querySelector<HTMLImageElement>('.item-fav img')!;
+    expect(fav.getAttribute('src')).toBe('https://api.test/api/v1/media/f.webp');
+    fav.dispatchEvent(new Event('error'));
+    flushSync();
+    expect(el.querySelector('.item-fav img')).toBeNull();
+    expect(el.querySelector('.item-fav use')?.getAttribute('href')).toBe('#i-page');
   });
 });
 

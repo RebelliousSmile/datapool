@@ -1,3 +1,4 @@
+import type { Schemas } from './api/client';
 import type { CopyLink } from './copy';
 import { MEDIA, SOURCES, hostOf, mediaOf, sourceOf, type Media, type Source } from './kinds';
 import { USAGE } from './format';
@@ -16,7 +17,23 @@ export type Group = 'none' | Dim;
 export const KEY: Record<Dim, string> = { media: 'type', source: 'source', usage: 'usage', domain: 'domaine' };
 const DIM_OF_KEY: Record<string, Dim> = { type: 'media', source: 'source', usage: 'usage', domaine: 'domain', domain: 'domain' };
 
-export type XLink = CopyLink & { id?: number; media: Media; source: Source; usage: string; host: string; text: string };
+// Lien tel que l'API le donne : les champs de médias manquent pour une API
+// antérieure à la phase 3 (repli sur la déduction locale).
+export type ApiLink = CopyLink & { id?: number } & Partial<
+  Pick<Schemas['PoolItem'], 'description' | 'media_type' | 'source' | 'thumbnail' | 'favicon'>
+>;
+
+export type XLink = CopyLink & {
+  id?: number;
+  media: Media;
+  source: Source;
+  usage: string;
+  host: string;
+  text: string;
+  description: string | null;
+  thumbnail: string | null;
+  favicon: string | null;
+};
 
 export type XState = {
   seg: SegDim;
@@ -36,16 +53,22 @@ export const defaultState = (): XState => ({
   f: { media: [], source: [], usage: [], domain: [] },
 });
 
-// Lien de l'API complété de ses dimensions ; `usage` est la clé CSS (`a-qualifier` pour null).
-export function enrich(link: CopyLink & { id?: number }): XLink {
+// Lien de l'API complété de ses dimensions ; `usage` est la clé CSS (`a-qualifier`
+// pour null). Type et source viennent de l'API, sinon de la déduction locale ;
+// `resolveMedia` rend absolus les chemins de vignette et de favicon.
+export function enrich(link: ApiLink, resolveMedia: (path: string | null | undefined) => string | null = (p) => p ?? null): XLink {
   const host = (link.domain ?? hostOf(link.url)).toLowerCase().replace(/^www\./, '');
+  const description = link.description ?? null;
   return {
     ...link,
-    media: mediaOf(link.url),
-    source: sourceOf(host),
+    media: link.media_type ?? mediaOf(link.url),
+    source: link.source ?? sourceOf(host),
     usage: link.usage_commercial ?? 'a-qualifier',
     host,
-    text: `${link.title ?? ''} ${link.url}`.toLowerCase(),
+    description,
+    thumbnail: resolveMedia(link.thumbnail),
+    favicon: resolveMedia(link.favicon),
+    text: `${link.title ?? ''} ${link.url} ${description ?? ''}`.toLowerCase(),
   };
 }
 

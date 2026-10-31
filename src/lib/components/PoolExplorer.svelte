@@ -60,7 +60,7 @@
     views = loadViews(slug);
     fetchAllLinks(session.client!, slug)
       .then((all) => {
-        if (slug === pool.slug) links = all.map(enrich);
+        if (slug === pool.slug) links = all.map((l) => enrich(l, session.client!.mediaUrl));
       })
       .catch((err: Error) => (loadError = err.message));
   });

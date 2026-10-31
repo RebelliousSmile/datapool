@@ -78,6 +78,48 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/media/{file}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Vignette ou favicon du cache (public, immuable)
+         * @description Fichier nommé par son empreinte, servi depuis le cache de `webpool media` avec `Cache-Control: public, max-age=31536000, immutable`. Les chemins viennent des champs `thumbnail` et `favicon`.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    file: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Image WebP */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "image/webp": unknown;
+                    };
+                };
+                404: components["responses"]["NotFound"];
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/me": {
         parameters: {
             query?: never;
@@ -716,6 +758,22 @@ export interface components {
             id?: number;
             /** @description admin uniquement */
             score?: number | null;
+            /** @description Description de la page (og:description ou meta description) */
+            description: string | null;
+            /**
+             * @description Type de média : fixé à la normalisation (Content-Type, og:type, URL), déduit de l'URL pour les liens plus anciens
+             * @enum {string}
+             */
+            media_type: "page" | "image" | "video" | "pdf" | "data" | "code" | "model";
+            /**
+             * @description Famille de source, d'après le domaine
+             * @enum {string}
+             */
+            source: "research" | "archives" | "stock" | "community" | "video" | "press" | "other";
+            /** @description Chemin de la vignette en cache (WebP, 480 px de large au plus), à résoudre contre l'origine de l'API ; null si aucune */
+            thumbnail: string | null;
+            /** @description Chemin du favicon du domaine en cache (WebP 64 px) ; null si aucun */
+            favicon: string | null;
         };
         Stats: {
             url_item?: {
@@ -737,6 +795,19 @@ export interface components {
                 status?: string;
                 n?: number;
             }[];
+            /** @description Vignettes et favicons par statut */
+            media?: {
+                thumbs?: {
+                    pending?: number;
+                    cached?: number;
+                    failed?: number;
+                };
+                favicons?: {
+                    pending?: number;
+                    cached?: number;
+                    failed?: number;
+                };
+            };
         };
         UrlSummary: {
             id?: number;
@@ -750,6 +821,22 @@ export interface components {
             /** Format: date-time */
             first_seen_at?: string | null;
             primary_theme?: string | null;
+            /** @description Description de la page (og:description ou meta description) */
+            description?: string | null;
+            /**
+             * @description Type de média : fixé à la normalisation (Content-Type, og:type, URL), déduit de l'URL pour les liens plus anciens
+             * @enum {string}
+             */
+            media_type?: "page" | "image" | "video" | "pdf" | "data" | "code" | "model";
+            /**
+             * @description Famille de source, d'après le domaine
+             * @enum {string}
+             */
+            source?: "research" | "archives" | "stock" | "community" | "video" | "press" | "other";
+            /** @description Chemin de la vignette en cache (WebP, 480 px de large au plus), à résoudre contre l'origine de l'API ; null si aucune */
+            thumbnail?: string | null;
+            /** @description Chemin du favicon du domaine en cache (WebP 64 px) ; null si aucun */
+            favicon?: string | null;
         };
         Url: {
             id?: number;
@@ -795,6 +882,24 @@ export interface components {
                 slug?: string;
                 rank?: number;
             }[];
+            /** @description Description de la page (og:description ou meta description) */
+            description?: string | null;
+            /**
+             * @description Type de média : fixé à la normalisation (Content-Type, og:type, URL), déduit de l'URL pour les liens plus anciens
+             * @enum {string}
+             */
+            media_type?: "page" | "image" | "video" | "pdf" | "data" | "code" | "model";
+            /**
+             * @description Famille de source, d'après le domaine
+             * @enum {string}
+             */
+            source?: "research" | "archives" | "stock" | "community" | "video" | "press" | "other";
+            /** @description Chemin de la vignette en cache (WebP, 480 px de large au plus), à résoudre contre l'origine de l'API ; null si aucune */
+            thumbnail?: string | null;
+            /** @description Chemin du favicon du domaine en cache (WebP 64 px) ; null si aucun */
+            favicon?: string | null;
+            lang?: string | null;
+            site_name?: string | null;
         };
         Theme: {
             slug?: string;

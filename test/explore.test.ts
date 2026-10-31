@@ -68,10 +68,20 @@ const raw = [
   { rank: 4, url: 'https://www.youtube.com/watch?v=1', title: 'LoRA video', domain: 'youtube.com', usage_commercial: null },
   { rank: 5, url: 'https://unsplash.com/photos/y', title: null, domain: 'unsplash.com', usage_commercial: 'libre' as const },
 ];
-const links = raw.map(enrich);
+const links = raw.map((l) => enrich(l));
 const S = (patch: Partial<XState> = {}): XState => ({ ...defaultState(), ...patch, f: { ...defaultState().f, ...patch.f } });
 
 describe('explore', () => {
+  it("prend type, source et médias de l'API, la déduction locale en repli", () => {
+    const l = enrich(
+      { ...raw[2], media_type: 'model', source: 'research', description: 'Desc', thumbnail: '/api/v1/media/t.webp', favicon: null },
+      (p) => (p ? `https://api.test${p}` : null),
+    );
+    expect(l).toMatchObject({ media: 'model', source: 'research', description: 'Desc', thumbnail: 'https://api.test/api/v1/media/t.webp', favicon: null });
+    expect(l.text).toContain('desc');
+    expect(links[2]).toMatchObject({ media: 'code', source: 'community', description: null, thumbnail: null, favicon: null });
+  });
+
   it('complète un lien de ses dimensions', () => {
     expect(links[3]).toMatchObject({ media: 'video', source: 'video', usage: 'a-qualifier', host: 'youtube.com' });
     expect(enrich({ rank: 9, url: 'https://www.a.org/x', title: 'T' } as never).host).toBe('a.org');

@@ -88,6 +88,13 @@
       </a>
       <div class="tile"><span class="eyebrow">Requêtes actives</span><span class="value">{fmtNumber(count(stats.search_query, 'active'))}</span></div>
       <div class="tile"><span class="eyebrow">Requêtes épuisées</span><span class="value">{fmtNumber(count(stats.search_query, 'exhausted'))}</span></div>
+      {#if stats.media}
+        {@const t = stats.media.thumbs ?? {}}
+        <div class="tile" class:warn={(t.failed ?? 0) > 0}>
+          <span class="eyebrow">Vignettes en cache</span><span class="value">{fmtNumber(t.cached)}</span>
+          <span class="sub">{fmtNumber(t.pending)} en attente · {fmtNumber(t.failed)} en échec</span>
+        </div>
+      {/if}
     </div>
 
     {@const failed = runs.items.filter((r) => r.status === 'failed').length}

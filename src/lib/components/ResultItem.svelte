@@ -16,11 +16,19 @@
   const icon = $derived(MEDIA.find((m) => m.key === link.media)!.icon);
   const source = $derived(SOURCES.find((s) => s.key === link.source)!.label);
   const title = $derived(link.title || link.url);
+  let favBroken = $state(false);
 </script>
 
 <li class="item" class:peeked data-media={link.media} data-source={link.source} data-usage={link.usage}>
   <span class="item-rank">#{link.rank}</span>
-  <span class="item-fav"><span class="fav"><Icon name={icon} small /></span></span>
+  <span class="item-fav"
+    ><span class="fav"
+      >{#if link.favicon && !favBroken}<img src={link.favicon} alt="" width="16" height="16" onerror={() => (favBroken = true)} />{:else}<Icon
+          name={icon}
+          small
+        />{/if}</span
+    ></span
+  >
   <div class="item-thumb"><MediaThumb {link} /></div>
   <div class="item-body">
     {#if href}
@@ -29,6 +37,7 @@
     {:else}
       <span class="item-title" class:untitled={!link.title}>{title}</span>
     {/if}
+    {#if link.description}<p class="item-desc">{link.description}</p>{/if}
     <div class="item-meta">
       <span class="url" title={link.url}><span class="scheme">{parts.scheme}</span><span class="host">{parts.host}</span>{parts.rest}</span>
       <span class="src">{source}</span>

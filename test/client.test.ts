@@ -73,6 +73,12 @@ describe('createClient', () => {
     ]);
   });
 
+  it("rend absolus les chemins de médias de l'API", () => {
+    const api = createClient({ baseUrl: 'https://api.ex/api/v1', token: 'x' });
+    expect(api.mediaUrl('/api/v1/media/a.webp')).toBe('https://api.ex/api/v1/media/a.webp');
+    expect(api.mediaUrl(null)).toBeNull();
+  });
+
   it('se contente du statut HTTP quand l’erreur n’est pas du JSON', async () => {
     const fetchFn = async () => new Response('<html>502</html>', { status: 502 });
     await expect(createClient(conn, fetchFn as typeof fetch).me()).rejects.toMatchObject({
