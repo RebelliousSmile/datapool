@@ -8,16 +8,17 @@
 .pager button.pg:hover:not([aria-disabled='true'], [aria-current='page']) { color: var(--accent); border-color: var(--accent); }
 .pager button.pg[aria-disabled='true'] { cursor: default; }
 
-/* Lien vers la fiche d'une URL (admin) : visible au survol et au focus de la ligne. */
-.row:hover .admin-link, .row:focus-within .admin-link { opacity: 1; }
-.row .admin-link { background: var(--surface); text-decoration: none; }
-
-/* Page pool : outils d'administration sous la synthèse. */
+/* Page pool : administration repliée sous l'explorateur. */
+.admin-panel { margin-top: var(--space-8); }
+.admin-panel summary { cursor: pointer; }
+.admin-panel[open] summary { margin-bottom: var(--space-4); }
+.admin-panel .cols { margin-bottom: var(--space-4); }
 .admin-tools { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
-.definition { margin-top: var(--space-3); }
-.definition summary { cursor: pointer; }
-.definition pre { margin: var(--space-3) 0 0; overflow-x: auto; font-size: var(--text-xs); }
-.flux .row.empty { display: block; padding: var(--space-3); }
+.admin-panel pre { margin: var(--space-4) 0 0; overflow-x: auto; font-size: var(--text-xs); }
+
+/* Vues enregistrées : la vue et son bouton de suppression sur une ligne. */
+.view-row { display: flex; align-items: center; gap: 2px; }
+.view-row .view-btn { flex: 1; min-width: 0; }
 
 /* Filtres des listes d'administration (corpus, domaines). */
 form.filters { display: flex; flex-wrap: wrap; align-items: end; gap: var(--space-3); margin-bottom: var(--space-2); }

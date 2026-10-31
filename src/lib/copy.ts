@@ -12,6 +12,14 @@ export const COPY_FORMATS: { key: CopyFormat; label: string; short: string; samp
   { key: 'csv', label: 'CSV', short: 'CSV', sample: 'rank,title,url,domain,usage' },
 ];
 
+// Format choisi dans le menu de copie, partagé par la copie du pool et celle d'un groupe.
+const FORMAT_KEY = 'datapool.copyFormat';
+export function getCopyFormat(): CopyFormat {
+  const saved = localStorage.getItem(FORMAT_KEY);
+  return COPY_FORMATS.some((f) => f.key === saved) ? (saved as CopyFormat) : 'txt';
+}
+export const setCopyFormat = (format: CopyFormat) => localStorage.setItem(FORMAT_KEY, format);
+
 // Les titres viennent du web : une cellule débutant par = + - @ serait évaluée
 // comme formule par un tableur (même règle que l'export CSV de webpool).
 function csvCell(value: unknown): string {

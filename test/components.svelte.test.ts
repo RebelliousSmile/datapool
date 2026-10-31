@@ -7,10 +7,12 @@ import ExternalLink from '../src/lib/components/ExternalLink.svelte';
 import Pager from '../src/lib/components/Pager.svelte';
 import UsageBar from '../src/lib/components/UsageBar.svelte';
 import UsageBadge from '../src/lib/components/UsageBadge.svelte';
-import LinkRow from '../src/lib/components/LinkRow.svelte';
+import ResultItem from '../src/lib/components/ResultItem.svelte';
+import { enrich } from '../src/lib/explore';
 import CopyLinks from '../src/lib/components/CopyLinks.svelte';
 import Icon from '../src/lib/components/Icon.svelte';
 import { theme } from '../src/lib/theme.svelte.ts';
+import { fetchAllLinks } from '../src/lib/copy';
 import { session } from '../src/lib/session.svelte.ts';
 
 let mounted: ReturnType<typeof mount>[] = [];
@@ -172,32 +174,38 @@ describe('Icon et UsageBadge', () => {
   });
 });
 
-describe('LinkRow', () => {
-  const link = { rank: 3, url: 'https://ex.com/a/b?c=1', title: 'Titre', usage_commercial: 'libre' };
+describe('ResultItem', () => {
+  const base = { rank: 3, url: 'https://www.youtube.com/watch?v=x', title: 'Titre', domain: 'youtube.com', usage_commercial: 'libre' as const };
 
-  it('affiche rang, titre cliquable, URL découpée et usage', () => {
-    const el = render(LinkRow, { link });
-    expect(clean(el.querySelector('.rank'))).toBe('3');
-    const a = el.querySelector('a.title')!;
-    expect(a.getAttribute('href')).toBe(link.url);
+  it('affiche rang, type, titre cliquable, URL découpée, source et usage', () => {
+    const onpeek = vi.fn();
+    const link = enrich(base);
+    const el = render(ResultItem, { link, onpeek });
+    const li = el.querySelector('li.item')!;
+    expect(li.getAttribute('data-media')).toBe('video');
+    expect(clean(el.querySelector('.item-rank'))).toBe('#3');
+    const a = el.querySelector('a.item-title')!;
+    expect(a.getAttribute('href')).toBe(base.url);
     expect(a.getAttribute('rel')).toBe('noopener noreferrer');
-    expect(el.querySelector('.url .host')?.textContent).toBe('ex.com');
-    expect(el.querySelector('.url')?.textContent).toBe(link.url);
+    expect(el.querySelector('.url .host')?.textContent).toBe('www.youtube.com');
+    expect(clean(el.querySelector('.src'))).toBe('Plateformes vidéo');
     expect(el.querySelector('.usage')?.getAttribute('data-usage')).toBe('libre');
-    expect(el.querySelector('.admin-link')).toBeNull();
+    expect(el.querySelector('.kind-tag')?.textContent).toContain('vidéo');
+    el.querySelector<HTMLButtonElement>('.peek')!.click();
+    expect(onpeek).toHaveBeenCalledWith(link);
   });
 
   it("remplace un titre absent par l'URL et lie la fiche pour l'admin", () => {
-    const el = render(LinkRow, { link: { ...link, title: null, id: 42 } });
-    expect(el.querySelector('.title')?.classList.contains('untitled')).toBe(true);
-    expect(clean(el.querySelector('.title'))).toBe(link.url);
-    expect(el.querySelector('.admin-link')?.getAttribute('href')).toBe('/urls/42');
+    const el = render(ResultItem, { link: enrich({ ...base, title: null, id: 42 }), onpeek: () => {} });
+    expect(el.querySelector('.item-title')?.classList.contains('untitled')).toBe(true);
+    expect(clean(el.querySelector('.item-title'))).toBe(base.url);
+    expect(el.querySelector('a[href="/urls/42"]')?.textContent).toBe('fiche');
   });
 
   it("n'ouvre pas un lien au schéma dangereux", () => {
-    const el = render(LinkRow, { link: { ...link, url: 'javascript:alert(1)' } });
-    expect(el.querySelector('a.title')).toBeNull();
-    expect(clean(el.querySelector('span.title'))).toBe('Titre');
+    const el = render(ResultItem, { link: enrich({ ...base, url: 'javascript:alert(1)' }), onpeek: () => {} });
+    expect(el.querySelector('a.item-title')).toBeNull();
+    expect(clean(el.querySelector('span.item-title'))).toBe('Titre');
   });
 });
 
@@ -223,8 +231,11 @@ describe('CopyLinks', () => {
     vi.stubGlobal('fetch', fetchFn);
     const writeText = vi.fn(async () => {});
     vi.stubGlobal('navigator', { clipboard: { writeText } });
-    const el = render(CopyLinks, { slug: 'p', count: 2 });
+    const el = render(CopyLinks, { slug: 'p', count: 2, load: () => fetchAllLinks(session.client!, 'p') });
     expect(clean(el.querySelector('button'))).toBe('Copier les 2 liens');
+    expect(clean(render(CopyLinks, { slug: 'p', count: 1, filtered: true, load: () => [] }).querySelector('button'))).toBe(
+      'Copier les 1 liens filtrés',
+    );
     el.querySelector<HTMLButtonElement>('button')!.click();
     await vi.waitFor(() => {
       flushSync();
@@ -237,7 +248,7 @@ describe('CopyLinks', () => {
 
   it('mémorise le format choisi dans le menu, fermé par Échap', async () => {
     await connect();
-    const el = render(CopyLinks, { slug: 'p', count: 2 });
+    const el = render(CopyLinks, { slug: 'p', count: 2, load: () => fetchAllLinks(session.client!, 'p') });
     const toggle = el.querySelectorAll<HTMLButtonElement>('.copy-split button')[1];
     const menu = el.querySelector('[role=menu]') as HTMLElement;
     expect(menu.hidden).toBe(true);
@@ -265,7 +276,7 @@ describe('CopyLinks', () => {
     vi.stubGlobal('navigator', { clipboard: { writeText: vi.fn(async () => { throw new Error('Permission refusée'); }) } });
     URL.createObjectURL = vi.fn(() => 'blob:liste');
     URL.revokeObjectURL = vi.fn();
-    const el = render(CopyLinks, { slug: 'p', count: 2 });
+    const el = render(CopyLinks, { slug: 'p', count: 2, load: () => fetchAllLinks(session.client!, 'p') });
     el.querySelector<HTMLButtonElement>('button')!.click();
     await vi.waitFor(() => {
       flushSync();

@@ -21,4 +21,17 @@
   <symbol id="i-search" viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5" /><path d="M10.5 10.5l4 4" /></symbol>
   <symbol id="i-download" viewBox="0 0 16 16"><path d="M8 1.5v9M4.5 7L8 10.5 11.5 7M2 14h12" /></symbol>
   <symbol id="i-run" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.5" stroke-dasharray="3 2" /><path d="M8 4.5V8l2.5 1.5" /></symbol>
+  <symbol id="i-data" viewBox="0 0 16 16"><ellipse cx="8" cy="3.5" rx="5.5" ry="2" /><path d="M2.5 3.5v9c0 1.1 2.5 2 5.5 2s5.5-.9 5.5-2v-9M2.5 8c0 1.1 2.5 2 5.5 2s5.5-.9 5.5-2" /></symbol>
+  <symbol id="i-code" viewBox="0 0 16 16"><path d="M5.5 4L1.5 8l4 4M10.5 4l4 4-4 4M9.2 2.5L6.8 13.5" /></symbol>
+  <symbol id="i-model" viewBox="0 0 16 16"><path d="M8 1.5l5.5 3.2v6.6L8 14.5l-5.5-3.2V4.7z" /><path d="M8 8l5.5-3.3M8 8L2.5 4.7M8 8v6.5" /></symbol>
+  <symbol id="i-filter" viewBox="0 0 16 16"><path d="M1.5 2.5h13l-5 6v5l-3 1.5V8.5z" /></symbol>
+  <symbol id="i-layers" viewBox="0 0 16 16"><path d="M8 1.5l6.5 3.5L8 8.5 1.5 5z" /><path d="M1.5 8L8 11.5 14.5 8M1.5 11L8 14.5 14.5 11" /></symbol>
+  <symbol id="i-user" viewBox="0 0 16 16"><circle cx="8" cy="5.5" r="3" /><path d="M2 14.5c.8-3 3.2-4.5 6-4.5s5.2 1.5 6 4.5" /></symbol>
+  <symbol id="i-bookmark" viewBox="0 0 16 16"><path d="M3.5 1.5h9v13L8 11.5l-4.5 3z" /></symbol>
+  <symbol id="i-sliders" viewBox="0 0 16 16"><path d="M2 4h7M12 4h2M2 12h2M7 12h7M2 8h4M9 8h5" /><circle cx="10.5" cy="4" r="1.5" /><circle cx="5.5" cy="12" r="1.5" /><circle cx="7.5" cy="8" r="1.5" /></symbol>
+  <symbol id="i-close" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8" /></symbol>
+  <symbol id="i-sparkle" viewBox="0 0 16 16"><path d="M8 1.5l1.6 4.9 4.9 1.6-4.9 1.6L8 14.5l-1.6-4.9L1.5 8l4.9-1.6z" /></symbol>
+  <symbol id="i-eye" viewBox="0 0 16 16"><path d="M1 8s2.6-5 7-5 7 5 7 5-2.6 5-7 5-7-5-7-5z" /><circle cx="8" cy="8" r="2.2" /></symbol>
+  <symbol id="i-dense" viewBox="0 0 16 16"><path d="M1.5 2.5h13M1.5 5h13M1.5 7.5h13M1.5 10h13M1.5 12.5h13M1.5 15h13" /></symbol>
+  <symbol id="i-comfort" viewBox="0 0 16 16"><rect x="1.5" y="2" width="4" height="4" rx="1" /><rect x="1.5" y="10" width="4" height="4" rx="1" /><path d="M8 3h6.5M8 5.5h4M8 11h6.5M8 13.5h4" /></symbol>
 </svg>

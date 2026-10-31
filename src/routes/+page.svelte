@@ -8,7 +8,7 @@
 
   // Un client read n'a pas de tableau de bord : ses pools sont la page d'accueil.
   $effect(() => {
-    if (!session.isAdmin) goto(resolve('/pools'), { replaceState: true });
+    if (!session.isAdmin) goto(resolve('/pools'), { replace: true });
   });
 
   const data = $derived(

@@ -2,6 +2,7 @@
   import '../app.css';
   import { resolve } from '$app/paths';
   import { page } from '$app/state';
+  import AccountMenu from '#lib/components/AccountMenu.svelte';
   import ConnectForm from '#lib/components/ConnectForm.svelte';
   import Icon from '#lib/components/Icon.svelte';
   import IconSprite from '#lib/components/IconSprite.svelte';
@@ -21,8 +22,8 @@
 
   const links = $derived(
     [
-      { href: resolve('/'), label: 'Tableau de bord', admin: true },
       { href: resolve('/pools'), label: 'Pools', admin: false },
+      { href: resolve('/'), label: 'Tableau de bord', admin: true },
       { href: resolve('/corpus'), label: 'Corpus', admin: true },
       { href: resolve('/domains'), label: 'Domaines', admin: true },
     ].filter((l) => session.isAdmin || !l.admin),
@@ -48,15 +49,14 @@
       {/each}
     </nav>
     <div class="app-user">
-      <span class="link-status">liaison ok</span>
-      <span class="who">{session.me.name} <span class="chip">{session.me.scope}</span></span>
       <button class="btn btn-ghost btn-sm theme-toggle" type="button" aria-pressed={theme.light} onclick={() => theme.toggle()}>
         <Icon name={theme.light ? 'moon' : 'sun'} /><span class="lbl">{theme.light ? 'Sombre' : 'Clair'}</span>
       </button>
-      <button class="btn btn-sm" type="button" onclick={() => session.disconnect()}>Déconnexion</button>
+      <AccountMenu />
     </div>
   </header>
-  <main class="page" id="main">{@render children()}</main>
+  <!-- l'explorateur de pool prend toute la largeur -->
+  <main class={page.route.id === '/pools/[slug]' ? 'xp-page' : 'page'} id="main">{@render children()}</main>
 {:else}
   <ConnectForm notice={restoreError} />
 {/if}

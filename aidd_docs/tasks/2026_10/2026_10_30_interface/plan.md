@@ -22,7 +22,7 @@ status: draft
 | 2   | Squelette datapool : connexion, tableau de bord, pools, corpus, fiche URL, domaines — **fait** (style provisoire, remplacé en phase 5) | — |
 | 3   | Médias des liens dans webpool : métadonnées, vignettes et favicons en cache | [`phase-3.md`](./phase-3.md) |
 | 4   | Représentation des liens et copie de liste (API + datapool) — **en partie faite** : vue flux et copie de toute la liste (côté datapool, par pages de 500) ; restent la vue grille (attend les vignettes) et l'export client côté API | [`phase-4.md`](./phase-4.md) |
-| 5   | Direction artistique « Data Pool » appliquée à datapool — **intégrée** (jetons, polices, styles, thème, tous les écrans, d'après `design/data-pool` 3e5fa92) ; propositions de recherche et de segmentation en attente de choix | maquettes par une session parallèle (branche `design/data-pool`) |
+| 5   | Direction artistique « Data Pool » : v1 **intégrée** (3e5fa92) ; v2 « outil de recherche » (artefact « datapool — maquettes v2 », 8b63daa) **intégrée** ; restent comptes, recherche globale, cartes de pools | [`phase-5.md`](./phase-5.md) |
 | 6   | Mise en production alwaysdata : site Node pour l'API, site statique pour datapool | à écrire |
 
 ### Phase 3 — Médias des liens (webpool)
@@ -77,6 +77,6 @@ Voir [`design-brief.md`](./design-brief.md). Les maquettes sont produites par un
 
 ## Open questions
 
-- Recherche et segmentation des listes : trois propositions de la session de design (facettes, requête, segments, `design/proposals/`) à départager ; elles demanderont des filtres côté API (type de média, source).
+- Recherche et segmentation : tranché par la v2 (synthèse des trois propositions, voir `phase-5.md`). Type de média et famille de source à fournir par webpool (phase 3).
 - Usage commercial affiché « à qualifier » quand le domaine n'est pas qualifié dans le registre, même si la taxonomie a pré-rempli la facette (ex. `libre`) : garder cette prudence ou afficher la valeur pré-remplie comme « présumée » ?
 - Quota disque alwaysdata pour le cache (estimation : ~25 Ko par vignette, soit ~250 Mo pour 10 000 liens) : à vérifier sur le compte avant la phase 6.

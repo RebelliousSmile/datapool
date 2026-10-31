@@ -1,18 +1,29 @@
 <script lang="ts">
   import { onDestroy } from 'svelte';
   import { fmtNumber } from '#lib/format.ts';
-  import { COPY_FORMATS, copyText, fetchAllLinks, formatLinks, type CopyFormat } from '#lib/copy.ts';
-  import { session } from '#lib/session.svelte.ts';
+  import {
+    COPY_FORMATS,
+    copyText,
+    formatLinks,
+    getCopyFormat,
+    setCopyFormat,
+    type CopyFormat,
+    type CopyLink,
+  } from '#lib/copy.ts';
   import Icon from './Icon.svelte';
 
-  // « Copier les N liens » : tout le pool, au format choisi (URLs seules par
-  // défaut, mémorisé), avec confirmation ; repli par téléchargement si le
-  // presse-papiers est refusé.
-  let { slug, count }: { slug: string; count: number } = $props();
+  // « Copier les N liens » : la sélection courante (tout le pool, ou les liens
+  // filtrés), au format choisi (URLs seules par défaut, mémorisé), avec
+  // confirmation ; repli par téléchargement si le presse-papiers est refusé.
+  // `load` fournit les liens au moment de la copie.
+  let {
+    slug,
+    count,
+    filtered = false,
+    load,
+  }: { slug: string; count: number; filtered?: boolean; load: () => Promise<CopyLink[]> | CopyLink[] } = $props();
 
-  const FORMAT_KEY = 'datapool.copyFormat';
-  const saved = localStorage.getItem(FORMAT_KEY);
-  let format = $state<CopyFormat>(COPY_FORMATS.some((f) => f.key === saved) ? (saved as CopyFormat) : 'txt');
+  let format = $state<CopyFormat>(getCopyFormat());
   let open = $state(false);
   let status = $state<{ kind: 'busy' | 'ok' | 'err'; text: string } | null>(null);
   let fallbackUrl = $state('');
@@ -24,7 +35,7 @@
 
   function choose(key: CopyFormat) {
     format = key;
-    localStorage.setItem(FORMAT_KEY, key);
+    setCopyFormat(key);
     close();
   }
   function close() {
@@ -42,7 +53,7 @@
     status = { kind: 'busy', text: `Chargement des ${fmtNumber(count)} liens…` };
     let text = '';
     try {
-      const links = await fetchAllLinks(session.client!, slug);
+      const links = await load();
       text = formatLinks(links, format);
       await copyText(text);
       status = { kind: 'ok', text: `${fmtNumber(links.length)} liens copiés · ${current.short}` };
@@ -66,8 +77,8 @@
 
 <div class="copy">
   <div class="copy-split">
-    <button class="btn btn-primary" type="button" onclick={copy} disabled={status?.kind === 'busy'}>
-      <Icon name="copy" />Copier les <span class="count">{fmtNumber(count)}</span> liens
+    <button class="btn btn-primary" type="button" onclick={copy} disabled={status?.kind === 'busy' || count === 0}>
+      <Icon name="copy" />Copier les <span class="count">{fmtNumber(count)}</span> liens{filtered ? ' filtrés' : ''}
     </button>
     <button
       class="btn btn-primary"

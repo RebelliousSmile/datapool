@@ -2,6 +2,9 @@ import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
 
+/** @param {string} name */
+const mock = (name) => fileURLToPath(new URL(`./test/mocks/${name}.ts`, import.meta.url));
+
 // `pnpm test` : client d'API, mise en forme, session et composants de src/lib,
 // compilés par Svelte et rendus dans jsdom. Les pages (src/routes) dépendent du
 // routeur SvelteKit : elles sont vérifiées par `pnpm check` et à l'usage.
@@ -9,7 +12,11 @@ export default defineConfig({
   plugins: [svelte()],
   resolve: {
     conditions: ['browser'],
-    alias: { '$app/paths': fileURLToPath(new URL('./test/mocks/app-paths.ts', import.meta.url)) },
+    alias: {
+      '$app/paths': mock('app-paths'),
+      '$app/navigation': mock('app-navigation'),
+      '$app/state': mock('app-state'),
+    },
   },
   test: {
     include: ['test/**/*.test.ts'],
