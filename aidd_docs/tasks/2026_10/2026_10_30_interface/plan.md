@@ -21,8 +21,8 @@ status: draft
 | 1   | API de lecture webpool et clients par jeton — **faite** (commit webpool `ccr-628dc400-1uuej3`) | — |
 | 2   | Squelette datapool : connexion, tableau de bord, pools, corpus, fiche URL, domaines — **fait** (style provisoire, remplacé en phase 5) | — |
 | 3   | Médias des liens dans webpool : métadonnées, vignettes et favicons en cache | [`phase-3.md`](./phase-3.md) |
-| 4   | Représentation des liens et copie de liste (API + datapool) | [`phase-4.md`](./phase-4.md) |
-| 5   | Direction artistique « Data Pool » appliquée à datapool | maquettes par une session parallèle (branche `design/data-pool`), intégration ensuite |
+| 4   | Représentation des liens et copie de liste (API + datapool) — **en partie faite** : vue flux et copie de toute la liste (côté datapool, par pages de 500) ; restent la vue grille (attend les vignettes) et l'export client côté API | [`phase-4.md`](./phase-4.md) |
+| 5   | Direction artistique « Data Pool » : v1 **intégrée** (3e5fa92) ; v2 « outil de recherche » (artefact « datapool — maquettes v2 », 8b63daa) **intégrée** ; restent comptes, recherche globale, cartes de pools | [`phase-5.md`](./phase-5.md) |
 | 6   | Mise en production alwaysdata : site Node pour l'API, site statique pour datapool | à écrire |
 
 ### Phase 3 — Médias des liens (webpool)
@@ -77,4 +77,6 @@ Voir [`design-brief.md`](./design-brief.md). Les maquettes sont produites par un
 
 ## Open questions
 
+- Recherche et segmentation : tranché par la v2 (synthèse des trois propositions, voir `phase-5.md`). Type de média et famille de source à fournir par webpool (phase 3).
+- Usage commercial affiché « à qualifier » quand le domaine n'est pas qualifié dans le registre, même si la taxonomie a pré-rempli la facette (ex. `libre`) : garder cette prudence ou afficher la valeur pré-remplie comme « présumée » ?
 - Quota disque alwaysdata pour le cache (estimation : ~25 Ko par vignette, soit ~250 Mo pour 10 000 liens) : à vérifier sur le compte avant la phase 6.

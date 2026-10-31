@@ -5,7 +5,8 @@ import ts from 'typescript-eslint';
 
 // Lint TypeScript et Svelte 5 (runes), règles recommandées.
 export default ts.config(
-  { ignores: ['node_modules/', '.svelte-kit/', 'build/', 'coverage/', 'src/lib/api/schema.d.ts'] },
+  // design/ : maquettes et outillage de la session de design, hors application
+  { ignores: ['node_modules/', '.svelte-kit/', 'build/', 'coverage/', 'design/', 'src/lib/api/schema.d.ts'] },
   js.configs.recommended,
   ...ts.configs.recommended,
   ...svelte.configs.recommended,

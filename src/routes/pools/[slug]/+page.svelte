@@ -2,25 +2,14 @@
   import { resolve } from '$app/paths';
   import { page } from '$app/state';
   import BarList from '#lib/components/BarList.svelte';
-  import Pager from '#lib/components/Pager.svelte';
+  import Icon from '#lib/components/Icon.svelte';
+  import PoolExplorer from '#lib/components/PoolExplorer.svelte';
   import UsageBar from '#lib/components/UsageBar.svelte';
-  import { fmtDate, fmtNumber, fmtScore, usageLabel } from '#lib/format.ts';
-  import ExternalLink from '#lib/components/ExternalLink.svelte';
   import { session } from '#lib/session.svelte.ts';
 
-  const LIMIT = 50;
   const slug = $derived(page.params.slug ?? '');
-  let offset = $state(0);
-  let exportError = $state('');
-
-  // Passer d'un pool à l'autre réutilise la page : on repart du début.
-  $effect.pre(() => {
-    void slug;
-    offset = 0;
-  });
-
   const pool = $derived(session.client?.pool(slug));
-  const items = $derived(session.client?.poolItems(slug, { limit: LIMIT, offset }));
+  let exportError = $state('');
 
   async function download(format: 'json' | 'csv' | 'md') {
     exportError = '';
@@ -38,90 +27,44 @@
   }
 </script>
 
-<p><a href={resolve('/pools')}>← Pools</a></p>
+<nav class="crumbs" aria-label="Fil d'Ariane">
+  <a href={resolve('/pools')}>pools</a><span class="sep">/</span><span>{slug}</span>
+</nav>
 
 {#await pool}
-  <p class="muted">Chargement…</p>
+  <p class="terminal-line">&gt; chargement<span class="caret" aria-hidden="true"></span></p>
 {:then p}
   {#if p}
-    <h1>{p.label}</h1>
-    <p class="secondary">
-      <code>{p.slug}</code> · {fmtNumber(p.items)} URLs · matérialisé {p.refreshed_at ? `le ${fmtDate(p.refreshed_at)}` : 'jamais'}
-    </p>
+    {#key p.slug}
+      <PoolExplorer pool={p} />
+    {/key}
 
     {#if session.isAdmin}
-      <p class="exports">
-        Exporter :
-        <button onclick={() => download('json')}>JSON</button>
-        <button onclick={() => download('csv')}>CSV</button>
-        <button onclick={() => download('md')}>Markdown</button>
-        {#if exportError}<span class="error">{exportError}</span>{/if}
-      </p>
-    {/if}
-
-    <div class="cols">
-      <section class="card">
-        <h2>Usage commercial des domaines</h2>
-        <UsageBar rows={p.usage_commercial} />
-      </section>
-      <section class="card">
-        <h2>Domaines les plus représentés</h2>
-        <BarList rows={p.top_domains.map((d) => ({ label: d.domain ?? '—', value: d.urls ?? 0 }))} />
-      </section>
-    </div>
-
-    {#if p.definition}
-      <details class="card">
-        <summary>Définition du pool</summary>
-        <pre>{JSON.stringify(p.definition, null, 2)}</pre>
+      <details class="panel admin-panel">
+        <summary class="eyebrow">Administration du pool</summary>
+        <div class="cols">
+          <section aria-labelledby="usage-h">
+            <div class="panel-head"><h2 id="usage-h">Usage commercial</h2></div>
+            <UsageBar rows={p.usage_commercial} />
+          </section>
+          <section aria-labelledby="dom-h">
+            <div class="panel-head"><h2 id="dom-h">Domaines les plus présents</h2><span class="eyebrow">top {p.top_domains.length}</span></div>
+            <BarList rows={p.top_domains.map((d) => ({ label: d.domain ?? '—', value: d.urls ?? 0 }))} />
+          </section>
+        </div>
+        <div class="admin-tools">
+          <span class="eyebrow">Exporter</span>
+          <button class="btn btn-sm" type="button" onclick={() => download('json')}><Icon name="download" small />JSON</button>
+          <button class="btn btn-sm" type="button" onclick={() => download('csv')}><Icon name="download" small />CSV</button>
+          <button class="btn btn-sm" type="button" onclick={() => download('md')}><Icon name="download" small />Markdown</button>
+          {#if exportError}<span class="alert-box err" role="alert"><Icon name="alert" small />{exportError}</span>{/if}
+        </div>
+        {#if p.definition}
+          <pre>{JSON.stringify(p.definition, null, 2)}</pre>
+        {/if}
       </details>
     {/if}
   {/if}
 {:catch err}
-  <p class="error" role="alert">{err.message}</p>
+  <div class="alert-box err" role="alert"><Icon name="alert" small />{err.message}</div>
 {/await}
-
-<h2>URLs</h2>
-{#await items}
-  <p class="muted">Chargement…</p>
-{:then res}
-  {#if res}
-    <div class="card">
-      <table>
-        <thead>
-          <tr>
-            <th class="num">#</th><th>Titre</th><th>Domaine</th><th>Usage</th>
-            {#if session.isAdmin}<th class="num">Score</th>{/if}
-          </tr>
-        </thead>
-        <tbody>
-          {#each res.items as it (it.rank)}
-            <tr>
-              <td class="num">{it.rank}</td>
-              <td class="url">
-                <ExternalLink url={it.url}>{it.title || it.url}</ExternalLink>
-                {#if session.isAdmin && it.id}<a class="muted fiche" href={resolve('/urls/[id]', { id: String(it.id) })}>fiche</a>{/if}
-              </td>
-              <td>{it.domain}</td>
-              <td>{usageLabel(it.usage_commercial)}</td>
-              {#if session.isAdmin}<td class="num">{fmtScore(it.score)}</td>{/if}
-            </tr>
-          {:else}
-            <tr><td colspan="5" class="muted">Pool vide.</td></tr>
-          {/each}
-        </tbody>
-      </table>
-      <Pager total={res.total} limit={LIMIT} bind:offset />
-    </div>
-  {/if}
-{:catch err}
-  <p class="error" role="alert">{err.message}</p>
-{/await}
-
-<style>
-  .cols { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); margin-top: 1rem; }
-  .cols h2 { margin-top: 0; }
-  details { margin-top: 1rem; }
-  .exports { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
-  .fiche { margin-left: 0.5rem; font-size: 0.8rem; }
-</style>

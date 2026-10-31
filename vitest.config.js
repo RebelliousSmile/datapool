@@ -1,19 +1,30 @@
 import { svelte } from '@sveltejs/vite-plugin-svelte';
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
+
+/** @param {string} name */
+const mock = (name) => fileURLToPath(new URL(`./test/mocks/${name}.ts`, import.meta.url));
 
 // `pnpm test` : client d'API, mise en forme, session et composants de src/lib,
 // compilés par Svelte et rendus dans jsdom. Les pages (src/routes) dépendent du
 // routeur SvelteKit : elles sont vérifiées par `pnpm check` et à l'usage.
 export default defineConfig({
   plugins: [svelte()],
-  resolve: { conditions: ['browser'] },
+  resolve: {
+    conditions: ['browser'],
+    alias: {
+      '$app/paths': mock('app-paths'),
+      '$app/navigation': mock('app-navigation'),
+      '$app/state': mock('app-state'),
+    },
+  },
   test: {
     include: ['test/**/*.test.ts'],
     environment: 'jsdom',
     coverage: {
       provider: 'v8',
       include: ['src/lib/**/*.{ts,svelte}'],
-      exclude: ['src/lib/api/schema.d.ts'],
+      exclude: ['src/lib/api/schema.d.ts', 'src/lib/components/IconSprite.svelte'],
       reporter: ['text-summary', 'text', 'html'],
       // planchers juste sous la mesure du 2026-10-31 : une baisse fait échouer la CI
       thresholds: { statements: 98, branches: 90, functions: 98, lines: 98 },

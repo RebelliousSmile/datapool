@@ -11,13 +11,21 @@ pools, corpus, domaines et activité du pipeline, lus par l'API HTTP de webpool
 | Écran | Accès | Contenu |
 |---|---|---|
 | Tableau de bord | admin | volumes du corpus, pools, domaines à qualifier, frontière d'exploration, derniers runs |
-| Pools | admin, read | pools visibles ; détail : usage commercial des domaines, domaines principaux, URLs rangées et paginées ; pour l'admin, scores, définition et export json/csv/md |
+| Pools | admin, read | pools visibles ; détail en **outil de recherche** : barre de requête à jetons (`type:image usage:libre`, `/` pour y aller), facettes comptées (type de média, source, usage, domaine), onglets de segments, « Grouper par » avec « Copier ce groupe », trois densités (confort, compact, grille), aperçu d'un lien, vues enregistrées ; **copie de la sélection** (URLs seules par défaut, Markdown, CSV). État dans l'URL (liens partageables). Pour l'admin : fiche de chaque lien, synthèse, définition et export |
 | Corpus | admin | URLs filtrées (texte, statut, thème, domaine), triées par date, qualité ou pertinence |
 | Fiche URL | admin | sources (requête, provider, rang), thèmes, facettes, pools |
 | Domaines | admin | registre, filtré par usage commercial (dont « à qualifier ») |
 
 Un client `read` (un client de webpool à qui l'on a accordé des pools) ne voit que
 ses pools, sans définition ni scores.
+
+## Direction artistique
+
+« Data Pool » : terminal d'accès au Net, sombre par défaut (thème clair au choix,
+mémorisé). Jetons, polices libres (Chakra Petch, JetBrains Mono, SIL OFL) et styles
+viennent des maquettes v2 de la branche `design/data-pool` (`src/styles/`, commit
+`8b63daa`, artefact « datapool — maquettes v2 ») ; la palette d'usage commercial est vérifiée pour les daltoniens et
+chaque usage porte aussi une forme et un libellé.
 
 ## Démarrage
 
@@ -67,6 +75,9 @@ pnpm test           # vitest : client d'API, session, mise en forme, composants 
 pnpm test:coverage  # idem avec couverture de src/lib et planchers (rapport dans coverage/)
 ```
 
+Les tests simulent `$app/paths`, `$app/navigation` et `$app/state` (`test/mocks/`) :
+l'explorateur complet est testé dans jsdom.
+
 La CI (`.github/workflows/ci.yml`, Node 22 et 24) enchaîne lint, check,
 couverture et build. Les pages (`src/routes`) dépendent du routeur SvelteKit :
 elles ne sont pas couvertes par vitest, seulement par `pnpm check`.
@@ -84,8 +95,14 @@ SvelteKit 3, Svelte 5, Vite 8. Alias `#lib/*` déclaré dans `imports` de
 | `src/lib/api/client.ts` | Client de l'API (jeton, erreurs, URLs) |
 | `src/lib/api/schema.d.ts` | Types générés depuis `openapi.json` |
 | `src/lib/session.svelte.ts` | Connexion : URL, jeton, client courant |
-| `src/lib/format.ts` | Nombres, dates, usage commercial (ordre et couleurs fixes) |
-| `src/lib/components/` | Formulaire de connexion, pagination, graphiques, lien externe filtré |
+| `src/lib/format.ts` | Nombres, dates, usage commercial (ordre, forme, couleur), pagination, découpe d'URL |
+| `src/lib/copy.ts` | Copie d'une liste : chargement de toutes les pages, formats, presse-papiers |
+| `src/lib/explore.ts` | Explorateur (fonctions pures) : filtres, effectifs par facette, jetons, suggestions, groupes, état ↔ URL |
+| `src/lib/kinds.ts` | Type de média et famille de source d'un lien (provisoire, en attendant webpool) |
+| `src/lib/views.ts` | Vues enregistrées par pool (navigateur) |
+| `src/lib/theme.svelte.ts` | Thème clair / sombre mémorisé |
+| `src/styles/` | Jetons, styles et polices de la direction artistique |
+| `src/lib/components/` | Explorateur de pool (`PoolExplorer`, `QueryBar`, `SegmentTabs`, `FacetPanel`, `ResultItem`, `LinkPreview`), copie, menu de compte, connexion, badge d'usage, graphiques, pagination, pictogrammes, lien externe filtré |
 | `src/routes/` | Écrans |
 
 ## Licence
