@@ -177,8 +177,8 @@ describe('PoolExplorer', () => {
     select(el.querySelector<HTMLSelectElement>('.ctl-group select')!, 'usage');
     expect([...el.querySelectorAll('.xp-gh')].map((h) => squash(h)?.replace('Copiercegroupe', ''))).toEqual([
       'Libre3liens',
-      'Sousconditions1liens',
-      'Àqualifier1liens',
+      'Sousconditions1lien',
+      'Àqualifier1lien',
     ]);
     el.querySelector<HTMLButtonElement>('.xp-gh button')!.click();
     await vi.waitFor(() => {

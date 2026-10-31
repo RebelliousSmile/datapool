@@ -11,8 +11,8 @@ pools, corpus, domaines et activité du pipeline, lus par l'API HTTP de webpool
 | Écran | Accès | Contenu |
 |---|---|---|
 | Tableau de bord | admin | volumes du corpus, pools, domaines à qualifier, frontière d'exploration, derniers runs |
-| Pools | admin, read | pools visibles ; détail en **outil de recherche** : barre de requête à jetons (`type:image usage:libre`, `/` pour y aller), facettes comptées (type de média, source, usage, domaine), onglets de segments, « Grouper par » avec « Copier ce groupe », trois densités (confort, compact, grille), aperçu d'un lien, vues enregistrées ; **copie de la sélection** (URLs seules par défaut, Markdown, CSV). État dans l'URL (liens partageables). Chaque lien montre sa vignette et le favicon de son site (servis par le cache de webpool), sa description, son type de média et sa famille de source. Pour l'admin : fiche de chaque lien, synthèse, définition et export |
-| Corpus | admin | URLs filtrées (texte, statut, thème, domaine), triées par date, qualité ou pertinence |
+| Pools | admin, read | pools visibles ; détail en **outil de recherche** : barre de requête à jetons (`type:image usage:libre`, `/` pour y aller), facettes comptées (type de média, source, usage, domaine), onglets de segments, « Grouper par » avec « Copier ce groupe », trois densités (confort, compact, grille), aperçu d'un lien, vues enregistrées ; **copie ou téléchargement de la sélection** (URLs seules par défaut, Markdown, CSV). État dans l'URL (liens partageables). Chaque lien montre sa vignette et le favicon de son site (servis par le cache de webpool), sa description, son type de média et sa famille de source. Pour l'admin : fiche de chaque lien, synthèse, définition et export |
+| Corpus | admin | URLs filtrées (texte, statut, thème, domaine), triées par date, qualité ou pertinence ; copie ou téléchargement de la sélection (5 000 liens au plus, plafond annoncé) |
 | Fiche URL | admin | sources (requête, provider, rang), thèmes, facettes, pools |
 | Domaines | admin | registre, filtré par usage commercial (dont « à qualifier ») |
 
