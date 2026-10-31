@@ -60,7 +60,7 @@
     <div class="url-hero">
       <MediaThumb link={media} rank={false} />
       <div>
-        <div class="meta" style="margin:0 0 6px">
+        <div class="meta url-meta">
           <span class="status {s.cls}"><Icon name={s.icon} small />{urlStatusLabel(u.status)}</span>
           <UsageBadge usage={u.usage_commercial} />
           {#if u.http_status}<span class="chip">HTTP {u.http_status}</span>{/if}
@@ -70,19 +70,19 @@
         <h1>{u.title || link}</h1>
         {#if u.description}<p class="desc">{u.description}</p>{/if}
         <div class="url-full" title="Cliquer pour sélectionner l'URL complète">{link}</div>
-        <div class="actions" style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center">
+        <div class="actions url-actions">
           <ExternalLink url={link}><span class="btn btn-sm"><Icon name="arrow" small />Ouvrir le site</span></ExternalLink>
           <button class="btn btn-sm" type="button" onclick={() => copy(link)}><Icon name="copy" small />Copier l'URL</button>
           {#if copied}<span class="secondary" role="status">{copied}</span>{/if}
         </div>
-        {#if u.error}<div class="alert-box err" style="margin-top:10px"><Icon name="alert" small />{u.error}</div>{/if}
+        {#if u.error}<div class="alert-box err mt-2"><Icon name="alert" small />{u.error}</div>{/if}
         {#if u.duplicate_of}
           <p class="secondary">Doublon de <a href={resolve('/urls/[id]', { id: String(u.duplicate_of) })}>#{u.duplicate_of}</a>.</p>
         {/if}
       </div>
     </div>
 
-    <div class="tiles" style="margin-top:20px">
+    <div class="tiles mt-5">
       {#each [['Pertinence', u.relevance_score], ['Qualité', u.quality_score], ['Confiance', u.confidence_score]] as [label, score] (label)}
         <div class="tile">
           <div class="score">
@@ -93,7 +93,7 @@
       {/each}
       <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- resolve() plus une query string -->
       <a class="tile" href={`${resolve('/corpus')}?domain=${encodeURIComponent(u.domain ?? '')}`}>
-        <span class="eyebrow">Domaine</span><span class="value"><span style="font-size:18px">{u.domain ?? '—'}</span></span>
+        <span class="eyebrow">Domaine</span><span class="value"><span class="value-sm">{u.domain ?? '—'}</span></span>
         <span class="go" aria-hidden="true"><Icon name="arrow" small /></span>
       </a>
     </div>
@@ -113,7 +113,7 @@
       </table>
     </div>
 
-    <div class="cols" style="margin-top:24px">
+    <div class="cols mt-6">
       <section class="panel">
         <div class="panel-head"><h2>Thèmes</h2></div>
         <dl class="kv">
@@ -147,7 +147,7 @@
       </section>
     </div>
 
-    <p class="terminal-line" style="margin-top:20px">
+    <p class="terminal-line mt-5">
       &gt; vue le {fmtDate(u.first_seen_at)} · normalisée le {fmtDate(u.normalized_at)} · classée le {fmtDate(u.classified_at)}
     </p>
   {/if}

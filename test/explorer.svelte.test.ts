@@ -16,7 +16,7 @@ const items = [
   { rank: 4, url: 'https://www.youtube.com/watch?v=1', title: 'LoRA video', domain: 'youtube.com', usage_commercial: null, id: 14 },
   { rank: 5, url: 'https://unsplash.com/photos/y', title: null, domain: 'unsplash.com', usage_commercial: 'libre', id: 15 },
 ];
-const pool = { slug: 'p', label: 'Pool P', items: 5, refreshed_at: '2026-10-30T12:00:00Z', top_domains: [], usage_commercial: [] };
+const pool = { slug: 'p', label: 'Pool P', public: false, items: 5, refreshed_at: '2026-10-30T12:00:00Z', top_domains: [], usage_commercial: [] };
 
 let mounted: ReturnType<typeof mount>[] = [];
 const clean = (el: Element | null | undefined) => el?.textContent?.replace(/\s+/g, ' ').trim();

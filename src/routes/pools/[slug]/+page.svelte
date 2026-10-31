@@ -29,6 +29,9 @@
 
 <nav class="crumbs" aria-label="Fil d'Ariane">
   <a href={resolve('/pools')}>pools</a><span class="sep">/</span><span>{slug}</span>
+  <span class="sep">·</span>
+  <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- resolve() plus une query string -->
+  <a href={`${resolve('/recherches')}?pool=${encodeURIComponent(slug)}`}><Icon name="search" small />ajouter une recherche à ce pool</a>
 </nav>
 
 {#await pool}

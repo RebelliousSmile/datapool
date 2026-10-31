@@ -23,6 +23,7 @@
   const links = $derived(
     [
       { href: resolve('/pools'), label: 'Pools', admin: false },
+      { href: resolve('/recherches'), label: 'Recherches', admin: false },
       { href: resolve('/'), label: 'Tableau de bord', admin: true },
       { href: resolve('/corpus'), label: 'Corpus', admin: true },
       { href: resolve('/domains'), label: 'Domaines', admin: true },
@@ -58,5 +59,6 @@
   <!-- l'explorateur de pool prend toute la largeur -->
   <main class={page.route.id === '/pools/[slug]' ? 'xp-page' : 'page'} id="main">{@render children()}</main>
 {:else}
-  <ConnectForm notice={restoreError} />
+  <!-- session.notice : jeton refusé en cours de session (401) -->
+  <ConnectForm notice={restoreError || session.notice} />
 {/if}

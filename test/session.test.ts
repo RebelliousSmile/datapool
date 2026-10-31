@@ -57,6 +57,26 @@ describe('session', () => {
     expect(readConnection(localStorage)).toEqual(conn);
   });
 
+  it('se déconnecte sur un 401 en cours de session', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => json({ name: 'moi', scope: 'read' })));
+    await session.connect(conn);
+    const old = session.client!;
+    vi.stubGlobal('fetch', vi.fn(async () => json({ error: { code: 'unauthorized', message: 'révoqué' } }, 401)));
+    await expect(old.billing()).rejects.toMatchObject({ status: 401 });
+    expect(session.client).toBeNull();
+    expect(session.me).toBeNull();
+    expect(localStorage.length).toBe(0);
+    expect(session.notice).toMatch(/reconnectez-vous/);
+
+    // reconnecté : un 401 tardif de l'ancien client ne déconnecte pas le nouveau
+    vi.stubGlobal('fetch', vi.fn(async () => json({ name: 'moi', scope: 'read' })));
+    await session.connect({ ...conn, token: 'wp_y' });
+    expect(session.notice).toBe('');
+    vi.stubGlobal('fetch', vi.fn(async () => json({ error: { code: 'unauthorized', message: 'révoqué' } }, 401)));
+    await old.billing().catch(() => null);
+    expect(session.me?.name).toBe('moi');
+  });
+
   it('ne fait rien sans connexion enregistrée', async () => {
     const fetchFn = vi.fn();
     vi.stubGlobal('fetch', fetchFn);

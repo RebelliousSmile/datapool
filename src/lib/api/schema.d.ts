@@ -35,6 +35,7 @@ export interface paths {
                         };
                     };
                 };
+                429: components["responses"]["RateLimited"];
             };
         };
         put?: never;
@@ -71,6 +72,7 @@ export interface paths {
                         "application/json": Record<string, never>;
                     };
                 };
+                429: components["responses"]["RateLimited"];
             };
         };
         put?: never;
@@ -150,6 +152,7 @@ export interface paths {
                     };
                 };
                 401: components["responses"]["Unauthorized"];
+                429: components["responses"]["RateLimited"];
             };
         };
         put?: never;
@@ -189,6 +192,7 @@ export interface paths {
                     };
                 };
                 401: components["responses"]["Unauthorized"];
+                429: components["responses"]["RateLimited"];
             };
         };
         put?: never;
@@ -232,6 +236,7 @@ export interface paths {
                 };
                 401: components["responses"]["Unauthorized"];
                 404: components["responses"]["NotFound"];
+                429: components["responses"]["RateLimited"];
             };
         };
         put?: never;
@@ -280,6 +285,7 @@ export interface paths {
                 };
                 401: components["responses"]["Unauthorized"];
                 404: components["responses"]["NotFound"];
+                429: components["responses"]["RateLimited"];
             };
         };
         put?: never;
@@ -330,6 +336,7 @@ export interface paths {
                 400: components["responses"]["BadRequest"];
                 401: components["responses"]["Unauthorized"];
                 404: components["responses"]["NotFound"];
+                429: components["responses"]["RateLimited"];
             };
         };
         put?: never;
@@ -368,6 +375,7 @@ export interface paths {
                 };
                 401: components["responses"]["Unauthorized"];
                 403: components["responses"]["Forbidden"];
+                429: components["responses"]["RateLimited"];
             };
         };
         put?: never;
@@ -415,6 +423,7 @@ export interface paths {
                 401: components["responses"]["Unauthorized"];
                 403: components["responses"]["Forbidden"];
                 404: components["responses"]["NotFound"];
+                429: components["responses"]["RateLimited"];
             };
         };
         put?: never;
@@ -471,6 +480,7 @@ export interface paths {
                 400: components["responses"]["BadRequest"];
                 401: components["responses"]["Unauthorized"];
                 403: components["responses"]["Forbidden"];
+                429: components["responses"]["RateLimited"];
             };
         };
         put?: never;
@@ -512,6 +522,7 @@ export interface paths {
                 401: components["responses"]["Unauthorized"];
                 403: components["responses"]["Forbidden"];
                 404: components["responses"]["NotFound"];
+                429: components["responses"]["RateLimited"];
             };
         };
         put?: never;
@@ -552,6 +563,7 @@ export interface paths {
                 };
                 401: components["responses"]["Unauthorized"];
                 403: components["responses"]["Forbidden"];
+                429: components["responses"]["RateLimited"];
             };
         };
         put?: never;
@@ -592,6 +604,7 @@ export interface paths {
                 };
                 401: components["responses"]["Unauthorized"];
                 403: components["responses"]["Forbidden"];
+                429: components["responses"]["RateLimited"];
             };
         };
         put?: never;
@@ -644,6 +657,7 @@ export interface paths {
                 400: components["responses"]["BadRequest"];
                 401: components["responses"]["Unauthorized"];
                 403: components["responses"]["Forbidden"];
+                429: components["responses"]["RateLimited"];
             };
         };
         put?: never;
@@ -692,6 +706,7 @@ export interface paths {
                 400: components["responses"]["BadRequest"];
                 401: components["responses"]["Unauthorized"];
                 403: components["responses"]["Forbidden"];
+                429: components["responses"]["RateLimited"];
             };
         };
         put?: never;
@@ -716,7 +731,7 @@ export interface paths {
                     limit?: components["parameters"]["limit"];
                     offset?: components["parameters"]["offset"];
                     /** @description Type */
-                    kind?: "ingest" | "normalize" | "classify" | "pool" | "explore";
+                    kind?: "ingest" | "normalize" | "classify" | "pool" | "explore" | "media" | "request";
                     /** @description Statut */
                     status?: "running" | "done" | "failed";
                 };
@@ -740,11 +755,544 @@ export interface paths {
                 400: components["responses"]["BadRequest"];
                 401: components["responses"]["Unauthorized"];
                 403: components["responses"]["Forbidden"];
+                429: components["responses"]["RateLimited"];
             };
         };
         put?: never;
         post?: never;
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/billing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Prix des recherches et portefeuilles du client (personnel, communautés) */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Billing"];
+                    };
+                };
+                401: components["responses"]["Unauthorized"];
+                429: components["responses"]["RateLimited"];
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/billing/entries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Grand livre du portefeuille personnel, ou d'une communauté pour ses propriétaires */
+        get: {
+            parameters: {
+                query?: {
+                    limit?: components["parameters"]["limit"];
+                    offset?: components["parameters"]["offset"];
+                    /** @description Communauté dont le client est propriétaire (`owner`) ; absent : le client lui-même */
+                    community?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Page"] & {
+                            items: components["schemas"]["WalletEntry"][];
+                        };
+                    };
+                };
+                400: components["responses"]["BadRequest"];
+                401: components["responses"]["Unauthorized"];
+                404: components["responses"]["NotFound"];
+                429: components["responses"]["RateLimited"];
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Recherches du client, ou de la communauté pour ses propriétaires, plus récentes d'abord */
+        get: {
+            parameters: {
+                query?: {
+                    limit?: components["parameters"]["limit"];
+                    offset?: components["parameters"]["offset"];
+                    /** @description Communauté dont le client est propriétaire (`owner`) ; absent : le client lui-même */
+                    community?: string;
+                    /** @description Statut */
+                    status?: "queued" | "running" | "done" | "failed" | "cancelled";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Page"] & {
+                            items: components["schemas"]["SearchRequest"][];
+                        };
+                    };
+                };
+                400: components["responses"]["BadRequest"];
+                401: components["responses"]["Unauthorized"];
+                404: components["responses"]["NotFound"];
+                429: components["responses"]["RateLimited"];
+            };
+        };
+        put?: never;
+        /** Achète une recherche : prix débité d'avance, exécution par la tâche `webpool requests run`, pages non lancées remboursées */
+        post: {
+            parameters: {
+                query?: never;
+                header?: {
+                    /** @description 1 à 100 caractères [A-Za-z0-9_-] ; même clé du même client : la recherche déjà achetée est rendue (200), sans nouveau débit */
+                    "Idempotency-Key"?: string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SearchRequestInput"];
+                };
+            };
+            responses: {
+                /** @description Clé d'idempotence déjà servie : recherche existante, rien de débité (en-tête Idempotent-Replayed: true) */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["RequestReceipt"];
+                    };
+                };
+                /** @description Recherche inscrite et payée */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["RequestReceipt"];
+                    };
+                };
+                400: components["responses"]["BadRequest"];
+                401: components["responses"]["Unauthorized"];
+                402: components["responses"]["PaymentRequired"];
+                404: components["responses"]["NotFound"];
+                /** @description Corps de plus de 8 Ko */
+                413: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Corps autre que application/json */
+                415: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Trop de recherches en attente (`too_many_queued`) ou trop de requêtes (`rate_limited`, en-tête Retry-After) */
+                429: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/requests/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Annule une recherche encore en attente, remboursée en entier */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Annulée */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["CancelReceipt"];
+                    };
+                };
+                400: components["responses"]["BadRequest"];
+                401: components["responses"]["Unauthorized"];
+                404: components["responses"]["NotFound"];
+                429: components["responses"]["RateLimited"];
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Toutes les recherches payantes, plus récentes d'abord */
+        get: {
+            parameters: {
+                query?: {
+                    limit?: components["parameters"]["limit"];
+                    offset?: components["parameters"]["offset"];
+                    /** @description Statut */
+                    status?: "queued" | "running" | "done" | "failed" | "cancelled";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Page"] & {
+                            items: components["schemas"]["SearchRequest"][];
+                        };
+                    };
+                };
+                400: components["responses"]["BadRequest"];
+                401: components["responses"]["Unauthorized"];
+                403: components["responses"]["Forbidden"];
+                429: components["responses"]["RateLimited"];
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/communities/{slug}/members": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Membres de la communauté, rôle, plafond et dépense sur 30 jours (propriétaires seulement) */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    slug: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            items: components["schemas"]["CommunityMember"][];
+                        };
+                    };
+                };
+                401: components["responses"]["Unauthorized"];
+                404: components["responses"]["NotFound"];
+                429: components["responses"]["RateLimited"];
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/communities/{slug}/members/{name}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Invite un client, ou change le rôle ou le plafond d'un membre (propriétaires seulement ; upsert partiel ; un invité devient membre en acceptant) */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    slug: string;
+                    /** @description nom du client */
+                    name: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CommunityMemberInput"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["CommunityMemberSet"];
+                    };
+                };
+                400: components["responses"]["BadRequest"];
+                401: components["responses"]["Unauthorized"];
+                404: components["responses"]["NotFound"];
+                429: components["responses"]["RateLimited"];
+            };
+        };
+        post?: never;
+        /** Retire un membre (propriétaires seulement ; la communauté garde un propriétaire actif) */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    slug: string;
+                    /** @description nom du client */
+                    name: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            community: string;
+                            name: string;
+                        };
+                    };
+                };
+                400: components["responses"]["BadRequest"];
+                401: components["responses"]["Unauthorized"];
+                404: components["responses"]["NotFound"];
+                429: components["responses"]["RateLimited"];
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/communities/{slug}/invitation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Accepte l'invitation de la communauté */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    slug: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            community: string;
+                            accepted?: boolean;
+                            left?: boolean;
+                        };
+                    };
+                };
+                401: components["responses"]["Unauthorized"];
+                404: components["responses"]["NotFound"];
+                429: components["responses"]["RateLimited"];
+            };
+        };
+        /** Décline l'invitation de la communauté */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    slug: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            community: string;
+                            accepted?: boolean;
+                            left?: boolean;
+                        };
+                    };
+                };
+                401: components["responses"]["Unauthorized"];
+                404: components["responses"]["NotFound"];
+                429: components["responses"]["RateLimited"];
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/communities/{slug}/membership": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Quitte la communauté (le dernier propriétaire actif ne peut pas) */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    slug: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            community: string;
+                            accepted?: boolean;
+                            left?: boolean;
+                        };
+                    };
+                };
+                400: components["responses"]["BadRequest"];
+                401: components["responses"]["Unauthorized"];
+                404: components["responses"]["NotFound"];
+                429: components["responses"]["RateLimited"];
+            };
+        };
         options?: never;
         head?: never;
         patch?: never;
@@ -776,6 +1324,8 @@ export interface components {
             /** Format: date-time */
             refreshed_at: string | null;
             items: number;
+            /** @description pool public : visible par tout client authentifié */
+            public: boolean;
         };
         Pool: {
             slug: string;
@@ -800,6 +1350,8 @@ export interface components {
             created_at?: string | null;
             /** @description admin uniquement : définition réexécutable du pool */
             definition?: Record<string, never>;
+            /** @description pool public : visible par tout client authentifié */
+            public: boolean;
         };
         PoolItem: {
             rank: number;
@@ -1014,6 +1566,156 @@ export interface components {
             /** Format: date-time */
             finished_at?: string | null;
         };
+        Price: {
+            provider: string;
+            /** @description giri par appel (une page) */
+            unit_price: number;
+            /** @description pages achetables par recherche (1 pour OpenRouter, qui ne pagine pas) */
+            max_pages: number;
+        };
+        CommunityWallet: {
+            slug: string;
+            label: string;
+            /** @enum {string} */
+            role: "owner" | "member";
+            /** @description giri de la communauté */
+            balance: number;
+            /** @description plafond du membre en giri sur 30 jours glissants, null : sans plafond */
+            monthly_limit: number | null;
+            /** @description giri dépensés par le membre sur 30 jours, remboursements déduits */
+            spent_30d: number;
+            /** @description pools de la communauté, seuls payables par son portefeuille */
+            pools: string[];
+            /** @description giri versés par le membre au pot commun (apports à son nom) */
+            contributed: number;
+        };
+        Billing: {
+            /** @description giri crédités pour 1 € de don ou d'achat */
+            giri_per_eur: number;
+            /** @description page de don ou d'achat de giri */
+            funding_url: string | null;
+            /** @description recherches en attente au plus par client */
+            max_queued: number;
+            prices: components["schemas"]["Price"][];
+            personal: {
+                balance: number;
+            };
+            communities: components["schemas"]["CommunityWallet"][];
+            /** @description invitations à des communautés, en attente d'acceptation */
+            invitations: components["schemas"]["Invitation"][];
+        };
+        WalletEntry: {
+            id: number;
+            /** @description giri, positif au crédit */
+            delta: number;
+            /**
+             * @description donation : don sur un portefeuille personnel ; purchase : apport au pot d'une communauté
+             * @enum {string}
+             */
+            kind: "donation" | "purchase" | "debit" | "refund" | "adjustment";
+            /** @description montant reçu, en centimes d'euro (don, achat) */
+            amount_cents?: number | null;
+            /** @description référence du paiement reçu */
+            reference?: string | null;
+            search_request_id?: number | null;
+            /** @description client qui a dépensé (débit, remboursement) ou versé (apport à une communauté) */
+            client?: string | null;
+            note?: string | null;
+            /** Format: date-time */
+            created_at: string;
+        };
+        SearchRequest: {
+            id: number;
+            client: string;
+            provider: string;
+            query: string;
+            pages: number;
+            /** @description pool visé */
+            pool: string | null;
+            /** @description communauté qui paie, null : portefeuille personnel */
+            community: string | null;
+            unit_price: number;
+            /** @description giri débités à l'achat */
+            price: number;
+            /** @description giri rendus (pages non lancées, échec, annulation) */
+            refunded: number;
+            /** @enum {string} */
+            status: "queued" | "running" | "done" | "failed" | "cancelled";
+            calls_done: number;
+            results: number;
+            new_urls: number;
+            new_domains: number;
+            /** @description URLs de la recherche présentes aujourd'hui dans le pool visé (calculé à la lecture) */
+            in_pool: number | null;
+            /** @description cause d'un échec : message générique pour un client, message brut du provider pour l'admin */
+            error: string | null;
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            started_at: string | null;
+            /** Format: date-time */
+            finished_at: string | null;
+        };
+        SearchRequestInput: {
+            query: string;
+            /** @description un des providers de `GET /billing` */
+            provider: string;
+            /** @default 1 */
+            pages: number;
+            /** @description pool visé (visible par le client) ; un pool d'une de vos communautés est payé par son pot */
+            pool?: string;
+            /** @description communauté dont le pot paie. Un pool d'une de vos communautés se paie toujours par elle : déduite si une seule communauté possède le pool, obligatoire si plusieurs ; jamais en personnel. */
+            community?: string;
+        };
+        RequestReceipt: {
+            request: components["schemas"]["SearchRequest"];
+            /** @description solde du portefeuille débité */
+            balance: number;
+        };
+        CancelReceipt: {
+            request: components["schemas"]["SearchRequest"];
+            refunded: number;
+        };
+        CommunityMember: {
+            name: string;
+            /** @enum {string} */
+            role: "owner" | "member";
+            /** @description plafond en giri sur 30 jours glissants, null : sans plafond */
+            monthly_limit: number | null;
+            spent_30d: number;
+            /** @description client révoqué */
+            revoked: boolean;
+            /** Format: date-time */
+            joined_at: string;
+            /** @description giri versés par le membre au pot commun (apports à son nom) */
+            contributed: number;
+            /** @description invitation acceptée ; un invité ne voit ni les pools ni le pot */
+            accepted: boolean;
+        };
+        /** @description Upsert partiel : un champ absent garde sa valeur (nouveau membre : `member`, sans plafond) ; `monthly_limit: null` lève le plafond, 0 bloque la dépense. */
+        CommunityMemberInput: {
+            /** @enum {string} */
+            role?: "owner" | "member";
+            /** @description null ou absent : sans plafond */
+            monthly_limit?: number | null;
+        };
+        CommunityMemberSet: {
+            community: string;
+            name: string;
+            role: string;
+            monthly_limit: number | null;
+            /** @description false : client invité, membre après acceptation */
+            accepted: boolean;
+        };
+        Invitation: {
+            slug: string;
+            label: string;
+            /** @enum {string} */
+            role: "owner" | "member";
+            monthly_limit: number | null;
+            /** Format: date-time */
+            invited_at: string;
+        };
     };
     responses: {
         /** @description Paramètre invalide */
@@ -1046,6 +1748,35 @@ export interface components {
         /** @description Introuvable */
         NotFound: {
             headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["Error"];
+            };
+        };
+        /** @description Solde insuffisant (`insufficient_balance`) ou plafond du membre atteint (`spend_limit`) */
+        PaymentRequired: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["Error"];
+            };
+        };
+        /** @description Trop de recherches en attente pour ce client (`too_many_queued`) */
+        TooManyRequests: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["Error"];
+            };
+        };
+        /** @description Trop de requêtes (`rate_limited`) : WEBPOOL_API_RATE_LIMIT par minute, par jeton, ou par IP sans jeton ; en-tête Retry-After */
+        RateLimited: {
+            headers: {
+                /** @description secondes avant de réessayer */
+                "Retry-After"?: number;
                 [name: string]: unknown;
             };
             content: {
