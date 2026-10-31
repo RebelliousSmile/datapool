@@ -4,15 +4,16 @@
   import ExternalLink from '#lib/components/ExternalLink.svelte';
   import Icon from '#lib/components/Icon.svelte';
   import Pager from '#lib/components/Pager.svelte';
-  import { REQUEST_STATUS_LABELS, fmtEuros, fmtGiri, parseLimit, payersFor, quote, spentOn } from '#lib/billing.ts';
+  import { REQUEST_STATUS_LABELS, defaultPayer, fmtEuros, fmtGiri, parseLimit, payersFor, quote, spentOn } from '#lib/billing.ts';
   import { fmtDate, fmtNumber } from '#lib/format.ts';
   import { session } from '#lib/session.svelte.ts';
   import type { Schemas } from '#lib/api/client.ts';
 
   // Les pools sont gratuits ; une recherche (appel à un provider) se paie
-  // d'avance en giri, sur le portefeuille personnel (crédité par un don) ou sur
-  // celui d'une communauté, pour un de ses pools. webpool l'exécute dans le
-  // quart d'heure et rembourse les pages non lancées.
+  // d'avance en giri. Hors communauté, sur le portefeuille personnel (crédité
+  // par un don) ; dans une communauté, on ne paie pas pour soi : les pools de la
+  // communauté se paient sur son pot, alimenté par les apports des membres.
+  // webpool l'exécute dans le quart d'heure et rembourse les pages non lancées.
   const LIMIT = 20;
 
   let reload = $state(0);
@@ -43,9 +44,9 @@
   const devis = $derived(billing ? quote(billing, { provider: form.provider, pages: form.pages, payer }) : null);
   const giriPerEur = $derived(billing?.giri_per_eur ?? 1000);
 
-  // Une communauté qui ne paie pas le pool choisi rend la main au portefeuille personnel.
+  // Le payeur suit le pool : pot de la communauté pour ses pools, personnel ailleurs.
   $effect(() => {
-    if (payer?.disabled) form.payer = '';
+    if (!payer || payer.disabled) form.payer = defaultPayer(payers);
   });
   // OpenRouter n'achète qu'une page.
   $effect(() => {
@@ -172,18 +173,22 @@
         <span class="sub"
           >{c.monthly_limit === null
             ? 'sans plafond'
-            : `${fmtGiri(c.spent_30d)} dépensés sur ${fmtGiri(c.monthly_limit)} en 30 jours`} · pools : {c.pools.join(', ') || 'aucun'}</span
+            : `${fmtGiri(c.spent_30d)} dépensés sur ${fmtGiri(c.monthly_limit)} en 30 jours`} · vos apports : {fmtGiri(c.contributed)} · pools :
+          {c.pools.join(', ') || 'aucun'}</span
         >
       </div>
     {/each}
   </div>
   <p class="muted">
     Le prix d'une recherche suit le coût des tokens du provider, majoré. Une page non lancée, un appel en échec ou une annulation
-    sont remboursés en giri. Les giri ne se transfèrent pas et ne se remboursent pas en euros.
+    sont remboursés en giri. Dans une communauté, on ne paie pas pour soi : on verse des giri au pot commun, qui paie les
+    recherches de ses pools ; chaque apport reste à votre nom. Les giri ne se transfèrent pas et ne se remboursent pas en
+    euros.
     {#if billing.funding_url}
-      <ExternalLink url={billing.funding_url}>Faire un don ou acheter des giri pour une communauté</ExternalLink>.
+      <ExternalLink url={billing.funding_url}>Faire un don, ou verser au pot d'une communauté</ExternalLink> (préciser la
+      communauté).
     {:else}
-      Pour un don ou un achat de giri, contacter l'administrateur.
+      Pour un don ou un apport à une communauté, contacter l'administrateur.
     {/if}
   </p>
 
@@ -322,7 +327,7 @@
         <div class="panel flush table-wrap">
           <table class="table">
             <thead>
-              <tr><th>Client</th><th>Rôle</th><th>Plafond</th><th class="num">Dépensé (30 j)</th><th><span class="sr-only">Actions</span></th></tr>
+              <tr><th>Client</th><th>Rôle</th><th>Plafond</th><th class="num">Dépensé (30 j)</th><th class="num">Apports</th><th><span class="sr-only">Actions</span></th></tr>
             </thead>
             <tbody>
               {#each res.items as m (m.name)}
@@ -340,6 +345,7 @@
                     <input class="input" id={`limit-${m.name}`} inputmode="numeric" placeholder="aucun" bind:value={edit.limit} />
                   </td>
                   <td class="num">{fmtNumber(m.spent_30d)}</td>
+                  <td class="num">{fmtNumber(m.contributed)}</td>
                   <td class="nowrap">
                     <button class="btn btn-sm" type="button" onclick={() => saveMember(m.name, edit.role, edit.limit)}
                       ><Icon name="check" small />Enregistrer</button

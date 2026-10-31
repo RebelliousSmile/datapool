@@ -1422,6 +1422,8 @@ export interface components {
             spent_30d: number;
             /** @description pools de la communauté, seuls payables par son portefeuille */
             pools: string[];
+            /** @description giri versés par le membre au pot commun (apports à son nom) */
+            contributed: number;
         };
         Billing: {
             /** @description giri crédités pour 1 € de don ou d'achat */
@@ -1440,14 +1442,17 @@ export interface components {
             id: number;
             /** @description giri, positif au crédit */
             delta: number;
-            /** @enum {string} */
+            /**
+             * @description donation : don sur un portefeuille personnel ; purchase : apport au pot d'une communauté
+             * @enum {string}
+             */
             kind: "donation" | "purchase" | "debit" | "refund" | "adjustment";
             /** @description montant reçu, en centimes d'euro (don, achat) */
             amount_cents?: number | null;
             /** @description référence du paiement reçu */
             reference?: string | null;
             search_request_id?: number | null;
-            /** @description client qui a dépensé */
+            /** @description client qui a dépensé (débit, remboursement) ou versé (apport à une communauté) */
             client?: string | null;
             note?: string | null;
             /** Format: date-time */
@@ -1490,9 +1495,9 @@ export interface components {
             provider: string;
             /** @default 1 */
             pages: number;
-            /** @description pool visé (visible par le client) ; requis pour payer avec une communauté */
+            /** @description pool visé (visible par le client) ; un pool d'une de vos communautés est payé par son pot */
             pool?: string;
-            /** @description communauté dont le portefeuille paie ; absent : portefeuille personnel */
+            /** @description communauté dont le pot paie. Un pool d'une de vos communautés se paie toujours par elle : déduite si une seule communauté possède le pool, obligatoire si plusieurs ; jamais en personnel. */
             community?: string;
         };
         RequestReceipt: {
@@ -1515,6 +1520,8 @@ export interface components {
             revoked: boolean;
             /** Format: date-time */
             joined_at: string;
+            /** @description giri versés par le membre au pot commun (apports à son nom) */
+            contributed: number;
         };
         /** @description Upsert partiel : un champ absent garde sa valeur (nouveau membre : `member`, sans plafond) ; `monthly_limit: null` lève le plafond, 0 bloque la dépense. */
         CommunityMemberInput: {

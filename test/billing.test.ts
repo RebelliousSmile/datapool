@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Schemas } from '../src/lib/api/client';
-import { REQUEST_STATUS_LABELS, fmtEuros, fmtGiri, parseLimit, payersFor, quote, spentOn } from '../src/lib/billing';
+import { REQUEST_STATUS_LABELS, defaultPayer, fmtEuros, fmtGiri, parseLimit, payersFor, quote, spentOn } from '../src/lib/billing';
 
 const billing: Schemas['Billing'] = {
   giri_per_eur: 1000,
@@ -12,8 +12,8 @@ const billing: Schemas['Billing'] = {
   ],
   personal: { balance: 25 },
   communities: [
-    { slug: 'atelier', label: 'Atelier', role: 'member', balance: 500, monthly_limit: 40, spent_30d: 20, pools: ['lora'] },
-    { slug: 'club', label: 'Club', role: 'owner', balance: 5, monthly_limit: null, spent_30d: 0, pools: [] },
+    { slug: 'atelier', label: 'Atelier', role: 'member', balance: 500, monthly_limit: 40, spent_30d: 20, contributed: 0, pools: ['lora'] },
+    { slug: 'club', label: 'Club', role: 'owner', balance: 5, monthly_limit: null, spent_30d: 0, contributed: 2000, pools: [] },
   ],
 };
 
@@ -24,19 +24,27 @@ describe('recherches payantes', () => {
     expect(fmtEuros(12500, 1000).replace(/\s/g, ' ')).toBe('12,50 €');
   });
 
-  it('payeurs : personnel toujours, communauté pour ses seuls pools, plafond restant', () => {
+  it('payeurs : pot de la communauté pour ses pools, jamais en personnel ; personnel ailleurs', () => {
     const payers = payersFor(billing, 'lora');
     expect(payers.map((p) => [p.value, p.disabled, p.limitLeft])).toEqual([
-      ['', null, null],
+      ['', 'les recherches de ce pool se paient sur le pot de Atelier', null],
       ['atelier', null, 20],
       ['club', 'ne paie que ses pools (aucun)', null],
     ]);
+    expect(defaultPayer(payers)).toBe('atelier');
+    const elsewhere = payersFor(billing, 'autre');
+    expect(elsewhere[0].disabled).toBeNull();
+    expect(elsewhere[1].disabled).toBe('ne paie que ses pools (lora)');
+    expect(defaultPayer(elsewhere)).toBe('');
     expect(payersFor(billing, '')[1].disabled).toBe('choisir un de ses pools');
-    expect(payersFor(billing, 'autre')[1].disabled).toBe('ne paie que ses pools (lora)');
+    expect(defaultPayer([{ ...elsewhere[0], disabled: 'x' }])).toBe('');
   });
 
   it('devis : prix, solde après achat, et la raison d’un refus', () => {
-    const [personal, atelier, club] = payersFor(billing, 'lora');
+    const [, atelier, club] = payersFor(billing, 'lora');
+    const [personal] = payersFor(billing, 'autre');
+    expect(quote(billing, { provider: 'brave', pages: 1, payer: payersFor(billing, 'lora')[0] })?.problem)
+      .toBe('Pas en personnel : les recherches de ce pool se paient sur le pot de Atelier.');
     expect(quote(billing, { provider: 'brave', pages: 2, payer: personal })).toEqual({
       unitPrice: 10, maxPages: 3, price: 20, balance: 25, after: 5, problem: null,
     });

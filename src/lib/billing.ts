@@ -23,11 +23,19 @@ export type Payer = {
   disabled: string | null;
 };
 
-// Portefeuilles qui peuvent payer une recherche visant `pool` : le personnel
-// toujours, une communauté seulement pour ses propres pools.
+// Portefeuilles qui peuvent payer une recherche visant `pool`. Dans une
+// communauté, on ne paie pas pour soi : un pool d'une de ses communautés se
+// paie sur leur pot, jamais en personnel ; une communauté ne paie que ses pools.
 export function payersFor(billing: Billing, pool: string): Payer[] {
+  const owners = billing.communities.filter((c) => pool && c.pools.includes(pool));
   return [
-    { value: '', label: 'Portefeuille personnel', balance: billing.personal.balance, limitLeft: null, disabled: null },
+    {
+      value: '',
+      label: 'Portefeuille personnel',
+      balance: billing.personal.balance,
+      limitLeft: null,
+      disabled: owners.length ? `les recherches de ce pool se paient sur le pot de ${owners.map((c) => c.label).join(' ou ')}` : null,
+    },
     ...billing.communities.map((c) => ({
       value: c.slug,
       label: `Communauté ${c.label}`,
@@ -41,6 +49,9 @@ export function payersFor(billing: Billing, pool: string): Payer[] {
     })),
   ];
 }
+
+// Payeur par défaut : le premier possible (le pot de la communauté pour ses pools).
+export const defaultPayer = (payers: Payer[]) => payers.find((p) => !p.disabled)?.value ?? '';
 
 export type Quote = {
   unitPrice: number;
@@ -58,7 +69,7 @@ export function quote(billing: Billing, { provider, pages, payer }: { provider: 
   const total = price.unit_price * pages;
   const base = { unitPrice: price.unit_price, maxPages: price.max_pages, price: total, balance: payer.balance, after: payer.balance - total };
   let problem: string | null = null;
-  if (payer.disabled) problem = `Cette communauté ${payer.disabled}.`;
+  if (payer.disabled) problem = payer.value ? `Cette communauté ${payer.disabled}.` : `Pas en personnel : ${payer.disabled}.`;
   else if (!Number.isInteger(pages) || pages < 1 || pages > price.max_pages) problem = `De 1 à ${price.max_pages} page${price.max_pages > 1 ? 's' : ''} pour ${provider}.`;
   else if (total > payer.balance) problem = `Solde insuffisant : ${fmtGiri(payer.balance)} pour ${fmtGiri(total)}.`;
   else if (payer.limitLeft !== null && total > payer.limitLeft) problem = `Plafond du mois : il vous reste ${fmtGiri(payer.limitLeft)}.`;
