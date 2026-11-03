@@ -82,7 +82,7 @@ correctifs de l'audit du 2026-10-31), fusionnée dans webpool `main` en `32ffc95
    (`https://webpool.scriptami.com/api/v1`) et `apiSiteId` (identifiant numérique du site
    de l'API) pour le redémarrage automatique. `mediaDir` peut rester absent : défaut
    `www/webpool-data/media`.
-4. **webpool** : hors du passage de la tâche planifiée `cycle` (lundi, 4 h) — elle
+4. **webpool** : hors du passage de la tâche planifiée `cycle` (chaque jour à 4 h depuis le 2026-11-03, le lundi avant) — elle
    tourne dans `www/webpool`, que la bascule remplace. `pnpm deploy:prod ad`
    (prévisualisation), puis
    `ALWAYSDATA_API_TOKEN=$ALWAYSDATA_API_KEY pnpm deploy:prod ad --apply` : webpool
