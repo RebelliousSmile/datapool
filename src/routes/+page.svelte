@@ -67,6 +67,13 @@
         <span class="value">{fmtNumber(errors)}</span>
         <span class="go" aria-hidden="true"><Icon name="arrow" small /></span>
       </a>
+      <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- resolve() plus une query string -->
+      <a class="tile" class:warn={(stats.quarantined ?? 0) > 0} href={`${resolve('/corpus')}?quarantined=true`}>
+        <span class="eyebrow">En quarantaine</span>
+        <span class="value">{fmtNumber(stats.quarantined ?? 0)}</span>
+        <span class="sub">liens morts écartés des pools</span>
+        <span class="go" aria-hidden="true"><Icon name="arrow" small /></span>
+      </a>
     </div>
 
     <div class="section-title"><h2>Pools, domaines, exploration</h2></div>

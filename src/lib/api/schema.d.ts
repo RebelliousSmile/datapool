@@ -457,6 +457,8 @@ export interface paths {
                     domain?: string;
                     /** @description Texte cherché dans le titre et l'URL */
                     q?: string;
+                    /** @description true : liens en quarantaine seulement ; false : hors quarantaine */
+                    quarantined?: boolean;
                     /** @description Ordre */
                     order?: "recent" | "quality" | "relevance";
                 };
@@ -1107,7 +1109,7 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        /** Invite un client, ou change le rôle ou le plafond d'un membre (propriétaires seulement ; upsert partiel ; un invité devient membre en acceptant) */
+        /** Invite un client, ou change le plafond d'un membre (propriétaires seulement ; upsert partiel ; un invité devient membre en acceptant) */
         put: {
             parameters: {
                 query?: never;
@@ -1141,7 +1143,7 @@ export interface paths {
             };
         };
         post?: never;
-        /** Retire un membre (propriétaires seulement ; la communauté garde un propriétaire actif) */
+        /** Retire un membre (propriétaires seulement ; un propriétaire ne s'écarte pas, il part lui-même ; la communauté garde un propriétaire) */
         delete: {
             parameters: {
                 query?: never;
@@ -1262,7 +1264,7 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        /** Quitte la communauté (le dernier propriétaire actif ne peut pas) */
+        /** Quitte la communauté : un propriétaire qui part passe la main au plus gros apport suivant ; refusé s'il n'y aurait plus de propriétaire */
         delete: {
             parameters: {
                 query?: never;
@@ -1392,6 +1394,8 @@ export interface components {
                 n?: number;
             }[];
             pools?: number;
+            /** @description Liens en quarantaine (3 échecs francs consécutifs) */
+            quarantined?: number;
             domain_profile?: {
                 total?: number;
                 to_qualify?: number;
@@ -1426,6 +1430,16 @@ export interface components {
             confidence_score?: number | null;
             /** Format: date-time */
             first_seen_at?: string | null;
+            /**
+             * Format: date-time
+             * @description Dernier contrôle du lien ; null si jamais testé
+             */
+            checked_at?: string | null;
+            /**
+             * Format: date-time
+             * @description Mise en quarantaine ; null si le lien n'y est pas
+             */
+            quarantined_at?: string | null;
             primary_theme?: string | null;
             /** @description Description de la page (og:description ou meta description) */
             description?: string | null;
@@ -1465,6 +1479,18 @@ export interface components {
             normalized_at?: string | null;
             /** Format: date-time */
             classified_at?: string | null;
+            /**
+             * Format: date-time
+             * @description Dernier contrôle du lien ; null si jamais testé
+             */
+            checked_at?: string | null;
+            /**
+             * Format: date-time
+             * @description Mise en quarantaine ; null si le lien n'y est pas
+             */
+            quarantined_at?: string | null;
+            /** @description Échecs francs consécutifs comptés ; remis à 0 par un succès */
+            dead_streak?: number;
             /** @enum {string|null} */
             usage_commercial?: "libre" | "sous-conditions" | "payant" | "non-commercial" | null;
             sources?: {
@@ -1490,6 +1516,8 @@ export interface components {
                 slug?: string;
                 rank?: number;
             }[];
+            /** @description 10 derniers contrôles, du plus récent au plus ancien */
+            checks?: components["schemas"]["UrlCheck"][];
             /** @description Description de la page (og:description ou meta description) */
             description?: string | null;
             /**
@@ -1508,6 +1536,19 @@ export interface components {
             favicon?: string | null;
             lang?: string | null;
             site_name?: string | null;
+        };
+        UrlCheck: {
+            /** Format: date-time */
+            checked_at?: string;
+            /** @description Statut HTTP final ; null si la requête a échoué */
+            http_status?: number | null;
+            /**
+             * @description ok : 2xx ; dead : échec franc, compté ; unsure : ambigu, historisé sans être compté
+             * @enum {string}
+             */
+            verdict?: "ok" | "dead" | "unsure";
+            /** @description Étiquette de l'erreur réseau (ENOTFOUND, TimeoutError, TOO_MANY_REDIRECTS, HOST_REFUSED…) */
+            error?: string | null;
         };
         Theme: {
             slug?: string;
@@ -1576,11 +1617,14 @@ export interface components {
         CommunityWallet: {
             slug: string;
             label: string;
-            /** @enum {string} */
+            /**
+             * @description owner : le membre qui a versé le plus de giri au pot (ex æquo : tous les premiers ; tant que personne n'a versé, le fondateur désigné par l'admin) ; calculé, il ne se donne pas
+             * @enum {string}
+             */
             role: "owner" | "member";
             /** @description giri de la communauté */
             balance: number;
-            /** @description plafond du membre en giri sur 30 jours glissants, null : sans plafond */
+            /** @description plafond effectif du membre en giri sur 30 jours glissants, null : sans plafond (toujours null pour le propriétaire) */
             monthly_limit: number | null;
             /** @description giri dépensés par le membre sur 30 jours, remboursements déduits */
             spent_30d: number;
@@ -1678,9 +1722,12 @@ export interface components {
         };
         CommunityMember: {
             name: string;
-            /** @enum {string} */
+            /**
+             * @description owner : le membre qui a versé le plus de giri au pot (ex æquo : tous les premiers ; tant que personne n'a versé, le fondateur désigné par l'admin) ; calculé, il ne se donne pas
+             * @enum {string}
+             */
             role: "owner" | "member";
-            /** @description plafond en giri sur 30 jours glissants, null : sans plafond */
+            /** @description plafond enregistré en giri sur 30 jours, null : sans plafond ; ne s'applique pas au propriétaire */
             monthly_limit: number | null;
             spent_30d: number;
             /** @description client révoqué */
@@ -1691,11 +1738,11 @@ export interface components {
             contributed: number;
             /** @description invitation acceptée ; un invité ne voit ni les pools ni le pot */
             accepted: boolean;
+            /** @description fondateur désigné par l'admin : propriétaire tant que personne n'a versé au pot */
+            founder: boolean;
         };
-        /** @description Upsert partiel : un champ absent garde sa valeur (nouveau membre : `member`, sans plafond) ; `monthly_limit: null` lève le plafond, 0 bloque la dépense. */
+        /** @description Upsert partiel : `monthly_limit` absent garde sa valeur (nouveau membre : WEBPOOL_MEMBER_DEFAULT_LIMIT), null lève le plafond, 0 bloque la dépense. Le rôle ne se donne pas (le propriétaire est le plus gros apport au pot) : un champ `role` est refusé. */
         CommunityMemberInput: {
-            /** @enum {string} */
-            role?: "owner" | "member";
             /** @description null ou absent : sans plafond */
             monthly_limit?: number | null;
         };
@@ -1710,7 +1757,10 @@ export interface components {
         Invitation: {
             slug: string;
             label: string;
-            /** @enum {string} */
+            /**
+             * @description owner : le membre qui a versé le plus de giri au pot (ex æquo : tous les premiers ; tant que personne n'a versé, le fondateur désigné par l'admin) ; calculé, il ne se donne pas
+             * @enum {string}
+             */
             role: "owner" | "member";
             monthly_limit: number | null;
             /** Format: date-time */

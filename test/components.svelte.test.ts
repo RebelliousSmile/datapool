@@ -15,6 +15,10 @@ import Icon from '../src/lib/components/Icon.svelte';
 import { theme } from '../src/lib/theme.svelte.ts';
 import { fetchAllLinks, type CopyLink } from '../src/lib/copy';
 import { session } from '../src/lib/session.svelte.ts';
+import UrlPage from '../src/routes/urls/[id]/+page.svelte';
+import CorpusPage from '../src/routes/corpus/+page.svelte';
+import DashboardPage from '../src/routes/+page.svelte';
+import { page as appPage } from './mocks/app-state';
 
 let mounted: ReturnType<typeof mount>[] = [];
 function render<P extends Record<string, unknown>>(component: Component<P>, props: P) {
@@ -410,5 +414,172 @@ describe('theme', () => {
     theme.toggle();
     expect(document.documentElement.dataset.theme).toBeUndefined();
     expect(localStorage.getItem('datapool.theme')).toBe('dark');
+  });
+});
+
+describe('contrôle des liens', () => {
+  const check = (day: number, http_status: number | null, verdict: string, error: string | null = null) => ({
+    checked_at: `2026-11-0${day}T04:10:00Z`,
+    http_status,
+    verdict,
+    error,
+  });
+  const empty = { sources: [], themes: [], facets: [], pools: [] };
+  const URLS: Record<string, unknown> = {
+    '224': {
+      ...empty,
+      id: 224,
+      raw_url: 'https://mort.test/a',
+      canonical_url: 'https://mort.test/a',
+      domain: 'mort.test',
+      title: 'Mort',
+      status: 'classified',
+      http_status: 200,
+      dead_streak: 3,
+      checked_at: '2026-11-06T04:10:00Z',
+      quarantined_at: '2026-11-06T04:10:00Z',
+      checks: [check(6, 404, 'dead'), check(5, null, 'unsure', 'TimeoutError'), check(4, 404, 'dead'), check(3, 404, 'dead')],
+    },
+    '7': {
+      ...empty,
+      id: 7,
+      raw_url: 'https://sain.test/',
+      canonical_url: 'https://sain.test/',
+      domain: 'sain.test',
+      title: 'Sain',
+      status: 'classified',
+      http_status: 301,
+      dead_streak: 0,
+      checked_at: '2026-11-06T04:10:00Z',
+      quarantined_at: null,
+      checks: [check(6, 200, 'ok')],
+    },
+    '8': {
+      ...empty,
+      id: 8,
+      raw_url: 'https://neuf.test/',
+      domain: 'neuf.test',
+      title: 'Neuf',
+      status: 'normalized',
+      http_status: 200,
+      dead_streak: 0,
+      checked_at: null,
+      quarantined_at: null,
+      checks: [],
+    },
+  };
+  const LIST = [
+    { id: 224, url: 'https://mort.test/a', title: 'Mort', status: 'classified', quarantined_at: '2026-11-06T04:10:00Z' },
+    { id: 7, url: 'https://sain.test/', title: 'Sain', status: 'classified', quarantined_at: null },
+  ];
+  const requested: URL[] = [];
+  const json = (body: unknown) => new Response(JSON.stringify(body));
+  function respond(url: URL) {
+    const path = url.pathname.replace('/api/v1', '');
+    if (path === '/me') return json({ name: 'admin', scope: 'admin' });
+    if (path === '/admin/stats') return json({ url_item: [{ status: 'classified', n: 3 }], pools: 1, quarantined: 4, search_query: [] });
+    if (path === '/admin/runs') return json({ items: [], total: 0, limit: 15, offset: 0 });
+    if (path === '/admin/themes') return json({ items: [] });
+    if (path === '/admin/urls') {
+      const q = url.searchParams.get('quarantined');
+      const items = q === null ? LIST : LIST.filter((u) => (u.quarantined_at !== null) === (q === 'true'));
+      return json({ items, total: items.length, limit: 50, offset: 0 });
+    }
+    const id = /^\/admin\/urls\/(\d+)$/.exec(path)?.[1];
+    if (id && URLS[id]) return json(URLS[id]);
+    return new Response('{}', { status: 404 });
+  }
+  const connect = async () => {
+    requested.length = 0;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: string | URL | Request) => {
+        const url = new URL(input instanceof Request ? input.url : String(input));
+        requested.push(url);
+        return respond(url);
+      }),
+    );
+    await session.connect({ baseUrl: 'http://api.test/api/v1', token: 'wp_x' });
+  };
+  const settled = async (el: Element, sel: string) => {
+    await vi.waitFor(() => {
+      flushSync();
+      expect(el.querySelector(sel)).not.toBeNull();
+    });
+  };
+  const checksTitle = (el: Element) => [...el.querySelectorAll('.section-title')].find((t) => t.textContent?.includes('Contrôles'));
+  const checkRows = (el: Element) =>
+    [...(checksTitle(el)?.nextElementSibling?.querySelectorAll('tbody tr') ?? [])].map((tr) =>
+      [...tr.querySelectorAll('td')].map((td) => clean(td)),
+    );
+  afterEach(() => {
+    session.disconnect();
+    localStorage.clear();
+    appPage.params = {};
+    appPage.url = new URL('http://localhost/pools/p');
+  });
+
+  it("page d'un lien en quarantaine : badge, résumé et tests avec verdict", async () => {
+    await connect();
+    appPage.params = { id: '224' };
+    const el = render(UrlPage, {});
+    await settled(el, '.url-meta');
+    expect(clean(el.querySelector('.url-meta .status.failed'))).toBe('quarantaine');
+    expect(clean(el.querySelector('.url-meta'))).toMatch(/HTTP 404 · testé le /);
+    expect(clean(checksTitle(el) ?? null)).toMatch(/3 morts comptés · en quarantaine depuis le /);
+    expect(checkRows(el).map((c) => c.slice(1))).toEqual([
+      ['404', 'mort', ''],
+      ['—', 'incertain', 'délai dépassé'],
+      ['404', 'mort', ''],
+      ['404', 'mort', ''],
+    ]);
+    expect(el.querySelector('td.verdict.dead')).not.toBeNull();
+  });
+
+  it("page d'un lien sain : dernier statut testé et sa date, sans badge", async () => {
+    await connect();
+    appPage.params = { id: '7' };
+    const el = render(UrlPage, {});
+    await settled(el, '.url-meta');
+    expect(el.querySelector('.url-meta .status.failed')).toBeNull();
+    const meta = clean(el.querySelector('.url-meta'));
+    expect(meta).toMatch(/HTTP 200 · testé le /);
+    expect(meta).not.toContain('HTTP 301');
+    expect(clean(checksTitle(el) ?? null)).toContain('0 mort compté');
+    expect(checkRows(el).map((c) => c.slice(1))).toEqual([['200', 'sain', '']]);
+  });
+
+  it('lien jamais testé : statut de la normalisation et panneau vide', async () => {
+    await connect();
+    appPage.params = { id: '8' };
+    const el = render(UrlPage, {});
+    await settled(el, '.url-meta');
+    expect(clean(el.querySelector('.url-meta'))).toContain('HTTP 200 · jamais testé');
+    expect(checkRows(el)).toEqual([['Jamais testé.']]);
+    expect(el.querySelector('[role=alert]')).toBeNull();
+  });
+
+  it('corpus : ?quarantined=true présélectionne le filtre et ne liste que la quarantaine', async () => {
+    await connect();
+    appPage.url = new URL('http://localhost/corpus?quarantined=true');
+    const el = render(CorpusPage, {});
+    await settled(el, 'tbody .cell-url');
+    const field = [...el.querySelectorAll('label.field')].find((l) => l.textContent?.includes('Quarantaine'));
+    expect(field?.querySelector('select')?.value).toBe('true');
+    expect(requested.find((u) => u.pathname.endsWith('/admin/urls'))?.searchParams.get('quarantined')).toBe('true');
+    const lines = [...el.querySelectorAll('tbody tr')];
+    expect(lines).toHaveLength(1);
+    expect(clean(lines[0].querySelector('.cell-url'))).toBe('Mort');
+    expect(clean(lines[0].querySelector('.status.failed'))).toBe('quarantaine');
+  });
+
+  it('tableau de bord : le compteur mène au corpus filtré', async () => {
+    await connect();
+    const el = render(DashboardPage, {});
+    await settled(el, '.tiles');
+    const tile = [...el.querySelectorAll('a.tile')].find((a) => a.textContent?.includes('En quarantaine'));
+    expect(tile?.getAttribute('href')).toBe('/corpus?quarantined=true');
+    expect(clean(tile?.querySelector('.value') ?? null)).toBe('4');
+    expect(tile?.classList.contains('warn')).toBe(true);
   });
 });
