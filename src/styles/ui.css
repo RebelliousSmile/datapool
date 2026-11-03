@@ -522,6 +522,11 @@ a.tile:hover .go { color: var(--accent); }
 .chip { display: inline-flex; align-items: center; gap: 4px; height: 20px; padding: 0 6px; font: var(--text-xs) / 1 var(--font-mono); color: var(--ink-2); border: 1px solid var(--line-strong); border-radius: var(--radius-sm); white-space: nowrap; }
 .chip.primary { color: var(--accent); border-color: var(--accent); }
 
+/* Verdict d'un contrôle de lien (page d'un lien). */
+.verdict.ok { color: var(--good); }
+.verdict.dead { color: var(--critical); }
+.verdict.unsure { color: var(--warning); }
+
 /* ======================================================================
    Pagination
    ====================================================================== */
