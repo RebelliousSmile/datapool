@@ -1,6 +1,6 @@
 ---
 objective: "webpool teste chaque jour le statut HTTP des liens, en garde l'historique et met en quarantaine un lien mort trois jours de suite, exclu des pools sans être supprimé ; datapool montre le dernier test, l'historique et la quarantaine."
-status: in-progress
+status: implemented
 ---
 
 <!-- Fill or omit these sections; never add, rename, or reorder one. -->
