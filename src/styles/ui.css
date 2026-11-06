@@ -575,16 +575,8 @@ a.tile:hover .go { color: var(--accent); }
 
 .alert-box { display: flex; gap: var(--space-2); align-items: flex-start; padding: var(--space-2) var(--space-3); font-size: var(--text-sm); border: 1px solid currentColor; border-radius: var(--radius-sm); }
 .alert-box.err { color: var(--critical); background: var(--critical-soft); }
+.alert-box.ok { color: var(--good); background: var(--good-soft); margin: 0; }
 .alert-box .icon { margin-top: 2px; }
-
-/* ======================================================================
-   Liste des pools
-   ====================================================================== */
-.pool-list .name a { font-family: var(--font-display); font-weight: 600; font-size: var(--text-md); color: var(--ink); text-decoration: none; }
-.pool-list .name a:hover { color: var(--accent); text-decoration: underline; }
-.pool-list .mini { width: 140px; }
-.pool-list .mini .stackbar { height: 6px; gap: 1px; }
-.pool-list .mini .stackbar .seg-u { border-radius: 0; }
 
 /* ======================================================================
    Fiche URL
@@ -651,7 +643,6 @@ a.tile:hover .go { color: var(--accent); }
   .card .body { padding: var(--space-2); }
   .card .title { font-size: var(--text-sm); }
 
-  .pool-list .slug, .pool-list .mini, .pool-list .h-slug, .pool-list .h-mini { display: none; }
   .table .hide-sm { display: none; }
   .show-sm { display: block; }
   .section-title { flex-wrap: wrap; row-gap: var(--space-2); }
@@ -935,10 +926,12 @@ kbd { font: 11px var(--font-mono); padding: 1px 6px; color: var(--muted); border
 .auth-demo { max-width: 520px; display: grid; gap: var(--space-2); padding: var(--space-4); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); }
 .auth-form { display: grid; align-content: center; gap: var(--space-4); padding: var(--space-10) var(--space-8); }
 .auth-form h2 { font-size: var(--text-xl); }
-.auth-tabs { display: grid; grid-template-columns: 1fr 1fr; padding: 3px; background: var(--surface-2); border-radius: var(--radius-md); }
-.auth-tabs a { display: grid; place-items: center; height: 36px; font: 600 var(--text-sm) var(--font-display); color: var(--ink-2); text-decoration: none; border-radius: calc(var(--radius-md) - 2px); }
-.auth-tabs a[aria-current='page'] { color: var(--ink); background: var(--surface); box-shadow: 0 0 0 1px var(--line-strong); }
+.auth-tabs { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; padding: 3px; background: var(--surface-2); border-radius: var(--radius-md); }
+.auth-tabs > * { display: grid; place-items: center; height: 36px; padding: 0 var(--space-2); font: 600 var(--text-sm) var(--font-display); color: var(--ink-2); text-decoration: none; background: none; border: 0; border-radius: calc(var(--radius-md) - 2px); cursor: pointer; }
+.auth-tabs > *:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.auth-tabs > [aria-current='page'] { color: var(--ink); background: var(--surface); box-shadow: 0 0 0 1px var(--line-strong); }
 .auth-alt { font-size: var(--text-sm); color: var(--ink-2); margin: 0; }
+.link-btn { padding: 0; font: inherit; color: var(--accent); background: none; border: 0; text-decoration: underline; cursor: pointer; }
 .divider { display: flex; align-items: center; gap: var(--space-3); font-size: var(--text-xs); color: var(--muted); }
 .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--line); }
 .check { display: flex; gap: var(--space-2); align-items: flex-start; font-size: var(--text-sm); color: var(--ink-2); }
@@ -973,3 +966,12 @@ kbd { font: 11px var(--font-mono); padding: 1px 6px; color: var(--muted); border
 .ledger > summary::-webkit-details-marker { display: none; }
 .ledger > summary::before { content: '▸'; color: var(--accent); font-family: var(--font-mono); }
 .ledger[open] > summary::before { content: '▾'; }
+
+/* Compte : mot de passe */
+.password-form { display: grid; gap: var(--space-4); max-width: 28rem; padding: var(--space-5); }
+.password-form h2 { font-size: var(--text-lg); }
+
+/* Recherche globale : pools d'un résultat */
+.hit-pools { display: flex; flex-wrap: wrap; gap: 4px; }
+.hit-pools a { text-decoration: none; }
+.search-head .meta strong { color: var(--ink); }

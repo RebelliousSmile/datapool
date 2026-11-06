@@ -1,6 +1,8 @@
-import { createClient, type Client, type Connection, type Schemas } from './api/client';
+import { createClient, SESSION_PREFIX, type Client, type Connection, type Schemas } from './api/client';
 
 // Connexion à l'API : URL et jeton gardés dans le localStorage du navigateur.
+// Le jeton est soit le jeton brut d'un client (`wp_…`), soit la session d'un
+// compte (`wps_…`, 30 jours) obtenue par e-mail et mot de passe.
 // Le jeton y est lisible par tout script de la page : l'interface n'en charge
 // aucun tiers (pas de CDN, Content-Security-Policy à poser à l'hébergement).
 const KEY = 'datapool.connection';
@@ -41,6 +43,30 @@ class Session {
     this.connection = connection;
     this.notice = '';
     localStorage.setItem(KEY, JSON.stringify(connection));
+  }
+
+  // Compte : connexion par e-mail et mot de passe, ou activation avec le code
+  // d'invitation. Le jeton de session obtenu suit le chemin d'un jeton brut.
+  async login(baseUrl: string, input: Schemas['LoginInput']) {
+    const { token } = await createClient({ baseUrl, token: '' }).login(input);
+    await this.connect({ baseUrl, token });
+  }
+
+  async activate(baseUrl: string, input: Schemas['ActivateInput']) {
+    const { token } = await createClient({ baseUrl, token: '' }).activate(input);
+    await this.connect({ baseUrl, token });
+  }
+
+  get isAccount() {
+    return this.connection?.token.startsWith(SESSION_PREFIX) ?? false;
+  }
+
+  // Déconnexion : une session de compte est aussi fermée côté API (au mieux :
+  // une API injoignable n'empêche pas d'oublier le jeton localement).
+  async logout() {
+    const client = this.isAccount ? this.client : null;
+    this.disconnect();
+    await client?.logout().catch(() => null);
   }
 
   // Reprend la connexion enregistrée ; un jeton révoqué la supprime.

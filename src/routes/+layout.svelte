@@ -3,6 +3,7 @@
   import { resolve } from '$app/paths';
   import { page } from '$app/state';
   import AccountMenu from '#lib/components/AccountMenu.svelte';
+  import AppSearch from '#lib/components/AppSearch.svelte';
   import ConnectForm from '#lib/components/ConnectForm.svelte';
   import Icon from '#lib/components/Icon.svelte';
   import IconSprite from '#lib/components/IconSprite.svelte';
@@ -49,6 +50,7 @@
         <a href={l.href} aria-current={current(l.href) ? 'page' : undefined}>{l.label}</a>
       {/each}
     </nav>
+    <AppSearch />
     <div class="app-user">
       <button class="btn btn-ghost btn-sm theme-toggle" type="button" aria-pressed={theme.light} onclick={() => theme.toggle()}>
         <Icon name={theme.light ? 'moon' : 'sun'} /><span class="lbl">{theme.light ? 'Sombre' : 'Clair'}</span>

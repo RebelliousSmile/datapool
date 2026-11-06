@@ -133,11 +133,17 @@ describe('ConnectForm', () => {
     });
   };
 
+  const tab = (el: Element, label: string) => {
+    [...el.querySelectorAll<HTMLButtonElement>('.auth-tabs button')].find((b) => b.textContent === label)!.click();
+    flushSync();
+  };
+
   it('connecte la session avec l’URL et le jeton saisis', async () => {
     session.disconnect();
     const fetchFn = vi.fn(async () => new Response(JSON.stringify({ name: 'moi', scope: 'admin' })));
     vi.stubGlobal('fetch', fetchFn);
     const el = render(ConnectForm, {});
+    tab(el, "Jeton d'API");
     const [url, token] = el.querySelectorAll('input');
     url.value = 'http://api.test/api/v1/';
     url.dispatchEvent(new Event('input'));
@@ -152,8 +158,9 @@ describe('ConnectForm', () => {
   it('affiche l’erreur de l’API', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ error: { code: 'unauthorized', message: 'Jeton refusé' } }), { status: 401 })));
     const el = render(ConnectForm, {});
+    tab(el, "Jeton d'API");
     await submit(el, () => el.querySelector('[role=alert]'));
-    expect(el.querySelector('button')!.disabled).toBe(false);
+    expect(el.querySelector<HTMLButtonElement>('.jack-submit')!.disabled).toBe(false);
     expect(el.querySelector('[role=alert]')?.textContent).toBe('Jeton refusé');
     expect(el.querySelector('input[type=password]')?.getAttribute('aria-invalid')).toBe('true');
   });

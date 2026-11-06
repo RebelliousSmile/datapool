@@ -1,9 +1,10 @@
 <script lang="ts">
+  import { resolve } from '$app/paths';
   import { session } from '#lib/session.svelte.ts';
   import Icon from './Icon.svelte';
 
-  // Menu du compte (avatar). Pour l'instant : le client de l'API connecté et
-  // la déconnexion ; vues, préférences et jetons viendront avec les comptes.
+  // Menu du compte (avatar) : client connecté, e-mail du compte, page du
+  // compte (mot de passe) pour une session par e-mail, déconnexion.
   let open = $state(false);
   let button = $state<HTMLButtonElement>();
   const name = $derived(session.me?.name ?? '');
@@ -27,8 +28,11 @@
     {initials}
   </button>
   <div class="menu" role="menu" hidden={!open}>
-    <div class="who"><strong>{name}</strong><span class="muted mono">client {session.me?.scope}</span></div>
-    <button class="menu-item" role="menuitem" type="button" onclick={() => session.disconnect()}>
+    <div class="who"><strong>{name}</strong><span class="muted mono">{session.me?.email ?? `client ${session.me?.scope}`}</span></div>
+    {#if session.isAccount}
+      <a class="menu-item" role="menuitem" href={resolve('/compte')} onclick={() => (open = false)}><Icon name="user" small /><b>Mon compte</b></a>
+    {/if}
+    <button class="menu-item" role="menuitem" type="button" onclick={() => session.logout()}>
       <Icon name="close" small /><b>Se déconnecter</b>
     </button>
   </div>

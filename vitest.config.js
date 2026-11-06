@@ -7,7 +7,8 @@ const mock = (name) => fileURLToPath(new URL(`./test/mocks/${name}.ts`, import.m
 
 // `pnpm test` : client d'API, mise en forme, session et composants de src/lib,
 // compilés par Svelte et rendus dans jsdom. Les pages (src/routes) dépendent du
-// routeur SvelteKit : elles sont vérifiées par `pnpm check` et à l'usage.
+// routeur SvelteKit : seuls le layout, /pools, /resultats et /compte sont rendus (avec les
+// substituts de test/mocks) ; les autres sont vérifiées par `pnpm check` et à l'usage.
 export default defineConfig({
   plugins: [svelte()],
   resolve: {

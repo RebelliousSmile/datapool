@@ -122,6 +122,32 @@ describe('createClient', () => {
     expect(calls[5].init).toEqual({ method: 'DELETE', headers: { Authorization: 'Bearer wp_x' }, signal: expect.any(AbortSignal) });
   });
 
+  it('comptes : connexion sans jeton, recherche, déconnexion, mot de passe', async () => {
+    const calls: { url: string; init: RequestInit }[] = [];
+    const fetchFn = (async (url: string, init: RequestInit) => {
+      calls.push({ url: url.replace('http://h/api/v1', ''), init });
+      return new Response(JSON.stringify({ token: 'wps_s' }), { status: 200 });
+    }) as unknown as typeof fetch;
+    const anon = createClient({ baseUrl: 'http://h/api/v1', token: '' }, fetchFn);
+    expect(await anon.login({ email: 'a@b.c', password: 'secret' })).toEqual({ token: 'wps_s' });
+    await anon.activate({ email: 'a@b.c', code: 'k', password: 'x'.repeat(12) });
+    const api = createClient(conn, fetchFn);
+    await api.search({ q: 'chat', limit: 50, offset: 0 });
+    await api.logout();
+    await api.changePassword({ current: 'a', password: 'b' });
+    expect(calls.map((c) => `${c.init.method ?? 'GET'} ${c.url}`)).toEqual([
+      'POST /account/login',
+      'POST /account/activate',
+      'GET /search?q=chat&limit=50&offset=0',
+      'POST /account/logout',
+      'PUT /account/password',
+    ]);
+    expect(calls[0].init.headers).toEqual({ 'Content-Type': 'application/json' });
+    expect(calls[0].init.body).toBe('{"email":"a@b.c","password":"secret"}');
+    expect(calls[3].init.headers).toEqual({ Authorization: 'Bearer wp_x' });
+    expect(calls[4].init.body).toBe('{"current":"a","password":"b"}');
+  });
+
   it("rend absolus les chemins de médias de l'API", () => {
     const api = createClient({ baseUrl: 'https://api.ex/api/v1', token: 'x' });
     expect(api.mediaUrl('/api/v1/media/a.webp')).toBe('https://api.ex/api/v1/media/a.webp');
