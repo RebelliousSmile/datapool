@@ -77,6 +77,43 @@ describe('session', () => {
     expect(session.me?.name).toBe('moi');
   });
 
+  it('ouvre une session de compte par e-mail ou par activation', async () => {
+    const calls: string[] = [];
+    vi.stubGlobal('fetch', vi.fn(async (url: string, init: RequestInit = {}) => {
+      calls.push(`${init.method ?? 'GET'} ${url.replace(conn.baseUrl, '')}`);
+      if (url.endsWith('/me')) return json({ name: 'ana', scope: 'read', email: 'ana@ex.fr' });
+      return json({ token: 'wps_s1', expires_at: '2026-12-06T00:00:00Z' });
+    }));
+    await session.login(conn.baseUrl, { email: 'ana@ex.fr', password: 'secret' });
+    expect(session.isAccount).toBe(true);
+    expect(session.me?.email).toBe('ana@ex.fr');
+    expect(readConnection(localStorage)).toEqual({ baseUrl: conn.baseUrl, token: 'wps_s1' });
+    session.disconnect();
+    expect(session.isAccount).toBe(false);
+    await session.activate(conn.baseUrl, { email: 'ana@ex.fr', code: 'k', password: 'x'.repeat(12) });
+    expect(session.isAccount).toBe(true);
+    expect(calls).toEqual(['POST /account/login', 'GET /me', 'POST /account/activate', 'GET /me']);
+  });
+
+  it('ferme la session de compte côté API, pas un jeton brut', async () => {
+    const fetchFn = vi.fn(async (..._args: unknown[]) => json({ name: 'moi', scope: 'read' }));
+    vi.stubGlobal('fetch', fetchFn);
+    await session.connect(conn);
+    expect(session.isAccount).toBe(false);
+    await session.logout();
+    expect(session.me).toBeNull();
+    expect(fetchFn).toHaveBeenCalledTimes(1);
+
+    await session.connect({ ...conn, token: 'wps_s' });
+    fetchFn.mockImplementation(async () => {
+      throw new TypeError('fetch failed');
+    });
+    await session.logout();
+    expect(session.me).toBeNull();
+    expect(localStorage.length).toBe(0);
+    expect(fetchFn).toHaveBeenLastCalledWith(`${conn.baseUrl}/account/logout`, expect.objectContaining({ method: 'POST' }));
+  });
+
   it('ne fait rien sans connexion enregistrée', async () => {
     const fetchFn = vi.fn();
     vi.stubGlobal('fetch', fetchFn);

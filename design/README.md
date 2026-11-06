@@ -1,7 +1,7 @@
 # Direction artistique « Data Pool »
 
-Maquettes et jetons de l'interface datapool (phase 5 du plan
-[`aidd_docs/tasks/2026_10/2026_10_30_interface`](../aidd_docs/tasks/2026_10/2026_10_30_interface/plan.md)).
+Maquettes et jetons de l'interface datapool (phase 5 du plan d'interface, terminé le
+2026-11-06 ; ses décisions durables sont dans [`aidd_docs/memory/internal/decisions/`](../aidd_docs/memory/internal/decisions/)).
 Ce dossier ne touche ni `src/`, ni l'API, ni `package.json` : l'intégration se fait ensuite
 dans les composants Svelte (section « Intégration » plus bas).
 

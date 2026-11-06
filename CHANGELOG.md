@@ -5,6 +5,12 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions [Sem
 
 ## [Unreleased]
 
+### Added
+
+- Comptes clients sur invitation : activation (e-mail, code, mot de passe), connexion par e-mail et mot de passe, session de 30 jours, déconnexion côté API, page « Mon compte » (changement de mot de passe). Le jeton d'API reste accepté.
+- Recherche globale dans tous les pools visibles : champ dans l'en-tête (raccourci « / »), page `/resultats` avec les pools et le rang de chaque lien.
+- Liste des pools en cartes.
+
 ## [v0.1.0] - 2026-11-03
 
 Première version publiée : historique complet dans `a151438..v0.1.0`.
