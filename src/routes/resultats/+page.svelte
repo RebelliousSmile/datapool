@@ -7,8 +7,6 @@
   const q = $derived(page.url.searchParams.get('q') ?? '');
 </script>
 
-<svelte:head><title>Recherche · datapool</title></svelte:head>
-
 <div class="page-head search-head">
   <div class="titles">
     <h1>Recherche</h1>

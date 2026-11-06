@@ -5,8 +5,9 @@
   import Icon from './Icon.svelte';
 
   // Recherche globale de l'en-tête : mène à /resultats?q=. La touche « / »
-  // y place le curseur, hors d'un champ de saisie.
-  let q = $state(page.url.searchParams.get('q') ?? '');
+  // y place le curseur, hors d'un champ de saisie. Le terme suit l'URL : celui
+  // de /resultats, vide ailleurs ; la saisie le remplace jusqu'à la navigation.
+  let q = $derived(page.url.pathname === resolve('/resultats') ? (page.url.searchParams.get('q') ?? '') : '');
   let input: HTMLInputElement | undefined = $state();
 
   function submit(event: SubmitEvent) {

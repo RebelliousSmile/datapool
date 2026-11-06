@@ -335,6 +335,12 @@ describe('AppSearch', () => {
     expect(navCalls.at(-1)?.url).toBe('/resultats?q=chats%20%26%20chiens');
   });
 
+  it('laisse le champ vide hors de /resultats', () => {
+    appPage.url = new URL('http://localhost/pools?q=chat');
+    const el = render(AppSearch, {});
+    expect(el.querySelector('input')!.value).toBe('');
+  });
+
   it('ignore un terme vide', () => {
     appPage.url = new URL('http://localhost/pools');
     const el = render(AppSearch, {});
