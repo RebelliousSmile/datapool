@@ -31,9 +31,29 @@
     ].filter((l) => session.isAdmin || !l.admin),
   );
 
+  // Titre de l'onglet, fixé ici pour toutes les routes : une page qui le fixait
+  // seule le laissait en place après navigation vers une page qui ne le fixe pas.
+  const titles: Record<string, string> = {
+    '/': 'Tableau de bord',
+    '/compte': 'Compte',
+    '/corpus': 'Corpus',
+    '/domains': 'Domaines',
+    '/pools': 'Pools',
+    '/recherches': 'Recherches',
+    '/resultats': 'Recherche',
+    '/urls/[id]': 'Lien',
+  };
+  const title = $derived.by(() => {
+    const id = page.route.id ?? '';
+    const name = id === '/pools/[slug]' ? page.params.slug : titles[id];
+    return name ? `${name} · datapool` : 'datapool';
+  });
+
   const current = (href: string) =>
     href === resolve('/') ? page.url.pathname === href : page.url.pathname.startsWith(href);
 </script>
+
+<svelte:head><title>{title}</title></svelte:head>
 
 <IconSprite />
 

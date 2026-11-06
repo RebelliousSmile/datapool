@@ -56,6 +56,8 @@ afterEach(() => {
   document.body.innerHTML = '';
   vi.unstubAllGlobals();
   session.disconnect();
+  appPage.route = { id: null };
+  appPage.params = {};
 });
 
 describe('page /pools', () => {
@@ -129,7 +131,6 @@ describe('page /resultats', () => {
     const fetchFn = await connect('wps_s', { name: 'ana', scope: 'read' }, emptySearch('chats'));
     const el = render(ResultatsPage);
     await until(() => el.querySelector('.search-count'));
-    expect(document.title).toBe('Recherche · datapool');
     expect(el.querySelector('h1')?.textContent).toBe('Recherche');
     expect(el.querySelector('.search-head .meta strong')?.textContent).toBe('chats');
     expect(fetchFn.mock.calls.at(-1)?.[0]).toBe(`${API}/search?q=chats&limit=50&offset=0`);
@@ -177,5 +178,17 @@ describe('layout', () => {
     expect(input).not.toBeNull();
     document.body.dispatchEvent(new KeyboardEvent('keydown', { key: '/', bubbles: true }));
     expect(document.activeElement).toBe(input);
+  });
+
+  it.each([
+    ['/resultats', {}, 'Recherche · datapool'],
+    ['/compte', {}, 'Compte · datapool'],
+    ['/pools/[slug]', { slug: 'chats' }, 'chats · datapool'],
+    [null, {}, 'datapool'],
+  ])('donne à l’onglet le titre de la route %s', (id, params, title) => {
+    appPage.route = { id };
+    appPage.params = params;
+    render(Layout, { children });
+    expect(document.title).toBe(title);
   });
 });

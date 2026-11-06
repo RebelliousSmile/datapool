@@ -3,8 +3,6 @@
   import { session } from '#lib/session.svelte.ts';
 </script>
 
-<svelte:head><title>Compte · datapool</title></svelte:head>
-
 <div class="page-head">
   <div class="titles">
     <h1>Mon compte</h1>

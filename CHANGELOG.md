@@ -10,6 +10,12 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions [Sem
 - Comptes clients sur invitation : activation (e-mail, code, mot de passe), connexion par e-mail et mot de passe, session de 30 jours, déconnexion côté API, page « Mon compte » (changement de mot de passe). Le jeton d'API reste accepté.
 - Recherche globale dans tous les pools visibles : champ dans l'en-tête (raccourci « / »), page `/resultats` avec les pools et le rang de chaque lien.
 - Liste des pools en cartes.
+- Favicon reprenant la marque « dp ».
+
+### Fixed
+
+- Titre de l'onglet fixé pour chaque route : il ne reste plus sur « Recherche » après avoir quitté les résultats.
+- Le champ de recherche de l'en-tête se vide hors de la page des résultats.
 
 ## [v0.1.0] - 2026-11-03
 
