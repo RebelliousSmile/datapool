@@ -18,10 +18,13 @@
     fmtEuros,
     fmtGiri,
     historyQuery,
+    LIST_PROVIDER,
     knownPool,
     parseLimit,
+    parseLinkLines,
     payersFor,
     quote,
+    quoteList,
     spentOn,
   } from '#lib/billing.ts';
   import { fmtDate, fmtNumber } from '#lib/format.ts';
@@ -49,7 +52,18 @@
 
   const payers = $derived(billing ? payersFor(billing, form.pool) : []);
   const payer = $derived(payers.find((p) => p.value === form.payer));
-  const devis = $derived(billing ? quote(billing, { provider: form.provider, pages: form.pages, payer }) : null);
+  // Recherche (provider, pages) ou liste de liens collée (une URL par ligne),
+  // examinée par webpool comme les résultats d'une recherche.
+  let mode = $state<'search' | 'list'>('search');
+  let linksText = $state('');
+  const parsedLinks = $derived(parseLinkLines(linksText));
+  const devis = $derived(
+    !billing
+      ? null
+      : mode === 'list'
+        ? quoteList(billing, { count: parsedLinks.links.length, payer })
+        : quote(billing, { provider: form.provider, pages: form.pages, payer }),
+  );
   const giriPerEur = $derived(billing?.giri_per_eur ?? 1000);
 
   $effect(() => {
@@ -65,7 +79,7 @@
   });
   // OpenRouter n'achète qu'une page.
   $effect(() => {
-    if (devis && form.pages > devis.maxPages) form.pages = devis.maxPages;
+    if (mode === 'search' && devis && form.pages > devis.maxPages) form.pages = devis.maxPages;
   });
 
   async function buy(event: SubmitEvent) {
@@ -73,15 +87,16 @@
     if (screen.sending) return;
     const client = session.client;
     if (!client || !devis || devis.problem || !form.query.trim()) return;
-    const bought = await screen.buy(client, {
-      query: form.query.trim(),
-      provider: form.provider,
-      pages: form.pages,
-      ...(form.pool ? { pool: form.pool } : {}),
-      ...(form.payer ? { community: form.payer } : {}),
-    });
+    const target = { ...(form.pool ? { pool: form.pool } : {}), ...(form.payer ? { community: form.payer } : {}) };
+    const bought = await screen.buy(
+      client,
+      mode === 'list'
+        ? { query: form.query.trim(), provider: LIST_PROVIDER, pages: 1, links: parsedLinks.links, ...target }
+        : { query: form.query.trim(), provider: form.provider, pages: form.pages, ...target },
+    );
     if (bought) {
       form.query = '';
+      if (mode === 'list') linksText = '';
       offset = 0;
     }
   }
@@ -319,24 +334,52 @@
   </details>
 
   <div class="section-title"><h2>Nouvelle recherche</h2><span class="eyebrow">{fmtNumber(billing.max_queued)} en attente au plus</span></div>
-  {#if billing.prices.length === 0}
+  <div class="tabs" role="group" aria-label="Type de soumission">
+    <button class="tab" type="button" aria-pressed={mode === 'search'} onclick={() => (mode = 'search')}>Recherche</button>
+    <button class="tab" type="button" aria-pressed={mode === 'list'} onclick={() => (mode = 'list')}>Liste de liens</button>
+  </div>
+  {#if mode === 'list'}
+    <p class="muted">
+      Une URL par ligne, suivie si vous le voulez d'un titre. La liste est examinée comme les résultats d'une recherche
+      (normalisation, classement, vignettes) et ses liens entrent dans le pool s'il les accepte. Réservée aux pools de vos
+      communautés, payée par le pot : {fmtGiri(billing.lists.price_per_link)} par lien, {fmtNumber(billing.lists.max_links)} liens au plus.
+    </p>
+  {/if}
+  {#if mode === 'search' && billing.prices.length === 0}
     <p class="muted">Aucun provider n'est ouvert aux recherches.</p>
   {:else}
     <form class="filters" onsubmit={buy}>
       <label class="field"
-        ><span>Requête</span><input class="input" bind:value={form.query} maxlength="200" required placeholder="長崎 写真 フリー素材" /></label
+        ><span>{mode === 'list' ? 'Libellé de la liste' : 'Requête'}</span><input
+          class="input"
+          bind:value={form.query}
+          maxlength="200"
+          required
+          placeholder={mode === 'list' ? 'Japon : sources photo libres' : '長崎 写真 フリー素材'}
+        /></label
       >
-      <label class="field"
-        ><span>Provider</span>
-        <select class="input" bind:value={form.provider}>
-          {#each billing.prices as p (p.provider)}
-            <option value={p.provider}>{p.provider} — {fmtGiri(p.unit_price)} la page</option>
-          {/each}
-        </select>
-      </label>
-      <label class="field"
-        ><span>Pages</span><input class="input" type="number" min="1" max={devis?.maxPages ?? 1} bind:value={form.pages} /></label
-      >
+      {#if mode === 'list'}
+        <label class="field links-field"
+          ><span>Liens</span><textarea
+            class="input"
+            rows="8"
+            bind:value={linksText}
+            placeholder="https://example.jp/page  Titre facultatif (une URL par ligne)"
+          ></textarea></label
+        >
+      {:else}
+        <label class="field"
+          ><span>Provider</span>
+          <select class="input" bind:value={form.provider}>
+            {#each billing.prices as p (p.provider)}
+              <option value={p.provider}>{p.provider} — {fmtGiri(p.unit_price)} la page</option>
+            {/each}
+          </select>
+        </label>
+        <label class="field"
+          ><span>Pages</span><input class="input" type="number" min="1" max={devis?.maxPages ?? 1} bind:value={form.pages} /></label
+        >
+      {/if}
       <label class="field"
         ><span>Pool visé</span>
         <select class="input" bind:value={form.pool}>
@@ -353,16 +396,33 @@
         </select>
       </label>
       <button class="btn btn-primary" disabled={screen.sending || !devis || !!devis.problem || !form.query.trim()}>
-        <Icon name="search" small />{screen.sending ? 'Achat…' : 'Acheter'}{devis ? ` · ${fmtGiri(devis.price)}` : ''}
+        <Icon name="search" small />{screen.sending ? 'Envoi…' : mode === 'list' ? 'Soumettre' : 'Acheter'}{devis
+          ? ` · ${fmtGiri(devis.price)}`
+          : ''}
       </button>
     </form>
     {#if devis}
       <p class="muted" aria-live="polite">
-        {fmtGiri(devis.price)} ({fmtEuros(devis.price, giriPerEur)}) pour {devis.price / devis.unitPrice} page{devis.price / devis.unitPrice > 1 ? 's' : ''}
+        {#if mode === 'list'}
+          {fmtGiri(devis.price)} ({fmtEuros(devis.price, giriPerEur)}) pour {parsedLinks.links.length} lien{parsedLinks.links.length > 1 ? 's' : ''}
+          {#if parsedLinks.duplicates}· {parsedLinks.duplicates} doublon{parsedLinks.duplicates > 1 ? 's' : ''} retiré{parsedLinks.duplicates > 1 ? 's' : ''}{/if}
+        {:else}
+          {fmtGiri(devis.price)} ({fmtEuros(devis.price, giriPerEur)}) pour {devis.price / devis.unitPrice} page{devis.price / devis.unitPrice > 1 ? 's' : ''}
+        {/if}
         {#if !devis.problem}· solde après achat : {fmtGiri(devis.after)}{/if}
         {#if form.pool}· les liens trouvés entrent dans le pool s'il les accepte{/if}
       </p>
       {#if devis.problem}<div class="alert-box err" role="alert"><Icon name="alert" small />{devis.problem}</div>{/if}
+      {#if mode === 'list' && parsedLinks.rejected.length}
+        <div class="alert-box err" role="alert">
+          <Icon name="alert" small />{parsedLinks.rejected.length} ligne{parsedLinks.rejected.length > 1 ? 's' : ''} ignorée{parsedLinks.rejected.length > 1
+            ? 's'
+            : ''} (URL http(s) attendue) : {parsedLinks.rejected
+            .slice(0, 5)
+            .map((r) => `ligne ${r.line}`)
+            .join(', ')}{parsedLinks.rejected.length > 5 ? '…' : ''}
+        </div>
+      {/if}
     {/if}
   {/if}
   {#if screen.sendError}<div class="alert-box err" role="alert"><Icon name="alert" small />{screen.sendError}</div>{/if}
@@ -410,7 +470,9 @@
                   {#if r.status === 'queued' && !view}<div class="show-sm">{@render cancelButton(r)}</div>{/if}
                 </td>
                 <td><span class="status {STATUS_CLASS[r.status]}">{REQUEST_STATUS_LABELS[r.status]}</span></td>
-                <td class="mono hide-sm">{r.provider} · {r.calls_done}/{r.pages}</td>
+                <td class="mono hide-sm"
+                  >{r.links !== null ? `liste · ${r.links} lien${r.links > 1 ? 's' : ''}` : `${r.provider} · ${r.calls_done}/${r.pages}`}</td
+                >
                 <td class="hide-sm">
                   {#if r.pool}<a href={resolve('/pools/[slug]', { slug: r.pool })}>{r.pool}</a>{:else}—{/if}
                   {#if r.community}<div class="muted">payé par {r.community}</div>{/if}

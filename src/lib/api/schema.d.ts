@@ -893,7 +893,7 @@ export interface paths {
             };
         };
         put?: never;
-        /** Achète une recherche : prix débité d'avance, exécution par la tâche `webpool requests run`, pages non lancées remboursées */
+        /** Achète une recherche, ou soumet une liste de liens (provider list) : prix débité d'avance, examen par la tâche `webpool requests run` (normalize, classify, media, pool), ce qui n'a pas été fait remboursé */
         post: {
             parameters: {
                 query?: never;
@@ -1606,6 +1606,13 @@ export interface components {
             communities: components["schemas"]["CommunityWallet"][];
             /** @description invitations à des communautés, en attente d'acceptation */
             invitations: components["schemas"]["Invitation"][];
+            /** @description listes de liens soumises par les membres d'une communauté (provider list) */
+            lists: {
+                /** @description giri par lien, payés d'un bloc sur le pot de la communauté */
+                price_per_link: number;
+                /** @description liens au plus par liste, doublons retirés */
+                max_links: number;
+            };
         };
         WalletEntry: {
             id: number;
@@ -1658,10 +1665,12 @@ export interface components {
             started_at: string | null;
             /** Format: date-time */
             finished_at: string | null;
+            /** @description liste de liens : nombre de liens soumis ; null pour une recherche */
+            links: number | null;
         };
         SearchRequestInput: {
             query: string;
-            /** @description un des providers de `GET /billing` */
+            /** @description un des providers de `GET /billing`, ou `list` pour soumettre une liste de liens */
             provider: string;
             /** @default 1 */
             pages: number;
@@ -1669,6 +1678,11 @@ export interface components {
             pool?: string;
             /** @description communauté dont le pot paie. Un pool d'une de vos communautés se paie toujours par elle : déduite si une seule communauté possède le pool, obligatoire si plusieurs ; jamais en personnel. */
             community?: string;
+            /** @description provider `list` seulement : liens à examiner (URL, ou {url, title}) ; http(s), doublons retirés, `max_links` au plus. Réservé aux pools d'une communauté du client, payé par son pot ; `query` est alors le libellé de la liste. */
+            links?: (string | {
+                url: string;
+                title?: string | null;
+            })[];
         };
         RequestReceipt: {
             request: components["schemas"]["SearchRequest"];

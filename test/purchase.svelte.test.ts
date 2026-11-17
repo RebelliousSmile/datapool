@@ -12,6 +12,7 @@ const billing = (balance: number): Schemas['Billing'] => ({
   personal: { balance },
   communities: [],
   invitations: [],
+  lists: { price_per_link: 1, max_links: 200 },
 });
 const receipt = (id: number, replayed = false) => ({
   request: { id, price: 10 } as Schemas['SearchRequest'],

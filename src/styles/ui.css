@@ -753,7 +753,7 @@ kbd { font: 11px var(--font-mono); padding: 1px 6px; color: var(--muted); border
 .tabs { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 2px; min-width: 0; }
 .tab { flex: none; position: relative; display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px; font: var(--text-md) var(--font-body); color: var(--ink-2); background: transparent; border: 1px solid var(--line); border-radius: var(--radius-pill); cursor: pointer; overflow: hidden; }
 .tab:hover { color: var(--ink); border-color: var(--line-strong); }
-.tab[aria-selected='true'] { color: var(--ink); background: var(--accent-soft); border-color: var(--accent); }
+.tab[aria-selected='true'], .tab[aria-pressed='true'] { color: var(--ink); background: var(--accent-soft); border-color: var(--accent); }
 .tab .cnt { font: var(--text-xs) var(--font-mono); color: var(--muted); }
 .tab[aria-selected='true'] .cnt { color: var(--ink-2); }
 .tab.zero { opacity: 0.45; }
@@ -968,3 +968,7 @@ kbd { font: 11px var(--font-mono); padding: 1px 6px; color: var(--muted); border
 .ledger > summary::-webkit-details-marker { display: none; }
 .ledger > summary::before { content: '▸'; color: var(--accent); font-family: var(--font-mono); }
 .ledger[open] > summary::before { content: '▾'; }
+
+/* Liste de liens à soumettre : le champ prend toute la largeur du formulaire. */
+.filters .links-field { flex: 1 1 100%; }
+.filters .links-field textarea { width: 100%; min-height: 9rem; resize: vertical; font-family: var(--font-mono); font-size: var(--text-sm); }

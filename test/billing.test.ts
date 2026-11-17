@@ -13,6 +13,8 @@ import {
   fmtGiri,
   historyQuery,
   knownPool,
+  parseLinkLines,
+  quoteList,
   parseLimit,
   payersFor,
   quote,
@@ -33,6 +35,7 @@ const billing: Schemas['Billing'] = {
     { slug: 'club', label: 'Club', role: 'owner', balance: 5, monthly_limit: null, spent_30d: 0, contributed: 2000, pools: [] },
   ],
   invitations: [],
+  lists: { price_per_link: 1, max_links: 3 },
 };
 
 describe('recherches payantes', () => {
@@ -114,5 +117,33 @@ describe('recherches payantes', () => {
     expect(entryDetail({ search_request_id: 12, note: 'pages non lancées' })).toBe('recherche #12 · pages non lancées');
     expect(entryDetail({ amount_cents: 1250, reference: 'kofi-1' }).replace(/\s/g, ' ')).toBe('12,50 € reçus · kofi-1');
     expect(entryDetail({})).toBe('—');
+  });
+
+  it('liste de liens : une URL par ligne, titre facultatif, lignes refusées et doublons comptés', () => {
+    const parsed = parseLinkLines(
+      ['# sources Japon', '', 'https://a.jp/x\tTemple de Kyoto', '  https://b.jp  ', 'ftp://c.jp', 'pas une url', 'https://a.jp/x', 'https://d.jp/y titre en deux mots'].join('\n'),
+    );
+    expect(parsed.links).toEqual([
+      { url: 'https://a.jp/x', title: 'Temple de Kyoto' },
+      { url: 'https://b.jp', title: null },
+      { url: 'https://d.jp/y', title: 'titre en deux mots' },
+    ]);
+    expect(parsed.rejected).toEqual([{ line: 5, text: 'ftp://c.jp' }, { line: 6, text: 'pas une url' }]);
+    expect(parsed.duplicates).toBe(1);
+    expect(parseLinkLines(`https://a.jp/${'x'.repeat(2000)}`).rejected).toHaveLength(1);
+  });
+
+  it('devis d’une liste : pot de la communauté, prix par lien, limites', () => {
+    const [personal, atelier, club] = payersFor(billing, 'lora');
+    expect(quoteList(billing, { count: 2, payer: atelier })).toEqual({ unitPrice: 1, maxPages: 1, price: 2, balance: 500, after: 498, problem: null });
+    expect(quoteList(billing, { count: 2, payer: personal })?.problem).toMatch(/pot d'une communauté/);
+    expect(quoteList(billing, { count: 2, payer: club })?.problem).toBe('Cette communauté ne paie que ses pools (aucun).');
+    expect(quoteList(billing, { count: 0, payer: atelier })?.problem).toMatch(/au moins un lien/);
+    expect(quoteList(billing, { count: 4, payer: atelier })?.problem).toBe('3 liens au plus par liste (4 ici).');
+    const poor = { ...atelier, balance: 1 };
+    expect(quoteList(billing, { count: 2, payer: poor })?.problem).toMatch(/Solde insuffisant/);
+    const capped = { ...atelier, limitLeft: 1 };
+    expect(quoteList(billing, { count: 2, payer: capped })?.problem).toMatch(/Plafond du mois/);
+    expect(quoteList(billing, { count: 2, payer: undefined })).toBeNull();
   });
 });

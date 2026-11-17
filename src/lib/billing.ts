@@ -143,3 +143,62 @@ export function entryDetail(e: Pick<Schemas['WalletEntry'], 'search_request_id' 
   ];
   return parts.filter(Boolean).join(' · ') || '—';
 }
+
+// --- Listes de liens (provider `list`) : un membre soumet des liens pour un
+// pool de sa communauté ; webpool les examine comme les résultats d'une recherche.
+
+export const LIST_PROVIDER = 'list';
+
+export type ParsedLinks = {
+  links: { url: string; title: string | null }[];
+  // lignes refusées (numéro à partir de 1, texte), à corriger avant l'envoi
+  rejected: { line: number; text: string }[];
+  duplicates: number;
+};
+
+// Une ligne par lien : l'URL, puis un titre facultatif après une tabulation ou
+// des espaces. Lignes vides et commentaires (#) ignorés ; doublons retirés.
+export function parseLinkLines(text: string): ParsedLinks {
+  const out: ParsedLinks = { links: [], rejected: [], duplicates: 0 };
+  const seen = new Set<string>();
+  text.split(/\r?\n/).forEach((raw, i) => {
+    const line = raw.trim();
+    if (!line || line.startsWith('#')) return;
+    const [url, ...rest] = line.split(/\s+/);
+    let ok: boolean;
+    try {
+      const parsed = new URL(url);
+      ok = parsed.protocol === 'http:' || parsed.protocol === 'https:';
+    } catch {
+      ok = false;
+    }
+    if (!ok || url.length > 2000) {
+      out.rejected.push({ line: i + 1, text: line.slice(0, 120) });
+      return;
+    }
+    if (seen.has(url)) {
+      out.duplicates += 1;
+      return;
+    }
+    seen.add(url);
+    out.links.push({ url, title: rest.join(' ').slice(0, 300) || null });
+  });
+  return out;
+}
+
+// Devis d'une liste : payée d'un bloc par le pot d'une communauté, au prix
+// par lien ; jamais sur le portefeuille personnel.
+export function quoteList(billing: Billing, { count, payer }: { count: number; payer: Payer | undefined }): Quote | null {
+  if (!payer) return null;
+  const { price_per_link: perLink, max_links: maxLinks } = billing.lists;
+  const total = perLink * count;
+  const base = { unitPrice: perLink, maxPages: 1, price: total, balance: payer.balance, after: payer.balance - total };
+  let problem: string | null = null;
+  if (!payer.value) problem = "Une liste se paie sur le pot d'une communauté : choisir un pool de votre communauté.";
+  else if (payer.disabled) problem = `Cette communauté ${payer.disabled}.`;
+  else if (count === 0) problem = 'Coller au moins un lien (une URL par ligne).';
+  else if (count > maxLinks) problem = `${maxLinks} liens au plus par liste (${count} ici).`;
+  else if (total > payer.balance) problem = `Solde insuffisant : ${fmtGiri(payer.balance)} pour ${fmtGiri(total)}.`;
+  else if (payer.limitLeft !== null && total > payer.limitLeft) problem = `Plafond du mois : il vous reste ${fmtGiri(payer.limitLeft)}.`;
+  return { ...base, problem };
+}
