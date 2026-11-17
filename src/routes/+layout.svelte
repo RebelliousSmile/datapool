@@ -3,6 +3,7 @@
   import { resolve } from '$app/paths';
   import { page } from '$app/state';
   import AccountMenu from '#lib/components/AccountMenu.svelte';
+  import AppSearch from '#lib/components/AppSearch.svelte';
   import ConnectForm from '#lib/components/ConnectForm.svelte';
   import Icon from '#lib/components/Icon.svelte';
   import IconSprite from '#lib/components/IconSprite.svelte';
@@ -30,9 +31,29 @@
     ].filter((l) => session.isAdmin || !l.admin),
   );
 
+  // Titre de l'onglet, fixé ici pour toutes les routes : une page qui le fixait
+  // seule le laissait en place après navigation vers une page qui ne le fixe pas.
+  const titles: Record<string, string> = {
+    '/': 'Tableau de bord',
+    '/compte': 'Compte',
+    '/corpus': 'Corpus',
+    '/domains': 'Domaines',
+    '/pools': 'Pools',
+    '/recherches': 'Recherches',
+    '/resultats': 'Recherche',
+    '/urls/[id]': 'Lien',
+  };
+  const title = $derived.by(() => {
+    const id = page.route.id ?? '';
+    const name = id === '/pools/[slug]' ? page.params.slug : titles[id];
+    return name ? `${name} · datapool` : 'datapool';
+  });
+
   const current = (href: string) =>
     href === resolve('/') ? page.url.pathname === href : page.url.pathname.startsWith(href);
 </script>
+
+<svelte:head><title>{title}</title></svelte:head>
 
 <IconSprite />
 
@@ -49,6 +70,7 @@
         <a href={l.href} aria-current={current(l.href) ? 'page' : undefined}>{l.label}</a>
       {/each}
     </nav>
+    <AppSearch />
     <div class="app-user">
       <button class="btn btn-ghost btn-sm theme-toggle" type="button" aria-pressed={theme.light} onclick={() => theme.toggle()}>
         <Icon name={theme.light ? 'moon' : 'sun'} /><span class="lbl">{theme.light ? 'Sombre' : 'Clair'}</span>

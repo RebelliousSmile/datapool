@@ -275,6 +275,7 @@ export const ERROR_CATEGORY_LABELS: Record<string, string> = {
   host_refused: 'hôte refusé',
   http_error: 'erreur HTTP',
   network: 'erreur réseau',
+  quarantined: 'lien mort (quarantaine)',
 };
 
 // Résumé d'un compte rendu : combien de liens par sort.

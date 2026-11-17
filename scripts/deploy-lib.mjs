@@ -6,7 +6,7 @@ import { createHash } from 'node:crypto';
 
 // Liste blanche de ce qui part en staging : de quoi installer les dépendances et
 // construire le site. Seul le résultat du build (build/) part sur la cible.
-export const DEPLOY_PATHS = ['src', 'package.json', 'pnpm-lock.yaml', 'tsconfig.json', 'vite.config.js', 'LICENSE'];
+export const DEPLOY_PATHS = ['src', 'static', 'package.json', 'pnpm-lock.yaml', 'tsconfig.json', 'vite.config.js', 'LICENSE'];
 
 const SAFE_PATH = /^[A-Za-z0-9._/-]+$/;
 const SAFE_HOST = /^[a-z0-9.-]+$/i;

@@ -14,9 +14,16 @@
   const STATUSES = ['pending', 'normalized', 'classified', 'duplicate', 'error'];
 
   // Filtres saisis, appliqués à la validation du formulaire.
-  // `?domain=` et `?status=` (liens des domaines, du tableau de bord, d'une fiche) présélectionnent les filtres.
+  // `?domain=`, `?status=` et `?quarantined=` (liens des domaines, du tableau de bord, d'une fiche) présélectionnent les filtres.
   const param = (name: string) => page.url.searchParams.get(name) ?? '';
-  let form = $state({ q: '', status: param('status'), theme: '', domain: param('domain'), order: 'recent' });
+  let form = $state({
+    q: '',
+    status: param('status'),
+    quarantined: param('quarantined'),
+    theme: '',
+    domain: param('domain'),
+    order: 'recent',
+  });
   let filters = $state({ ...form });
   let offset = $state(0);
 
@@ -50,6 +57,14 @@
     <select class="input" bind:value={form.status}>
       <option value="">tous</option>
       {#each STATUSES as s (s)}<option value={s}>{urlStatusLabel(s)}</option>{/each}
+    </select>
+  </label>
+  <label class="field"
+    ><span>Quarantaine</span>
+    <select class="input" bind:value={form.quarantined}>
+      <option value="">toutes</option>
+      <option value="false">hors quarantaine</option>
+      <option value="true">en quarantaine</option>
     </select>
   </label>
   <label class="field"
@@ -98,7 +113,10 @@
             <tr>
               <td class="cell-url"><a href={resolve('/urls/[id]', { id: String(u.id) })}>{u.title || u.url}</a></td>
               <td class="mono hide-sm">{u.domain ?? '—'}</td>
-              <td class="mono">{urlStatusLabel(u.status)}</td>
+              <td class="mono">
+                {urlStatusLabel(u.status)}{#if u.quarantined_at}
+                  <span class="status failed" title="En quarantaine depuis le {fmtDate(u.quarantined_at)}">quarantaine</span>{/if}
+              </td>
               <td class="mono hide-sm">{u.primary_theme ?? '—'}</td>
               <td class="num">{fmtScore(u.relevance_score)}</td>
               <td class="num">{fmtScore(u.quality_score)}</td>

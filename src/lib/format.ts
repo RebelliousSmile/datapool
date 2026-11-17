@@ -78,3 +78,24 @@ export const urlStatusLabel = (status: string | null | undefined) => URL_STATUS_
 
 // « 1 lien », « 2 liens » (nombre mis en forme) ; `plural` pour un pluriel irrégulier.
 export const countOf = (n: number, word: string, plural = `${word}s`) => `${fmtNumber(n)} ${n > 1 ? plural : word}`;
+
+// Verdict d'un contrôle de lien (url_check.verdict, webpool).
+const CHECK_VERDICT_LABELS: Record<string, string> = { ok: 'sain', dead: 'mort', unsure: 'incertain' };
+export const checkVerdictLabel = (verdict: string | null | undefined) =>
+  CHECK_VERDICT_LABELS[verdict ?? ''] ?? String(verdict);
+
+// Étiquette d'erreur réseau d'un contrôle (url_check.error) ; une étiquette inconnue s'affiche telle quelle.
+const CHECK_ERROR_LABELS: Record<string, string> = {
+  ENOTFOUND: 'domaine introuvable',
+  EAI_AGAIN: 'DNS indisponible',
+  ECONNREFUSED: 'connexion refusée',
+  ECONNRESET: 'connexion coupée',
+  CERT_HAS_EXPIRED: 'certificat expiré',
+  ERR_TLS_CERT_ALTNAME_INVALID: 'certificat pour un autre nom',
+  UNABLE_TO_VERIFY_LEAF_SIGNATURE: 'chaîne de certificats incomplète',
+  TimeoutError: 'délai dépassé',
+  TOO_MANY_REDIRECTS: 'trop de redirections',
+  HOST_REFUSED: 'hôte refusé',
+  UNKNOWN: 'erreur inconnue',
+};
+export const checkErrorLabel = (error: string | null | undefined) => (error ? (CHECK_ERROR_LABELS[error] ?? error) : '');

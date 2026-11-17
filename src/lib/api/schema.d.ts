@@ -163,6 +163,262 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Recherche dans tous les pools visibles : titre, URL et description
+         * @description Un résultat par URL, triées par qualité ; chaque résultat liste les pools visibles qui la contiennent.
+         */
+        get: {
+            parameters: {
+                query: {
+                    q: string;
+                    limit?: components["parameters"]["limit"];
+                    offset?: components["parameters"]["offset"];
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Page"] & {
+                            q: string;
+                            items: components["schemas"]["SearchResult"][];
+                        };
+                    };
+                };
+                400: components["responses"]["BadRequest"];
+                401: components["responses"]["Unauthorized"];
+                429: components["responses"]["RateLimited"];
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/account/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Connexion par e-mail et mot de passe : ouvre une session de 30 jours
+         * @description Chaque échec compte contre l'adresse IP, comme un jeton invalide ; au-delà de la limite, 429 avant toute vérification.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["LoginInput"];
+                };
+            };
+            responses: {
+                /** @description Session ouverte */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Session"];
+                    };
+                };
+                400: components["responses"]["BadRequest"];
+                /** @description E-mail ou mot de passe incorrect (`invalid_credentials`) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                429: components["responses"]["RateLimited"];
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/account/activate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Activation d'un compte invité : premier mot de passe, avec le code d'invitation
+         * @description Le code, à usage unique, vient de `webpool account invite` (valable 7 jours par défaut). Pas d'inscription libre.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ActivateInput"];
+                };
+            };
+            responses: {
+                /** @description Compte activé, session ouverte */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Session"];
+                    };
+                };
+                400: components["responses"]["BadRequest"];
+                /** @description Invitation invalide, expirée ou déjà utilisée (`invalid_invitation`) */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                429: components["responses"]["RateLimited"];
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/account/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Déconnexion : révoque la session courante (sans effet pour un jeton brut) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Ok"];
+                    };
+                };
+                401: components["responses"]["Unauthorized"];
+                429: components["responses"]["RateLimited"];
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/account/password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Change le mot de passe et révoque les autres sessions du compte */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["PasswordInput"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Ok"];
+                    };
+                };
+                400: components["responses"]["BadRequest"];
+                401: components["responses"]["Unauthorized"];
+                /** @description Mot de passe actuel incorrect (`invalid_credentials`) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Client sans compte (`no_account`) */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                429: components["responses"]["RateLimited"];
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/pools": {
         parameters: {
             query?: never;
@@ -457,6 +713,8 @@ export interface paths {
                     domain?: string;
                     /** @description Texte cherché dans le titre et l'URL */
                     q?: string;
+                    /** @description true : liens en quarantaine seulement ; false : hors quarantaine */
+                    quarantined?: boolean;
                     /** @description Ordre */
                     order?: "recent" | "quality" | "relevance";
                 };
@@ -1360,6 +1618,8 @@ export interface components {
             name: string;
             /** @enum {string} */
             scope: "admin" | "read";
+            /** @description E-mail du compte (connexion par mot de passe) ; null pour un client sans compte */
+            email: string | null;
         };
         PoolSummary: {
             slug: string;
@@ -1369,6 +1629,14 @@ export interface components {
             items: number;
             /** @description pool public : visible par tout client authentifié */
             public: boolean;
+            /** @description Jusqu'à 4 chemins de vignettes en cache, prises parmi les 50 premiers rangs, à résoudre contre l'origine de l'API */
+            preview: string[];
+            /** @description Répartition des liens par usage commercial du domaine */
+            usage_commercial: {
+                /** @enum {string|null} */
+                usage: "libre" | "sous-conditions" | "payant" | "non-commercial" | null;
+                urls: number;
+            }[];
         };
         Pool: {
             slug: string;
@@ -1435,6 +1703,8 @@ export interface components {
                 n?: number;
             }[];
             pools?: number;
+            /** @description Liens en quarantaine (3 échecs francs consécutifs) */
+            quarantined?: number;
             domain_profile?: {
                 total?: number;
                 to_qualify?: number;
@@ -1469,6 +1739,16 @@ export interface components {
             confidence_score?: number | null;
             /** Format: date-time */
             first_seen_at?: string | null;
+            /**
+             * Format: date-time
+             * @description Dernier contrôle du lien ; null si jamais testé
+             */
+            checked_at?: string | null;
+            /**
+             * Format: date-time
+             * @description Mise en quarantaine ; null si le lien n'y est pas
+             */
+            quarantined_at?: string | null;
             primary_theme?: string | null;
             /** @description Description de la page (og:description ou meta description) */
             description?: string | null;
@@ -1508,6 +1788,18 @@ export interface components {
             normalized_at?: string | null;
             /** Format: date-time */
             classified_at?: string | null;
+            /**
+             * Format: date-time
+             * @description Dernier contrôle du lien ; null si jamais testé
+             */
+            checked_at?: string | null;
+            /**
+             * Format: date-time
+             * @description Mise en quarantaine ; null si le lien n'y est pas
+             */
+            quarantined_at?: string | null;
+            /** @description Échecs francs consécutifs comptés ; remis à 0 par un succès */
+            dead_streak?: number;
             /** @enum {string|null} */
             usage_commercial?: "libre" | "sous-conditions" | "payant" | "non-commercial" | null;
             sources?: {
@@ -1533,6 +1825,8 @@ export interface components {
                 slug?: string;
                 rank?: number;
             }[];
+            /** @description 10 derniers contrôles, du plus récent au plus ancien */
+            checks?: components["schemas"]["UrlCheck"][];
             /** @description Description de la page (og:description ou meta description) */
             description?: string | null;
             /**
@@ -1551,6 +1845,19 @@ export interface components {
             favicon?: string | null;
             lang?: string | null;
             site_name?: string | null;
+        };
+        UrlCheck: {
+            /** Format: date-time */
+            checked_at?: string;
+            /** @description Statut HTTP final ; null si la requête a échoué */
+            http_status?: number | null;
+            /**
+             * @description ok : 2xx ; dead : échec franc, compté ; unsure : ambigu, historisé sans être compté
+             * @enum {string}
+             */
+            verdict?: "ok" | "dead" | "unsure";
+            /** @description Étiquette de l'erreur réseau (ENOTFOUND, TimeoutError, TOO_MANY_REDIRECTS, HOST_REFUSED…) */
+            error?: string | null;
         };
         Theme: {
             slug?: string;
@@ -1782,6 +2089,58 @@ export interface components {
             /** Format: date-time */
             invited_at: string;
         };
+        SearchResult: {
+            url: string;
+            domain: string;
+            title: string | null;
+            /** @enum {string|null} */
+            usage_commercial: "libre" | "sous-conditions" | "payant" | "non-commercial" | null;
+            /** @description Description de la page (og:description ou meta description) */
+            description: string | null;
+            /**
+             * @description Type de média : fixé à la normalisation (Content-Type, og:type, URL), déduit de l'URL pour les liens plus anciens
+             * @enum {string}
+             */
+            media_type: "page" | "image" | "video" | "pdf" | "data" | "code" | "model";
+            /**
+             * @description Famille de source, d'après le domaine
+             * @enum {string}
+             */
+            source: "research" | "archives" | "stock" | "community" | "video" | "press" | "other";
+            /** @description Chemin de la vignette en cache (WebP, 480 px de large au plus), à résoudre contre l'origine de l'API ; null si aucune */
+            thumbnail: string | null;
+            /** @description Chemin du favicon du domaine en cache (WebP 64 px) ; null si aucun */
+            favicon: string | null;
+            /** @description Pools visibles contenant le lien, avec son rang */
+            pools: {
+                slug: string;
+                label: string;
+                rank: number;
+            }[];
+        };
+        Session: {
+            /** @description Jeton de session (`wps_…`), à envoyer en `Authorization: Bearer` ; montré une seule fois */
+            token: string;
+            /** Format: date-time */
+            expires_at: string;
+        };
+        Ok: {
+            ok: boolean;
+        };
+        LoginInput: {
+            email: string;
+            password: string;
+        };
+        ActivateInput: {
+            email: string;
+            /** @description Code d'invitation (`wpi_…`) remis par l'admin */
+            code: string;
+            password: string;
+        };
+        PasswordInput: {
+            current: string;
+            password: string;
+        };
         RequestLink: {
             /** @description ordre dans la liste soumise, ou rang dans les résultats d'une recherche */
             position: number | null;
@@ -1798,8 +2157,11 @@ export interface components {
             outcome: "queued" | "examining" | "error" | "in_pool" | "not_in_pool" | "in_corpus";
             /** @description URL déjà connue du corpus avant la soumission */
             known: boolean;
-            /** @enum {string|null} */
-            error_category: "not_found" | "host_refused" | "http_error" | "network" | null;
+            /**
+             * @description catégorie d'une erreur ; quarantined : lien mis en quarantaine par le contrôle des liens
+             * @enum {string|null}
+             */
+            error_category: "not_found" | "host_refused" | "http_error" | "network" | "quarantined" | null;
             /** @description admin seulement : message brut */
             error?: string | null;
             /** @description admin seulement */

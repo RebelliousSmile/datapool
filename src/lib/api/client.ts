@@ -9,7 +9,11 @@ export type Query = Record<string, string | number | boolean | string[] | null |
 
 type Membership = { community: string; accepted?: boolean; left?: boolean };
 
+// `token` vide : routes publiques seulement (connexion, activation d'un compte).
 export type Connection = { baseUrl: string; token: string };
+
+// Préfixe des jetons de session d'un compte (e-mail et mot de passe).
+export const SESSION_PREFIX = 'wps_';
 
 export class ApiError extends Error {
   constructor(
@@ -62,7 +66,7 @@ export function createClient(conn: Connection, fetchFn: typeof fetch = fetch, op
       res = await fetchFn(buildUrl(conn.baseUrl, path, query), {
         ...(init.method ? { method: init.method } : {}),
         headers: {
-          Authorization: `Bearer ${conn.token}`,
+          ...(conn.token ? { Authorization: `Bearer ${conn.token}` } : {}),
           ...(init.body === undefined ? {} : { 'Content-Type': 'application/json' }),
           ...init.headers,
         },
@@ -97,6 +101,13 @@ export function createClient(conn: Connection, fetchFn: typeof fetch = fetch, op
     // Chemin de média de l'API (`/api/v1/media/…`) → URL absolue, ou null.
     mediaUrl: (path: string | null | undefined) => (path ? new URL(path, conn.baseUrl).href : null),
     me: () => get<Schemas['Me']>('/me'),
+    // Comptes : connexion et activation sans jeton, puis session `wps_…`.
+    login: (input: Schemas['LoginInput']) => send<Schemas['Session']>('POST', '/account/login', input),
+    activate: (input: Schemas['ActivateInput']) => send<Schemas['Session']>('POST', '/account/activate', input),
+    logout: () => send<Schemas['Ok']>('POST', '/account/logout'),
+    changePassword: (input: Schemas['PasswordInput']) => send<Schemas['Ok']>('PUT', '/account/password', input),
+    // Recherche dans tous les pools visibles.
+    search: (query: Query) => get<Page<Schemas['SearchResult']> & { q: string }>('/search', query),
     pools: () => get<{ items: Schemas['PoolSummary'][] }>('/pools'),
     pool: (slug: string) => get<Schemas['Pool']>(`/pools/${seg(slug)}`),
     poolItems: (slug: string, query: Query) => get<Page<Schemas['PoolItem']>>(`/pools/${seg(slug)}/items`, query),

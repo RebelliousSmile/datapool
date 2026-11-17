@@ -6,7 +6,7 @@
   import MediaThumb from '#lib/components/MediaThumb.svelte';
   import { enrich } from '#lib/explore.ts';
   import UsageBadge from '#lib/components/UsageBadge.svelte';
-  import { fmtDate, fmtScore, urlStatusLabel } from '#lib/format.ts';
+  import { checkErrorLabel, checkVerdictLabel, countOf, fmtDate, fmtScore, urlStatusLabel } from '#lib/format.ts';
   import { copyText } from '#lib/copy.ts';
   import { session } from '#lib/session.svelte.ts';
 
@@ -42,6 +42,8 @@
   {#if u}
     {@const link = u.canonical_url ?? u.raw_url ?? ''}
     {@const s = STATUS[u.status ?? ''] ?? { cls: 'idle', icon: 'page' }}
+    {@const checks = u.checks ?? []}
+    {@const last = checks[0]}
     {@const media = enrich(
       {
         rank: 0,
@@ -63,7 +65,12 @@
         <div class="meta url-meta">
           <span class="status {s.cls}"><Icon name={s.icon} small />{urlStatusLabel(u.status)}</span>
           <UsageBadge usage={u.usage_commercial} />
-          {#if u.http_status}<span class="chip">HTTP {u.http_status}</span>{/if}
+          {#if u.quarantined_at}<span class="status failed"><Icon name="alert" small />quarantaine</span>{/if}
+          {#if last}
+            <span class="chip">{last.http_status ? `HTTP ${last.http_status}` : checkErrorLabel(last.error)} · testé le {fmtDate(last.checked_at)}</span>
+          {:else}
+            <span class="chip">{u.http_status ? `HTTP ${u.http_status} · ` : ''}jamais testé</span>
+          {/if}
           {#if u.lang}<span class="chip">{u.lang}</span>{/if}
           {#if u.site_name}<span class="chip">{u.site_name}</span>{/if}
         </div>
@@ -108,6 +115,32 @@
               <td class="mono">{src.provider}</td><td>{src.query}</td>
               <td class="num hide-sm">{src.serp_rank ?? '—'}</td><td class="mono nowrap">{fmtDate(src.discovered_at)}</td>
             </tr>
+          {/each}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section-title">
+      <h2>Contrôles</h2>
+      <span class="eyebrow">
+        {countOf(u.dead_streak ?? 0, 'mort compté', 'morts comptés')}{u.quarantined_at
+          ? ` · en quarantaine depuis le ${fmtDate(u.quarantined_at)}`
+          : ''}
+      </span>
+    </div>
+    <div class="panel flush table-wrap">
+      <table class="table">
+        <thead><tr><th>Date</th><th class="num">HTTP</th><th>Verdict</th><th>Erreur</th></tr></thead>
+        <tbody>
+          {#each checks as c, i (i)}
+            <tr>
+              <td class="mono nowrap">{fmtDate(c.checked_at)}</td>
+              <td class="num">{c.http_status ?? '—'}</td>
+              <td class="mono verdict {c.verdict}">{checkVerdictLabel(c.verdict)}</td>
+              <td>{checkErrorLabel(c.error)}</td>
+            </tr>
+          {:else}
+            <tr><td colspan="4" class="muted">Jamais testé.</td></tr>
           {/each}
         </tbody>
       </table>
