@@ -127,6 +127,8 @@ export function createClient(conn: Connection, fetchFn: typeof fetch = fetch, op
     },
     cancelRequest: (id: number) => send<Schemas['CancelReceipt']>('DELETE', `/requests/${seg(String(id))}`),
     adminRequests: (query: Query) => get<Page<Schemas['SearchRequest']>>('/admin/requests', query),
+    // Sort de chaque lien d'une recherche ou d'une liste.
+    requestLinks: (id: number) => get<{ items: Schemas['RequestLink'][] }>(`/requests/${seg(String(id))}/links`),
     // Membres d'une communauté, pour ses propriétaires.
     members: (slug: string) => get<{ items: Schemas['CommunityMember'][] }>(`/communities/${seg(slug)}/members`),
     setMember: (slug: string, name: string, input: Schemas['CommunityMemberInput']) =>

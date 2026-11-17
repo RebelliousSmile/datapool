@@ -13,6 +13,10 @@ import {
   fmtGiri,
   historyQuery,
   knownPool,
+  OUTCOME_CLASS,
+  OUTCOME_LABELS,
+  ERROR_CATEGORY_LABELS,
+  outcomeSummary,
   parseLinkLines,
   quoteList,
   parseLimit,
@@ -145,5 +149,37 @@ describe('recherches payantes', () => {
     const capped = { ...atelier, limitLeft: 1 };
     expect(quoteList(billing, { count: 2, payer: capped })?.problem).toMatch(/Plafond du mois/);
     expect(quoteList(billing, { count: 2, payer: undefined })).toBeNull();
+  });
+
+  it('liste de liens : Markdown, CSV et TSV, favoris HTML', () => {
+    expect(parseLinkLines(['- [Photo AC](https://www.photo-ac.com/)', '1. https://u.jp Kyoto', '[A](https://a.jp) et [B](https://b.jp)'].join('\n')).links.map((l) => [l.url, l.title]))
+      .toEqual([['https://www.photo-ac.com/', 'Photo AC'], ['https://u.jp', 'Kyoto'], ['https://a.jp', 'A'], ['https://b.jp', 'B']]);
+    const csv = parseLinkLines(['url,titre', 'https://a.jp,"Temple, Kyoto"', '"Nagasaki";https://b.jp', 'C\thttps://c.jp'].join('\n'));
+    expect(csv.links.map((l) => [l.url, l.title])).toEqual([['https://a.jp', 'Temple, Kyoto'], ['https://b.jp', 'Nagasaki'], ['https://c.jp', 'C']]);
+    expect(csv.rejected).toEqual([]);
+    const html = '<DL><DT><A HREF="https://a.jp/?q=1&amp;r=2">Kyoto <b>temples</b></A><DT><A HREF="javascript:alert(1)">x</A><a href=\'https://a.jp/?q=1&amp;r=2\'>bis</a></DL>';
+    expect(parseLinkLines(html)).toEqual({ links: [{ url: 'https://a.jp/?q=1&r=2', title: 'Kyoto temples' }], rejected: [], duplicates: 1 });
+    expect(parseLinkLines('- [x](https://ok.jp) et [y](https://ok.jp)').duplicates).toBe(1);
+  });
+
+  it('devis d’une liste d’admin : gratuit, tout pool, limites de taille seulement', () => {
+    const [personal] = payersFor(billing, 'autre');
+    expect(quoteList(billing, { count: 2, payer: personal, admin: true })).toEqual({ unitPrice: 0, maxPages: 1, price: 0, balance: 25, after: 25, problem: null });
+    expect(quoteList(billing, { count: 0, payer: personal, admin: true })?.problem).toMatch(/au moins un lien/);
+    expect(quoteList(billing, { count: 4, payer: personal, admin: true })?.problem).toMatch(/3 liens au plus/);
+  });
+
+  it('sort des liens : libellés, classes, résumé', () => {
+    expect(OUTCOME_LABELS.in_pool).toBe('dans le pool');
+    expect(OUTCOME_CLASS.error).toBe('failed');
+    expect(ERROR_CATEGORY_LABELS.host_refused).toBe('hôte refusé');
+    expect(outcomeSummary([{ outcome: 'in_pool' }, { outcome: 'in_pool' }, { outcome: 'error' }])).toBe('2 dans le pool · 1 erreur');
+    expect(outcomeSummary([])).toBe('');
+  });
+
+  it('admin : « gratuit » possible pour tout pool, recherche à prix nul', () => {
+    const [free] = payersFor(billing, 'lora', { admin: true });
+    expect(free).toMatchObject({ value: '', label: 'Gratuit (admin)', disabled: null });
+    expect(quote(billing, { provider: 'brave', pages: 3, payer: free, admin: true })).toMatchObject({ price: 0, after: 25, problem: null });
   });
 });

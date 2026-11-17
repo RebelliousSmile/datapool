@@ -1298,6 +1298,49 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/requests/{id}/links": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Sort de chaque lien d'une recherche ou d'une liste (auteur, propriétaires de la communauté qui a payé, admin) */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            items: components["schemas"]["RequestLink"][];
+                        };
+                    };
+                };
+                401: components["responses"]["Unauthorized"];
+                404: components["responses"]["NotFound"];
+                429: components["responses"]["RateLimited"];
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1678,7 +1721,7 @@ export interface components {
             pool?: string;
             /** @description communauté dont le pot paie. Un pool d'une de vos communautés se paie toujours par elle : déduite si une seule communauté possède le pool, obligatoire si plusieurs ; jamais en personnel. */
             community?: string;
-            /** @description provider `list` seulement : liens à examiner (URL, ou {url, title}) ; http(s), doublons retirés, `max_links` au plus. Réservé aux pools d'une communauté du client, payé par son pot ; `query` est alors le libellé de la liste. */
+            /** @description provider `list` seulement : liens à examiner (URL, ou {url, title}) ; http(s), doublons retirés, `max_links` au plus. Pour un membre : réservé aux pools d'une de ses communautés, payé par le pot. Pour un admin sans `community` : gratuit, tout pool. `query` est le libellé de la liste. */
             links?: (string | {
                 url: string;
                 title?: string | null;
@@ -1738,6 +1781,29 @@ export interface components {
             monthly_limit: number | null;
             /** Format: date-time */
             invited_at: string;
+        };
+        RequestLink: {
+            /** @description ordre dans la liste soumise, ou rang dans les résultats d'une recherche */
+            position: number | null;
+            /** @description URL soumise (liste) ou trouvée (recherche) */
+            url: string;
+            canonical_url: string | null;
+            domain: string | null;
+            /** @description titre de la page lu à la normalisation (il l'emporte sur le titre proposé) */
+            title: string | null;
+            /**
+             * @description queued : liste pas encore ingérée ; examining : en cours de normalisation ou de classement ; in_pool / not_in_pool : classé, entré ou non dans le pool visé (seuils, exclusions) ; in_corpus : classé, sans pool visé
+             * @enum {string}
+             */
+            outcome: "queued" | "examining" | "error" | "in_pool" | "not_in_pool" | "in_corpus";
+            /** @description URL déjà connue du corpus avant la soumission */
+            known: boolean;
+            /** @enum {string|null} */
+            error_category: "not_found" | "host_refused" | "http_error" | "network" | null;
+            /** @description admin seulement : message brut */
+            error?: string | null;
+            /** @description admin seulement */
+            http_status?: number | null;
         };
     };
     responses: {

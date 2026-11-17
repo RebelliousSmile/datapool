@@ -18,8 +18,12 @@
     fmtEuros,
     fmtGiri,
     historyQuery,
+    ERROR_CATEGORY_LABELS,
     LIST_PROVIDER,
+    OUTCOME_CLASS,
+    OUTCOME_LABELS,
     knownPool,
+    outcomeSummary,
     parseLimit,
     parseLinkLines,
     payersFor,
@@ -50,7 +54,7 @@
 
   let form = $state({ query: '', provider: '', pages: 1, pool: page.url.searchParams.get('pool') ?? '', payer: '' });
 
-  const payers = $derived(billing ? payersFor(billing, form.pool) : []);
+  const payers = $derived(billing ? payersFor(billing, form.pool, { admin: session.isAdmin }) : []);
   const payer = $derived(payers.find((p) => p.value === form.payer));
   // Recherche (provider, pages) ou liste de liens collée (une URL par ligne),
   // examinée par webpool comme les résultats d'une recherche.
@@ -61,8 +65,8 @@
     !billing
       ? null
       : mode === 'list'
-        ? quoteList(billing, { count: parsedLinks.links.length, payer })
-        : quote(billing, { provider: form.provider, pages: form.pages, payer }),
+        ? quoteList(billing, { count: parsedLinks.links.length, payer, admin: session.isAdmin })
+        : quote(billing, { provider: form.provider, pages: form.pages, payer, admin: session.isAdmin }),
   );
   const giriPerEur = $derived(billing?.giri_per_eur ?? 1000);
 
@@ -99,6 +103,33 @@
       if (mode === 'list') linksText = '';
       offset = 0;
     }
+  }
+
+  // Fichier de liens (texte, Markdown, CSV, favoris HTML) : lu dans le navigateur,
+  // rien n'est envoyé avant la soumission.
+  let fileError = $state('');
+  async function loadLinkFile(event: Event) {
+    fileError = '';
+    const file = (event.currentTarget as HTMLInputElement).files?.[0];
+    if (!file) return;
+    if (file.size > 1_000_000) {
+      fileError = 'Fichier de plus de 1 Mo : le découper en plusieurs listes.';
+      return;
+    }
+    linksText = await file.text();
+    if (!form.query.trim()) form.query = file.name.replace(/\.[^.]+$/, '');
+  }
+
+  // Détail lien par lien d'une recherche ou d'une liste (GET /requests/{id}/links).
+  let openLinks = $state<number | null>(null);
+  let linksDetail = $state<Promise<{ items: Schemas['RequestLink'][] }> | null>(null);
+  function toggleLinks(id: number) {
+    if (openLinks === id) {
+      openLinks = null;
+      return;
+    }
+    openLinks = id;
+    linksDetail = session.client!.requestLinks(id);
   }
 
   // Historique : mes recherches, celles d'une communauté que je possède, ou
@@ -340,9 +371,12 @@
   </div>
   {#if mode === 'list'}
     <p class="muted">
-      Une URL par ligne, suivie si vous le voulez d'un titre. La liste est examinée comme les résultats d'une recherche
-      (normalisation, classement, vignettes) et ses liens entrent dans le pool s'il les accepte. Réservée aux pools de vos
-      communautés, payée par le pot : {fmtGiri(billing.lists.price_per_link)} par lien, {fmtNumber(billing.lists.max_links)} liens au plus.
+      Une URL par ligne suivie d'un titre facultatif, une liste Markdown, un CSV ou un export de favoris. La liste est examinée
+      comme les résultats d'une recherche (normalisation, classement, vignettes) et ses liens entrent dans le pool s'il les
+      accepte ; le détail de chaque lien est consultable dans l'historique.
+      {#if session.isAdmin}Gratuite pour l'admin, pour tout pool.{:else}Réservée aux pools de vos communautés, payée par le pot :
+        {fmtGiri(billing.lists.price_per_link)} par lien.{/if}
+      {fmtNumber(billing.lists.max_links)} liens au plus.
     </p>
   {/if}
   {#if mode === 'search' && billing.prices.length === 0}
@@ -366,6 +400,14 @@
             bind:value={linksText}
             placeholder="https://example.jp/page  Titre facultatif (une URL par ligne)"
           ></textarea></label
+        >
+        <label class="field"
+          ><span>ou un fichier</span><input
+            class="input"
+            type="file"
+            accept=".txt,.md,.markdown,.csv,.tsv,.html,.htm,text/plain,text/markdown,text/csv,text/html"
+            onchange={loadLinkFile}
+          /></label
         >
       {:else}
         <label class="field"
@@ -413,6 +455,7 @@
         {#if form.pool}· les liens trouvés entrent dans le pool s'il les accepte{/if}
       </p>
       {#if devis.problem}<div class="alert-box err" role="alert"><Icon name="alert" small />{devis.problem}</div>{/if}
+      {#if fileError}<div class="alert-box err" role="alert"><Icon name="alert" small />{fileError}</div>{/if}
       {#if mode === 'list' && parsedLinks.rejected.length}
         <div class="alert-box err" role="alert">
           <Icon name="alert" small />{parsedLinks.rejected.length} ligne{parsedLinks.rejected.length > 1 ? 's' : ''} ignorée{parsedLinks.rejected.length > 1
@@ -471,7 +514,7 @@
                 </td>
                 <td><span class="status {STATUS_CLASS[r.status]}">{REQUEST_STATUS_LABELS[r.status]}</span></td>
                 <td class="mono hide-sm"
-                  >{r.links !== null ? `liste · ${r.links} lien${r.links > 1 ? 's' : ''}` : `${r.provider} · ${r.calls_done}/${r.pages}`}</td
+                  >{typeof r.links === 'number' ? `liste · ${r.links} lien${r.links > 1 ? 's' : ''}` : `${r.provider} · ${r.calls_done}/${r.pages}`}</td
                 >
                 <td class="hide-sm">
                   {#if r.pool}<a href={resolve('/pools/[slug]', { slug: r.pool })}>{r.pool}</a>{:else}—{/if}
@@ -480,12 +523,49 @@
                 <td class="num" title={r.refunded ? `${fmtGiri(r.price)} payés, ${fmtGiri(r.refunded)} remboursés` : undefined}
                   >{fmtNumber(spentOn(r))}</td
                 >
-                <td class="num" title="résultats · nouveaux · dans le pool"
-                  >{fmtNumber(r.results)} · {fmtNumber(r.new_urls)}{r.in_pool === null ? '' : ` · ${fmtNumber(r.in_pool)}`}</td
-                >
+                <td class="num">
+                  <button
+                    class="btn btn-sm btn-ghost"
+                    type="button"
+                    aria-expanded={openLinks === r.id}
+                    title="résultats · nouveaux · dans le pool — détail lien par lien"
+                    onclick={() => toggleLinks(r.id)}
+                    >{fmtNumber(r.results)} · {fmtNumber(r.new_urls)}{r.in_pool === null ? '' : ` · ${fmtNumber(r.in_pool)}`}</button
+                  >
+                </td>
                 <td class="mono nowrap hide-sm">{fmtDate(r.created_at)}</td>
                 <td class="hide-sm">{#if r.status === 'queued' && !view}{@render cancelButton(r)}{/if}</td>
               </tr>
+              {#if openLinks === r.id && linksDetail}
+                <tr class="links-detail">
+                  <td colspan="9">
+                    {#await linksDetail}
+                      <p class="terminal-line">&gt; chargement<span class="caret" aria-hidden="true"></span></p>
+                    {:then detail}
+                      <p class="muted">{outcomeSummary(detail.items) || 'Aucun lien.'}</p>
+                      <table class="table">
+                        <thead><tr><th class="num">#</th><th>Lien</th><th>Sort</th><th class="hide-sm">Titre lu</th></tr></thead>
+                        <tbody>
+                          {#each detail.items as l (l.position ?? l.url)}
+                            <tr>
+                              <td class="num mono">{l.position ?? '—'}</td>
+                              <td class="mono"><ExternalLink url={l.url}>{l.url}</ExternalLink>{#if l.known}<span class="chip" title="déjà dans le corpus avant la soumission">déjà connu</span>{/if}</td>
+                              <td>
+                                <span class="status {OUTCOME_CLASS[l.outcome]}">{OUTCOME_LABELS[l.outcome]}</span>
+                                {#if l.error_category}<span class="muted">{ERROR_CATEGORY_LABELS[l.error_category] ?? l.error_category}</span>{/if}
+                                {#if l.error}<div class="muted" title={l.error}>{l.error}</div>{/if}
+                              </td>
+                              <td class="hide-sm secondary">{l.title ?? '—'}</td>
+                            </tr>
+                          {/each}
+                        </tbody>
+                      </table>
+                    {:catch err}
+                      <div class="alert-box err" role="alert"><Icon name="alert" small />{errorMessage(err)}</div>
+                    {/await}
+                  </td>
+                </tr>
+              {/if}
             {:else}
               <tr><td colspan="9" class="muted">Aucune recherche.</td></tr>
             {/each}

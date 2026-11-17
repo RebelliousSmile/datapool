@@ -95,6 +95,7 @@ describe('createClient', () => {
     await api.acceptInvitation('atelier');
     await api.declineInvitation('a b');
     await api.leaveCommunity('atelier');
+    await api.requestLinks(12);
     expect(calls.map((c) => c.url)).toEqual([
       '/billing',
       '/billing/entries?community=atelier',
@@ -108,8 +109,9 @@ describe('createClient', () => {
       '/communities/atelier/invitation',
       '/communities/a%20b/invitation',
       '/communities/atelier/membership',
+      '/requests/12/links',
     ]);
-    expect(calls.slice(9).map((c) => c.init.method)).toEqual(['POST', 'DELETE', 'DELETE']);
+    expect(calls.slice(9, 12).map((c) => c.init.method)).toEqual(['POST', 'DELETE', 'DELETE']);
     expect(calls[9].init).not.toHaveProperty('body');
     expect(calls[7].init).toMatchObject({ method: 'PUT', body: '{"monthly_limit":10}' });
     expect(calls[8].init).toMatchObject({ method: 'DELETE' });

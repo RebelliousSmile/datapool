@@ -2,7 +2,7 @@ import { flushSync, mount, unmount, createRawSnippet } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ApiError, type Schemas } from '../src/lib/api/client';
 import Async from '../src/lib/components/Async.svelte';
-import { Generation, RequestsScreen, errorMessage, type ScreenApi } from '../src/lib/purchase.svelte.ts';
+import { Generation, RequestsScreen, errorMessage, submissionNotice, type ScreenApi } from '../src/lib/purchase.svelte.ts';
 
 const billing = (balance: number): Schemas['Billing'] => ({
   giri_per_eur: 1000,
@@ -127,7 +127,7 @@ describe('RequestsScreen : achat', () => {
     expect(await first).toBe(true);
     expect(api.createRequest).toHaveBeenCalledOnce();
     expect(s.sending).toBe(false);
-    expect(s.notice).toMatch(/^Recherche #7 achetée : 10 giri débités, solde 90 giri/);
+    expect(s.notice).toMatch(/^Recherche #7 enregistrée : 10 giri débités, solde 90 giri/);
     expect(s.version).toBe(1);
     expect(api.billing).toHaveBeenCalledOnce();
   });
@@ -149,7 +149,7 @@ describe('RequestsScreen : achat', () => {
     api.createRequest.mockResolvedValueOnce(receipt(3, true));
     expect(await s.buy(api, input)).toBe(true);
     expect(api.createRequest.mock.calls[2][1].idempotencyKey).toBe(key);
-    expect(s.notice).toMatch(/^Recherche #3 déjà achetée \(envoi repris, rien de plus débité\)/);
+    expect(s.notice).toMatch(/^Recherche #3 déjà enregistrée \(envoi repris, rien de plus débité\)/);
     expect(s.pendingKey).toBeNull();
 
     await s.buy(api, input);
@@ -338,5 +338,14 @@ describe('Async', () => {
   it('sans valeur (pas de client), rien', () => {
     const { target } = render(undefined);
     expect(target.textContent?.trim()).toBe('');
+  });
+});
+
+describe('message après une soumission', () => {
+  const req = (over: Partial<Schemas['SearchRequest']>) => ({ id: 5, links: null, price: 10, ...over }) as Schemas['SearchRequest'];
+  it('liste gratuite, liste payée, recherche rejouée', () => {
+    expect(submissionNotice({ request: req({ links: 3, price: 0 }), balance: 0 })).toBe("Liste #5 (3 liens) enregistrée : gratuite. Examen dans le quart d'heure.");
+    expect(submissionNotice({ request: req({ links: 1, price: 1 }), balance: 9 })).toMatch(/^Liste #5 \(1 lien\) enregistrée : 1 giri débités, solde 9 giri/);
+    expect(submissionNotice({ request: req({}), balance: 9, replayed: true })).toMatch(/^Recherche #5 déjà enregistrée/);
   });
 });

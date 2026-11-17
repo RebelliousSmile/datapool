@@ -26,15 +26,17 @@ export type Payer = {
 // Portefeuilles qui peuvent payer une recherche visant `pool`. Dans une
 // communauté, on ne paie pas pour soi : un pool d'une de ses communautés se
 // paie sur leur pot, jamais en personnel ; une communauté ne paie que ses pools.
-export function payersFor(billing: Billing, pool: string): Payer[] {
+// Un admin (la maison) ne se facture pas : son choix « gratuit » vaut pour tout pool.
+export function payersFor(billing: Billing, pool: string, { admin = false }: { admin?: boolean } = {}): Payer[] {
   const owners = billing.communities.filter((c) => pool && c.pools.includes(pool));
   return [
     {
       value: '',
-      label: 'Portefeuille personnel',
+      label: admin ? 'Gratuit (admin)' : 'Portefeuille personnel',
       balance: billing.personal.balance,
       limitLeft: null,
-      disabled: owners.length ? `les recherches de ce pool se paient sur le pot de ${owners.map((c) => c.label).join(' ou ')}` : null,
+      disabled:
+        owners.length && !admin ? `les recherches de ce pool se paient sur le pot de ${owners.map((c) => c.label).join(' ou ')}` : null,
     },
     ...billing.communities.map((c) => ({
       value: c.slug,
@@ -63,10 +65,14 @@ export type Quote = {
   problem: string | null;
 };
 
-export function quote(billing: Billing, { provider, pages, payer }: { provider: string; pages: number; payer: Payer | undefined }): Quote | null {
+export function quote(
+  billing: Billing,
+  { provider, pages, payer, admin = false }: { provider: string; pages: number; payer: Payer | undefined; admin?: boolean },
+): Quote | null {
   const price = billing.prices.find((p) => p.provider === provider);
   if (!price || !payer) return null;
-  const total = price.unit_price * pages;
+  // admin sans communauté : gratuit
+  const total = admin && !payer.value ? 0 : price.unit_price * pages;
   const base = { unitPrice: price.unit_price, maxPages: price.max_pages, price: total, balance: payer.balance, after: payer.balance - total };
   let problem: string | null = null;
   if (payer.disabled) problem = payer.value ? `Cette communauté ${payer.disabled}.` : `Pas en personnel : ${payer.disabled}.`;
@@ -156,41 +162,85 @@ export type ParsedLinks = {
   duplicates: number;
 };
 
-// Une ligne par lien : l'URL, puis un titre facultatif après une tabulation ou
-// des espaces. Lignes vides et commentaires (#) ignorés ; doublons retirés.
+// Lecture d'une liste de liens dans le format où elle existe — même
+// algorithme que webpool (src/requests/links.js, `webpool list submit`) :
+// - favoris HTML (export de navigateur) : chaque <a href="http…">titre</a> ;
+// - Markdown : [titre](url) n'importe où dans la ligne, ou URL nue après une puce ;
+// - CSV ou TSV : la colonne http(s) est l'URL, la première autre colonne non
+//   vide le titre ; une ligne d'en-tête (url, title…) est ignorée ;
+// - texte : l'URL puis un titre facultatif.
+// Lignes vides et commentaires (#) ignorés, doublons retirés. Rien n'est
+// interprété comme du HTML : les favoris sont lus par expression régulière.
+const HTTP = /^https?:\/\//i;
+const MD_LINK = /\[([^\]]*)\]\((https?:\/\/[^)\s]+)\)/gi;
+const HTML_LINK = /<a\s[^>]*href\s*=\s*["'](https?:\/\/[^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
+const HEADER = /^\s*"?(url|lien|link|href)"?\s*[,;\t]/i;
+const decodeEntities = (t: string) =>
+  t.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+const cleanTitle = (t: string | undefined) => (t ?? '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim().slice(0, 300) || null;
+const unquote = (f: string) => f.trim().replace(/^"(.*)"$/, '$1').replace(/""/g, '"').trim();
+
+function validUrl(url: string) {
+  if (url.length > 2000) return false;
+  try {
+    const p = new URL(url);
+    return p.protocol === 'http:' || p.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
 export function parseLinkLines(text: string): ParsedLinks {
   const out: ParsedLinks = { links: [], rejected: [], duplicates: 0 };
   const seen = new Set<string>();
+  const push = (url: string, title?: string) => {
+    const u = decodeEntities(url.trim());
+    if (seen.has(u)) {
+      out.duplicates += 1;
+      return true;
+    }
+    if (!validUrl(u)) return false;
+    seen.add(u);
+    out.links.push({ url: u, title: cleanTitle(title && decodeEntities(title)) });
+    return true;
+  };
+  if (/<a\s[^>]*href/i.test(text)) {
+    for (const m of text.matchAll(HTML_LINK)) push(m[1], m[2]);
+    return out;
+  }
   text.split(/\r?\n/).forEach((raw, i) => {
     const line = raw.trim();
-    if (!line || line.startsWith('#')) return;
-    const [url, ...rest] = line.split(/\s+/);
-    let ok: boolean;
-    try {
-      const parsed = new URL(url);
-      ok = parsed.protocol === 'http:' || parsed.protocol === 'https:';
-    } catch {
-      ok = false;
-    }
-    if (!ok || url.length > 2000) {
-      out.rejected.push({ line: i + 1, text: line.slice(0, 120) });
+    if (!line || line.startsWith('#') || HEADER.test(line)) return;
+    const reject = () => out.rejected.push({ line: i + 1, text: line.slice(0, 120) });
+    const md = [...line.matchAll(MD_LINK)];
+    if (md.length) {
+      for (const m of md) if (!push(m[2], m[1])) reject();
       return;
     }
-    if (seen.has(url)) {
-      out.duplicates += 1;
+    const fields = line.split(/\t|;|,(?=(?:[^"]*"[^"]*")*[^"]*$)/).map(unquote);
+    if (fields.length > 1 && fields.some((f) => HTTP.test(f))) {
+      const url = fields.find((f) => HTTP.test(f)) as string;
+      const title = fields.find((f) => f && f !== url);
+      if (!push(url, title)) reject();
       return;
     }
-    seen.add(url);
-    out.links.push({ url, title: rest.join(' ').slice(0, 300) || null });
+    const [first, ...rest] = line.replace(/^([-*+]|\d+[.)])\s+/, '').split(/\s+/);
+    if (!HTTP.test(first) || !push(first, rest.join(' '))) reject();
   });
   return out;
 }
 
 // Devis d'une liste : payée d'un bloc par le pot d'une communauté, au prix
 // par lien ; jamais sur le portefeuille personnel.
-export function quoteList(billing: Billing, { count, payer }: { count: number; payer: Payer | undefined }): Quote | null {
+// `admin` : la maison ne se facture pas ; sans communauté, la liste est gratuite
+// et vise n'importe quel pool.
+export function quoteList(billing: Billing, { count, payer, admin = false }: { count: number; payer: Payer | undefined; admin?: boolean }): Quote | null {
   if (!payer) return null;
   const { price_per_link: perLink, max_links: maxLinks } = billing.lists;
+  if (admin && !payer.value) {
+    const problem = count === 0 ? 'Coller au moins un lien (une URL par ligne).' : count > maxLinks ? `${maxLinks} liens au plus par liste (${count} ici).` : null;
+    return { unitPrice: 0, maxPages: 1, price: 0, balance: payer.balance, after: payer.balance, problem };
+  }
   const total = perLink * count;
   const base = { unitPrice: perLink, maxPages: 1, price: total, balance: payer.balance, after: payer.balance - total };
   let problem: string | null = null;
@@ -201,4 +251,35 @@ export function quoteList(billing: Billing, { count, payer }: { count: number; p
   else if (total > payer.balance) problem = `Solde insuffisant : ${fmtGiri(payer.balance)} pour ${fmtGiri(total)}.`;
   else if (payer.limitLeft !== null && total > payer.limitLeft) problem = `Plafond du mois : il vous reste ${fmtGiri(payer.limitLeft)}.`;
   return { ...base, problem };
+}
+
+// Sort d'un lien après examen (GET /requests/{id}/links).
+export const OUTCOME_LABELS: Record<Schemas['RequestLink']['outcome'], string> = {
+  queued: 'en attente',
+  examining: 'en examen',
+  error: 'erreur',
+  in_pool: 'dans le pool',
+  not_in_pool: 'hors du pool',
+  in_corpus: 'dans le corpus',
+};
+export const OUTCOME_CLASS: Record<Schemas['RequestLink']['outcome'], string> = {
+  queued: 'idle',
+  examining: 'running',
+  error: 'failed',
+  in_pool: 'ok',
+  not_in_pool: 'warn',
+  in_corpus: 'idle',
+};
+export const ERROR_CATEGORY_LABELS: Record<string, string> = {
+  not_found: 'introuvable',
+  host_refused: 'hôte refusé',
+  http_error: 'erreur HTTP',
+  network: 'erreur réseau',
+};
+
+// Résumé d'un compte rendu : combien de liens par sort.
+export function outcomeSummary(items: Pick<Schemas['RequestLink'], 'outcome'>[]) {
+  const counts = new Map<string, number>();
+  for (const i of items) counts.set(i.outcome, (counts.get(i.outcome) ?? 0) + 1);
+  return [...counts].map(([o, n]) => `${n} ${OUTCOME_LABELS[o as Schemas['RequestLink']['outcome']]}`).join(' · ');
 }
