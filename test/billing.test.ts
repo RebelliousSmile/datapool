@@ -39,7 +39,7 @@ const billing: Schemas['Billing'] = {
     { slug: 'club', label: 'Club', role: 'owner', balance: 5, monthly_limit: null, spent_30d: 0, contributed: 2000, pools: [] },
   ],
   invitations: [],
-  lists: { price_per_link: 1, max_links: 3 },
+  lists: { price_per_link: 1, max_links: 3, reward_per_link: 2, reward_domain_cap: 5, reward_monthly_cap: 1000 },
 };
 
 describe('recherches payantes', () => {
@@ -115,6 +115,7 @@ describe('recherches payantes', () => {
 
   it('grand livre : genre et montant signé', () => {
     expect(ENTRY_KIND_LABELS.purchase).toBe('apport');
+    expect(ENTRY_KIND_LABELS.reward).toBe('récompense');
     expect(fmtDelta(1000).replace(/\s/g, ' ')).toBe('+1 000');
     expect(fmtDelta(-20)).toBe('−20');
     expect(fmtDelta(0)).toBe('0');

@@ -132,6 +132,7 @@ export const ENTRY_KIND_LABELS: Record<Schemas['WalletEntry']['kind'], string> =
   debit: 'achat',
   refund: 'remboursement',
   adjustment: 'ajustement',
+  reward: 'récompense',
 };
 
 // giri signés pour le grand livre : « +1 000 » au crédit, « −200 » au débit.

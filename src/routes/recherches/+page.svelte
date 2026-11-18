@@ -280,7 +280,7 @@
   <div class="tiles">
     <div class="tile">
       <span class="eyebrow">Personnel</span><span class="value">{fmtGiri(billing.personal.balance)}</span>
-      <span class="sub">{fmtEuros(billing.personal.balance, giriPerEur)} · crédité par un don</span>
+      <span class="sub">{fmtEuros(billing.personal.balance, giriPerEur)} · dons et récompenses de liens</span>
     </div>
     {#each billing.communities as c (c.slug)}
       <div class="tile">
@@ -327,7 +327,7 @@
   </p>
 
   <details class="ledger" bind:open={ledgerOpen}>
-    <summary><h2>Mouvements</h2><span class="eyebrow">dons, apports, achats, remboursements</span></summary>
+    <summary><h2>Mouvements</h2><span class="eyebrow">dons, apports, achats, remboursements, récompenses</span></summary>
     {#if owned.length}
       <label class="field"
         ><span>Grand livre</span>
@@ -377,6 +377,11 @@
       {#if session.isAdmin}Gratuite pour l'admin, pour tout pool.{:else}Réservée aux pools de vos communautés, payée par le pot :
         {fmtGiri(billing.lists.price_per_link)} par lien.{/if}
       {fmtNumber(billing.lists.max_links)} liens au plus.
+      {#if billing.lists.reward_per_link > 0 && !session.isAdmin}
+        Chaque lien valide que vous apportez, nouveau pour le corpus et entré dans le pool, vous rapporte
+        {fmtGiri(billing.lists.reward_per_link)} sur votre portefeuille personnel (au plus {fmtNumber(billing.lists.reward_domain_cap)} liens
+        par domaine et {fmtGiri(billing.lists.reward_monthly_cap)} sur 30 jours).
+      {/if}
     </p>
   {/if}
   {#if mode === 'search' && billing.prices.length === 0}
@@ -521,7 +526,9 @@
                   {#if r.community}<div class="muted">payé par {r.community}</div>{/if}
                 </td>
                 <td class="num" title={r.refunded ? `${fmtGiri(r.price)} payés, ${fmtGiri(r.refunded)} remboursés` : undefined}
-                  >{fmtNumber(spentOn(r))}</td
+                  >{fmtNumber(spentOn(r))}{#if r.rewarded > 0}<div class="reward" title="giri gagnés par les liens valides apportés">
+                      +{fmtGiri(r.rewarded)}
+                    </div>{/if}</td
                 >
                 <td class="num">
                   <button
@@ -549,7 +556,11 @@
                           {#each detail.items as l (l.position ?? l.url)}
                             <tr>
                               <td class="num mono">{l.position ?? '—'}</td>
-                              <td class="mono"><ExternalLink url={l.url}>{l.url}</ExternalLink>{#if l.known}<span class="chip" title="déjà dans le corpus avant la soumission">déjà connu</span>{/if}</td>
+                              <td class="mono"
+                                ><ExternalLink url={l.url}>{l.url}</ExternalLink>{#if l.known}<span class="chip" title="déjà dans le corpus avant la soumission"
+                                    >déjà connu</span
+                                  >{/if}{#if l.reward > 0}<span class="chip primary" title="lien valide apporté : récompense">+{fmtGiri(l.reward)}</span>{/if}</td
+                              >
                               <td>
                                 <span class="status {OUTCOME_CLASS[l.outcome]}">{OUTCOME_LABELS[l.outcome]}</span>
                                 {#if l.error_category}<span class="muted">{ERROR_CATEGORY_LABELS[l.error_category] ?? l.error_category}</span>{/if}

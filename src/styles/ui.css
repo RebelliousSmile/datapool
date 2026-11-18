@@ -983,3 +983,6 @@ kbd { font: 11px var(--font-mono); padding: 1px 6px; color: var(--muted); border
 /* Détail lien par lien d'une recherche ou d'une liste, sous sa ligne d'historique. */
 .links-detail > td { background: var(--surface-2); padding: var(--space-3); }
 .links-detail .table { margin-top: var(--space-2); }
+
+/* giri gagnés par les liens valides d'une liste */
+.reward { color: var(--good); font: var(--text-xs) var(--font-mono); }

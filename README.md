@@ -81,7 +81,11 @@ Accessible aussi depuis un pool par « ajouter une recherche à ce pool ».
   CSV/TSV, export de favoris HTML, lu dans le navigateur, 1 Mo au plus), lignes
   invalides et doublons signalés avant l'envoi. Par un membre pour un pool de sa
   communauté, au prix par lien payé par le pot ; par l'admin, gratuitement, pour
-  tout pool. webpool l'examine comme les résultats d'une recherche.
+  tout pool. webpool l'examine comme les résultats d'une recherche. Chaque lien
+  valide apporté par un membre (nouveau pour le corpus, entré dans le pool)
+  rapporte des giri sur son portefeuille personnel : montant et plafonds sont
+  affichés dans le formulaire, le gain dans l'historique (« +2 giri ») et dans le
+  détail par lien.
 - **Historique** filtrable par statut : giri dépensés après remboursement, liens
   trouvés, nouveaux et entrés dans le pool, avec le **détail lien par lien**
   (en attente, en examen, erreur par catégorie dont la quarantaine, dans le pool
