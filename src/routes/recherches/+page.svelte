@@ -18,10 +18,17 @@
     fmtEuros,
     fmtGiri,
     historyQuery,
+    ERROR_CATEGORY_LABELS,
+    LIST_PROVIDER,
+    OUTCOME_CLASS,
+    OUTCOME_LABELS,
     knownPool,
+    outcomeSummary,
     parseLimit,
+    parseLinkLines,
     payersFor,
     quote,
+    quoteList,
     spentOn,
   } from '#lib/billing.ts';
   import { fmtDate, fmtNumber } from '#lib/format.ts';
@@ -47,9 +54,20 @@
 
   let form = $state({ query: '', provider: '', pages: 1, pool: page.url.searchParams.get('pool') ?? '', payer: '' });
 
-  const payers = $derived(billing ? payersFor(billing, form.pool) : []);
+  const payers = $derived(billing ? payersFor(billing, form.pool, { admin: session.isAdmin }) : []);
   const payer = $derived(payers.find((p) => p.value === form.payer));
-  const devis = $derived(billing ? quote(billing, { provider: form.provider, pages: form.pages, payer }) : null);
+  // Recherche (provider, pages) ou liste de liens collée (une URL par ligne),
+  // examinée par webpool comme les résultats d'une recherche.
+  let mode = $state<'search' | 'list'>('search');
+  let linksText = $state('');
+  const parsedLinks = $derived(parseLinkLines(linksText));
+  const devis = $derived(
+    !billing
+      ? null
+      : mode === 'list'
+        ? quoteList(billing, { count: parsedLinks.links.length, payer, admin: session.isAdmin })
+        : quote(billing, { provider: form.provider, pages: form.pages, payer, admin: session.isAdmin }),
+  );
   const giriPerEur = $derived(billing?.giri_per_eur ?? 1000);
 
   $effect(() => {
@@ -65,7 +83,7 @@
   });
   // OpenRouter n'achète qu'une page.
   $effect(() => {
-    if (devis && form.pages > devis.maxPages) form.pages = devis.maxPages;
+    if (mode === 'search' && devis && form.pages > devis.maxPages) form.pages = devis.maxPages;
   });
 
   async function buy(event: SubmitEvent) {
@@ -73,17 +91,45 @@
     if (screen.sending) return;
     const client = session.client;
     if (!client || !devis || devis.problem || !form.query.trim()) return;
-    const bought = await screen.buy(client, {
-      query: form.query.trim(),
-      provider: form.provider,
-      pages: form.pages,
-      ...(form.pool ? { pool: form.pool } : {}),
-      ...(form.payer ? { community: form.payer } : {}),
-    });
+    const target = { ...(form.pool ? { pool: form.pool } : {}), ...(form.payer ? { community: form.payer } : {}) };
+    const bought = await screen.buy(
+      client,
+      mode === 'list'
+        ? { query: form.query.trim(), provider: LIST_PROVIDER, pages: 1, links: parsedLinks.links, ...target }
+        : { query: form.query.trim(), provider: form.provider, pages: form.pages, ...target },
+    );
     if (bought) {
       form.query = '';
+      if (mode === 'list') linksText = '';
       offset = 0;
     }
+  }
+
+  // Fichier de liens (texte, Markdown, CSV, favoris HTML) : lu dans le navigateur,
+  // rien n'est envoyé avant la soumission.
+  let fileError = $state('');
+  async function loadLinkFile(event: Event) {
+    fileError = '';
+    const file = (event.currentTarget as HTMLInputElement).files?.[0];
+    if (!file) return;
+    if (file.size > 1_000_000) {
+      fileError = 'Fichier de plus de 1 Mo : le découper en plusieurs listes.';
+      return;
+    }
+    linksText = await file.text();
+    if (!form.query.trim()) form.query = file.name.replace(/\.[^.]+$/, '');
+  }
+
+  // Détail lien par lien d'une recherche ou d'une liste (GET /requests/{id}/links).
+  let openLinks = $state<number | null>(null);
+  let linksDetail = $state<Promise<{ items: Schemas['RequestLink'][] }> | null>(null);
+  function toggleLinks(id: number) {
+    if (openLinks === id) {
+      openLinks = null;
+      return;
+    }
+    openLinks = id;
+    linksDetail = session.client!.requestLinks(id);
   }
 
   // Historique : mes recherches, celles d'une communauté que je possède, ou
@@ -130,7 +176,7 @@
     return crewSlug ? session.client?.members(crewSlug) : undefined;
   });
 
-  // Le rôle ne se donne pas : webpool désigne propriétaire le plus gros apport au pot.
+  // Le rôle ne se donne pas : le propriétaire est le membre qui a versé le plus au pot.
   async function saveMember(name: string, limitRaw: string | number | null) {
     crewError = '';
     crewNotice = '';
@@ -204,7 +250,7 @@
       {#each billing.invitations as inv (inv.slug)}
         <li class="panel invitation">
           <div>
-            <strong>{inv.label}</strong> vous invite comme {inv.role === 'owner' ? 'propriétaire' : 'membre'}
+            <strong>{inv.label}</strong> vous invite comme membre
             <div class="muted">
               {inv.monthly_limit === null ? 'sans plafond' : `plafond : ${fmtGiri(inv.monthly_limit)} sur 30 jours`} · le {fmtDate(inv.invited_at)}
             </div>
@@ -234,14 +280,18 @@
   <div class="tiles">
     <div class="tile">
       <span class="eyebrow">Personnel</span><span class="value">{fmtGiri(billing.personal.balance)}</span>
-      <span class="sub">{fmtEuros(billing.personal.balance, giriPerEur)} · crédité par un don</span>
+      <span class="sub">{fmtEuros(billing.personal.balance, giriPerEur)} · dons et récompenses de liens</span>
     </div>
     {#each billing.communities as c (c.slug)}
       <div class="tile">
-        <span class="eyebrow">{c.label} · {c.role === 'owner' ? 'propriétaire' : 'membre'}</span>
+        <span class="eyebrow"
+          >{c.label} · {c.role === 'owner' ? 'propriétaire' : 'membre'}</span
+        >
         <span class="value">{fmtGiri(c.balance)}</span>
         <span class="sub"
-          >{c.monthly_limit === null
+          >{c.role === 'owner'
+            ? 'propriétaire : plus gros apport au pot, sans plafond'
+            : c.monthly_limit === null
             ? 'sans plafond'
             : `${fmtGiri(c.spent_30d)} dépensés sur ${fmtGiri(c.monthly_limit)} en 30 jours`} · vos apports : {fmtGiri(c.contributed)} · pools :
           {c.pools.join(', ') || 'aucun'}</span
@@ -277,7 +327,7 @@
   </p>
 
   <details class="ledger" bind:open={ledgerOpen}>
-    <summary><h2>Mouvements</h2><span class="eyebrow">dons, apports, achats, remboursements</span></summary>
+    <summary><h2>Mouvements</h2><span class="eyebrow">dons, apports, achats, remboursements, récompenses</span></summary>
     {#if owned.length}
       <label class="field"
         ><span>Grand livre</span>
@@ -315,24 +365,68 @@
   </details>
 
   <div class="section-title"><h2>Nouvelle recherche</h2><span class="eyebrow">{fmtNumber(billing.max_queued)} en attente au plus</span></div>
-  {#if billing.prices.length === 0}
+  <div class="tabs" role="group" aria-label="Type de soumission">
+    <button class="tab" type="button" aria-pressed={mode === 'search'} onclick={() => (mode = 'search')}>Recherche</button>
+    <button class="tab" type="button" aria-pressed={mode === 'list'} onclick={() => (mode = 'list')}>Liste de liens</button>
+  </div>
+  {#if mode === 'list'}
+    <p class="muted">
+      Une URL par ligne suivie d'un titre facultatif, une liste Markdown, un CSV ou un export de favoris. La liste est examinée
+      comme les résultats d'une recherche (normalisation, classement, vignettes) et ses liens entrent dans le pool s'il les
+      accepte ; le détail de chaque lien est consultable dans l'historique.
+      {#if session.isAdmin}Gratuite pour l'admin, pour tout pool.{:else}Réservée aux pools de vos communautés, payée par le pot :
+        {fmtGiri(billing.lists.price_per_link)} par lien.{/if}
+      {fmtNumber(billing.lists.max_links)} liens au plus.
+      {#if billing.lists.reward_per_link > 0 && !session.isAdmin}
+        Chaque lien valide que vous apportez, nouveau pour le corpus et entré dans le pool, vous rapporte
+        {fmtGiri(billing.lists.reward_per_link)} sur votre portefeuille personnel (au plus {fmtNumber(billing.lists.reward_domain_cap)} liens
+        par domaine et {fmtGiri(billing.lists.reward_monthly_cap)} sur 30 jours).
+      {/if}
+    </p>
+  {/if}
+  {#if mode === 'search' && billing.prices.length === 0}
     <p class="muted">Aucun provider n'est ouvert aux recherches.</p>
   {:else}
     <form class="filters" onsubmit={buy}>
       <label class="field"
-        ><span>Requête</span><input class="input" bind:value={form.query} maxlength="200" required placeholder="長崎 写真 フリー素材" /></label
+        ><span>{mode === 'list' ? 'Libellé de la liste' : 'Requête'}</span><input
+          class="input"
+          bind:value={form.query}
+          maxlength="200"
+          required
+          placeholder={mode === 'list' ? 'Japon : sources photo libres' : '長崎 写真 フリー素材'}
+        /></label
       >
-      <label class="field"
-        ><span>Provider</span>
-        <select class="input" bind:value={form.provider}>
-          {#each billing.prices as p (p.provider)}
-            <option value={p.provider}>{p.provider} — {fmtGiri(p.unit_price)} la page</option>
-          {/each}
-        </select>
-      </label>
-      <label class="field"
-        ><span>Pages</span><input class="input" type="number" min="1" max={devis?.maxPages ?? 1} bind:value={form.pages} /></label
-      >
+      {#if mode === 'list'}
+        <label class="field links-field"
+          ><span>Liens</span><textarea
+            class="input"
+            rows="8"
+            bind:value={linksText}
+            placeholder="https://example.jp/page  Titre facultatif (une URL par ligne)"
+          ></textarea></label
+        >
+        <label class="field"
+          ><span>ou un fichier</span><input
+            class="input"
+            type="file"
+            accept=".txt,.md,.markdown,.csv,.tsv,.html,.htm,text/plain,text/markdown,text/csv,text/html"
+            onchange={loadLinkFile}
+          /></label
+        >
+      {:else}
+        <label class="field"
+          ><span>Provider</span>
+          <select class="input" bind:value={form.provider}>
+            {#each billing.prices as p (p.provider)}
+              <option value={p.provider}>{p.provider} — {fmtGiri(p.unit_price)} la page</option>
+            {/each}
+          </select>
+        </label>
+        <label class="field"
+          ><span>Pages</span><input class="input" type="number" min="1" max={devis?.maxPages ?? 1} bind:value={form.pages} /></label
+        >
+      {/if}
       <label class="field"
         ><span>Pool visé</span>
         <select class="input" bind:value={form.pool}>
@@ -349,16 +443,34 @@
         </select>
       </label>
       <button class="btn btn-primary" disabled={screen.sending || !devis || !!devis.problem || !form.query.trim()}>
-        <Icon name="search" small />{screen.sending ? 'Achat…' : 'Acheter'}{devis ? ` · ${fmtGiri(devis.price)}` : ''}
+        <Icon name="search" small />{screen.sending ? 'Envoi…' : mode === 'list' ? 'Soumettre' : 'Acheter'}{devis
+          ? ` · ${fmtGiri(devis.price)}`
+          : ''}
       </button>
     </form>
     {#if devis}
       <p class="muted" aria-live="polite">
-        {fmtGiri(devis.price)} ({fmtEuros(devis.price, giriPerEur)}) pour {devis.price / devis.unitPrice} page{devis.price / devis.unitPrice > 1 ? 's' : ''}
+        {#if mode === 'list'}
+          {fmtGiri(devis.price)} ({fmtEuros(devis.price, giriPerEur)}) pour {parsedLinks.links.length} lien{parsedLinks.links.length > 1 ? 's' : ''}
+          {#if parsedLinks.duplicates}· {parsedLinks.duplicates} doublon{parsedLinks.duplicates > 1 ? 's' : ''} retiré{parsedLinks.duplicates > 1 ? 's' : ''}{/if}
+        {:else}
+          {fmtGiri(devis.price)} ({fmtEuros(devis.price, giriPerEur)}) pour {devis.price / devis.unitPrice} page{devis.price / devis.unitPrice > 1 ? 's' : ''}
+        {/if}
         {#if !devis.problem}· solde après achat : {fmtGiri(devis.after)}{/if}
         {#if form.pool}· les liens trouvés entrent dans le pool s'il les accepte{/if}
       </p>
       {#if devis.problem}<div class="alert-box err" role="alert"><Icon name="alert" small />{devis.problem}</div>{/if}
+      {#if fileError}<div class="alert-box err" role="alert"><Icon name="alert" small />{fileError}</div>{/if}
+      {#if mode === 'list' && parsedLinks.rejected.length}
+        <div class="alert-box err" role="alert">
+          <Icon name="alert" small />{parsedLinks.rejected.length} ligne{parsedLinks.rejected.length > 1 ? 's' : ''} ignorée{parsedLinks.rejected.length > 1
+            ? 's'
+            : ''} (URL http(s) attendue) : {parsedLinks.rejected
+            .slice(0, 5)
+            .map((r) => `ligne ${r.line}`)
+            .join(', ')}{parsedLinks.rejected.length > 5 ? '…' : ''}
+        </div>
+      {/if}
     {/if}
   {/if}
   {#if screen.sendError}<div class="alert-box err" role="alert"><Icon name="alert" small />{screen.sendError}</div>{/if}
@@ -406,20 +518,65 @@
                   {#if r.status === 'queued' && !view}<div class="show-sm">{@render cancelButton(r)}</div>{/if}
                 </td>
                 <td><span class="status {STATUS_CLASS[r.status]}">{REQUEST_STATUS_LABELS[r.status]}</span></td>
-                <td class="mono hide-sm">{r.provider} · {r.calls_done}/{r.pages}</td>
+                <td class="mono hide-sm"
+                  >{typeof r.links === 'number' ? `liste · ${r.links} lien${r.links > 1 ? 's' : ''}` : `${r.provider} · ${r.calls_done}/${r.pages}`}</td
+                >
                 <td class="hide-sm">
                   {#if r.pool}<a href={resolve('/pools/[slug]', { slug: r.pool })}>{r.pool}</a>{:else}—{/if}
                   {#if r.community}<div class="muted">payé par {r.community}</div>{/if}
                 </td>
                 <td class="num" title={r.refunded ? `${fmtGiri(r.price)} payés, ${fmtGiri(r.refunded)} remboursés` : undefined}
-                  >{fmtNumber(spentOn(r))}</td
+                  >{fmtNumber(spentOn(r))}{#if r.rewarded > 0}<div class="reward" title="giri gagnés par les liens valides apportés">
+                      +{fmtGiri(r.rewarded)}
+                    </div>{/if}</td
                 >
-                <td class="num" title="résultats · nouveaux · dans le pool"
-                  >{fmtNumber(r.results)} · {fmtNumber(r.new_urls)}{r.in_pool === null ? '' : ` · ${fmtNumber(r.in_pool)}`}</td
-                >
+                <td class="num">
+                  <button
+                    class="btn btn-sm btn-ghost"
+                    type="button"
+                    aria-expanded={openLinks === r.id}
+                    title="résultats · nouveaux · dans le pool — détail lien par lien"
+                    onclick={() => toggleLinks(r.id)}
+                    >{fmtNumber(r.results)} · {fmtNumber(r.new_urls)}{r.in_pool === null ? '' : ` · ${fmtNumber(r.in_pool)}`}</button
+                  >
+                </td>
                 <td class="mono nowrap hide-sm">{fmtDate(r.created_at)}</td>
                 <td class="hide-sm">{#if r.status === 'queued' && !view}{@render cancelButton(r)}{/if}</td>
               </tr>
+              {#if openLinks === r.id && linksDetail}
+                <tr class="links-detail">
+                  <td colspan="9">
+                    {#await linksDetail}
+                      <p class="terminal-line">&gt; chargement<span class="caret" aria-hidden="true"></span></p>
+                    {:then detail}
+                      <p class="muted">{outcomeSummary(detail.items) || 'Aucun lien.'}</p>
+                      <table class="table">
+                        <thead><tr><th class="num">#</th><th>Lien</th><th>Sort</th><th class="hide-sm">Titre lu</th></tr></thead>
+                        <tbody>
+                          {#each detail.items as l (l.position ?? l.url)}
+                            <tr>
+                              <td class="num mono">{l.position ?? '—'}</td>
+                              <td class="mono"
+                                ><ExternalLink url={l.url}>{l.url}</ExternalLink>{#if l.known}<span class="chip" title="déjà dans le corpus avant la soumission"
+                                    >déjà connu</span
+                                  >{/if}{#if l.reward > 0}<span class="chip primary" title="lien valide apporté : récompense">+{fmtGiri(l.reward)}</span>{/if}</td
+                              >
+                              <td>
+                                <span class="status {OUTCOME_CLASS[l.outcome]}">{OUTCOME_LABELS[l.outcome]}</span>
+                                {#if l.error_category}<span class="muted">{ERROR_CATEGORY_LABELS[l.error_category] ?? l.error_category}</span>{/if}
+                                {#if l.error}<div class="muted" title={l.error}>{l.error}</div>{/if}
+                              </td>
+                              <td class="hide-sm secondary">{l.title ?? '—'}</td>
+                            </tr>
+                          {/each}
+                        </tbody>
+                      </table>
+                    {:catch err}
+                      <div class="alert-box err" role="alert"><Icon name="alert" small />{errorMessage(err)}</div>
+                    {/await}
+                  </td>
+                </tr>
+              {/if}
             {:else}
               <tr><td colspan="9" class="muted">Aucune recherche.</td></tr>
             {/each}
@@ -444,6 +601,11 @@
         <span class="eyebrow">{owned[0].label} · plafond en giri sur 30 jours, vide : aucun</span>
       {/if}
     </div>
+    <p class="muted">
+      Le propriétaire est le membre qui a versé le plus de giri au pot (ex æquo : tous les premiers ; tant que personne n'a
+      versé, le fondateur). Le rôle ne se donne pas : il change de mains quand un autre membre verse davantage. Un
+      propriétaire n'a pas de plafond et ne peut pas être retiré par un autre.
+    </p>
     <Async value={members}>
       {#snippet children(res)}
         <div class="panel flush table-wrap">
@@ -454,22 +616,34 @@
             <tbody>
               {#each res.items as m (m.name)}
                 {@const edit = { limit: m.monthly_limit === null ? '' : String(m.monthly_limit) }}
+                {@const owner = m.role === 'owner'}
                 <tr>
                   <td class="mono"
                     >{m.name}{#if !m.accepted}<span class="chip">invité</span>{/if}{#if m.revoked}<span class="chip">révoqué</span>{/if}</td
                   >
-                  <td>{m.role === 'owner' ? 'propriétaire' : 'membre'}{#if m.founder}<span class="chip">fondateur</span>{/if}</td>
                   <td>
-                    <label class="sr-only" for={`limit-${m.name}`}>Plafond de {m.name}</label>
-                    <input class="input" id={`limit-${m.name}`} inputmode="numeric" placeholder="aucun" bind:value={edit.limit} />
+                    {#if owner}<span class="chip primary">propriétaire</span>{:else}membre{/if}{#if m.founder}<span
+                        class="chip"
+                        title="désigné par l'admin : propriétaire tant que personne n'a versé">fondateur</span
+                      >{/if}
+                  </td>
+                  <td>
+                    {#if owner}
+                      <span class="muted">aucun</span>
+                    {:else}
+                      <label class="sr-only" for={`limit-${m.name}`}>Plafond de {m.name}</label>
+                      <input class="input" id={`limit-${m.name}`} inputmode="numeric" placeholder="aucun" bind:value={edit.limit} />
+                    {/if}
                   </td>
                   <td class="num">{fmtNumber(m.spent_30d)}</td>
                   <td class="num">{fmtNumber(m.contributed)}</td>
                   <td class="nowrap">
-                    <button class="btn btn-sm" type="button" onclick={() => saveMember(m.name, edit.limit)}
-                      ><Icon name="check" small />Enregistrer</button
-                    >
-                    <button class="btn btn-sm btn-ghost" type="button" onclick={() => removeMember(m.name)}><Icon name="x" small />Retirer</button>
+                    {#if !owner}
+                      <button class="btn btn-sm" type="button" onclick={() => saveMember(m.name, edit.limit)}
+                        ><Icon name="check" small />Enregistrer</button
+                      >
+                      <button class="btn btn-sm btn-ghost" type="button" onclick={() => removeMember(m.name)}><Icon name="x" small />Retirer</button>
+                    {/if}
                   </td>
                 </tr>
               {/each}

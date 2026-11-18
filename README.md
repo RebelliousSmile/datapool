@@ -50,7 +50,7 @@ après 15 s (« L'API ne répond pas »).
 | Pools | admin, read | cartes des pools visibles : mosaïque des premières vignettes, répartition par usage commercial, nombre de liens, date de matérialisation ; chaque pool s'ouvre en outil de recherche (ci-dessous) |
 | Recherche | admin, read | barre de l'en-tête (touche `/`) : un terme cherché dans tous les pools visibles (titre, description, URL), un résultat par lien avec les pools qui le contiennent et son rang dans chacun |
 | Mon compte | session de compte | changement de mot de passe |
-| Recherches | admin, read | soldes en giri, achat de recherches, historique, communautés (ci-dessous) |
+| Recherches | admin, read | soldes en giri, achat de recherches, soumission de listes de liens, historique avec détail lien par lien, communautés (ci-dessous) |
 | Corpus | admin | URLs filtrées (texte, statut, thème, domaine, quarantaine), triées par date, qualité ou pertinence ; copie ou téléchargement de la sélection (5 000 liens au plus, plafond annoncé) |
 | Fiche URL | admin | sources (requête, provider, rang), thèmes, facettes, pools ; contrôle des liens : quarantaine, dernier test et historique des contrôles |
 | Domaines | admin | registre, filtré par usage commercial (dont « à qualifier ») |
@@ -76,15 +76,26 @@ Accessible aussi depuis un pool par « ajouter une recherche à ce pool ».
   communauté (rôle, plafond, dépense sur 30 jours, vos apports).
 - **Achat** : requête, provider, nombre de pages, pool visé, avec le prix et le
   solde après achat. Un pool de communauté se paie sur son pot, jamais en
-  personnel.
+  personnel ; l'admin ne paie pas (« Gratuit (admin) »).
+- **Liste de liens** : collée ou chargée depuis un fichier (texte, Markdown,
+  CSV/TSV, export de favoris HTML, lu dans le navigateur, 1 Mo au plus), lignes
+  invalides et doublons signalés avant l'envoi. Par un membre pour un pool de sa
+  communauté, au prix par lien payé par le pot ; par l'admin, gratuitement, pour
+  tout pool. webpool l'examine comme les résultats d'une recherche. Chaque lien
+  valide apporté par un membre (nouveau pour le corpus, entré dans le pool)
+  rapporte des giri sur son portefeuille personnel : montant et plafonds sont
+  affichés dans le formulaire, le gain dans l'historique (« +2 giri ») et dans le
+  détail par lien.
 - **Historique** filtrable par statut : giri dépensés après remboursement, liens
-  trouvés, nouveaux et entrés dans le pool ; annulation d'une recherche en
-  attente. **Mouvements** repliables : grand livre personnel, ou du pot pour un
+  trouvés, nouveaux et entrés dans le pool, avec le **détail lien par lien**
+  (en attente, en examen, erreur par catégorie dont la quarantaine, dans le pool
+  ou non, déjà connu) ; annulation d'une recherche en attente. **Mouvements** repliables : grand livre personnel, ou du pot pour un
   propriétaire.
 - **Communautés** : invitations reçues (accepter, décliner), « Quitter » avec
   confirmation. Les propriétaires voient les recherches de leur communauté et
-  gèrent ses membres (invitation, rôle, plafond, retrait ; « invité » tant que
-  l'invitation n'est pas acceptée). L'admin voit toutes les recherches.
+  gèrent ses membres (invitation, plafond, retrait d'un membre ; « invité » tant
+  que l'invitation n'est pas acceptée). Le propriétaire est le membre qui a versé
+  le plus au pot : rôle calculé, ni plafond ni retrait pour lui. L'admin voit toutes les recherches.
 
 **Achat sûr.** Un achat à la fois (le bouton passe à « Achat… »). Chaque achat
 part avec un en-tête `Idempotency-Key` : si la connexion tombe ou si l'API ne

@@ -749,7 +749,7 @@ kbd { font: 11px var(--font-mono); padding: 1px 6px; color: var(--muted); border
 .tabs { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 2px; min-width: 0; }
 .tab { flex: none; position: relative; display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px; font: var(--text-md) var(--font-body); color: var(--ink-2); background: transparent; border: 1px solid var(--line); border-radius: var(--radius-pill); cursor: pointer; overflow: hidden; }
 .tab:hover { color: var(--ink); border-color: var(--line-strong); }
-.tab[aria-selected='true'] { color: var(--ink); background: var(--accent-soft); border-color: var(--accent); }
+.tab[aria-selected='true'], .tab[aria-pressed='true'] { color: var(--ink); background: var(--accent-soft); border-color: var(--accent); }
 .tab .cnt { font: var(--text-xs) var(--font-mono); color: var(--muted); }
 .tab[aria-selected='true'] .cnt { color: var(--ink-2); }
 .tab.zero { opacity: 0.45; }
@@ -975,3 +975,14 @@ kbd { font: 11px var(--font-mono); padding: 1px 6px; color: var(--muted); border
 .hit-pools { display: flex; flex-wrap: wrap; gap: 4px; }
 .hit-pools a { text-decoration: none; }
 .search-head .meta strong { color: var(--ink); }
+
+/* Liste de liens à soumettre : le champ prend toute la largeur du formulaire. */
+.filters .links-field { flex: 1 1 100%; }
+.filters .links-field textarea { width: 100%; min-height: 9rem; resize: vertical; font-family: var(--font-mono); font-size: var(--text-sm); }
+
+/* Détail lien par lien d'une recherche ou d'une liste, sous sa ligne d'historique. */
+.links-detail > td { background: var(--surface-2); padding: var(--space-3); }
+.links-detail .table { margin-top: var(--space-2); }
+
+/* giri gagnés par les liens valides d'une liste */
+.reward { color: var(--good); font: var(--text-xs) var(--font-mono); }

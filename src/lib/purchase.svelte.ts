@@ -26,6 +26,15 @@ export class Generation {
 
 export const errorMessage = (err: unknown) => (err instanceof Error ? err.message : String(err));
 // Statut 0 : panne réseau ou délai dépassé, l'achat est peut-être passé.
+// Message après une soumission : recherche ou liste, payée ou gratuite, rejouée.
+export function submissionNotice(res: { request: Schemas['SearchRequest']; balance: number; replayed?: boolean }) {
+  const r = res.request;
+  const what = typeof r.links === 'number' ? `Liste #${r.id} (${r.links} lien${r.links > 1 ? 's' : ''})` : `Recherche #${r.id}`;
+  if (res.replayed) return `${what} déjà enregistrée (envoi repris, rien de plus débité) : solde ${fmtGiri(res.balance)}.`;
+  const paid = r.price > 0 ? `${fmtGiri(r.price)} débités, solde ${fmtGiri(res.balance)}` : 'gratuite';
+  return `${what} enregistrée : ${paid}. Examen dans le quart d'heure.`;
+}
+
 const unsure = (err: unknown) => err instanceof ApiError && err.status === 0;
 // 402 solde insuffisant, 429 trop de recherches en attente : soldes à relire.
 const staleBalance = (err: unknown) => err instanceof ApiError && (err.status === 402 || err.status === 429);
@@ -102,9 +111,7 @@ export class RequestsScreen {
     try {
       const res = await api.createRequest(input, { idempotencyKey: this.#pending.key });
       this.#pending = null;
-      this.notice = res.replayed
-        ? `Recherche #${res.request.id} déjà achetée (envoi repris, rien de plus débité) : solde ${fmtGiri(res.balance)}.`
-        : `Recherche #${res.request.id} achetée : ${fmtGiri(res.request.price)} débités, solde ${fmtGiri(res.balance)}. Elle sera lancée dans le quart d'heure.`;
+      this.notice = submissionNotice(res);
       await this.refresh(api);
       return true;
     } catch (err) {
@@ -152,7 +159,7 @@ export class RequestsScreen {
   }
 
   // Accepter ou décliner une invitation, quitter une communauté. Erreur 400
-  // du dernier propriétaire actif affichée telle quelle.
+  // « plus de propriétaire » affichée telle quelle.
   async membership(api: ScreenApi, action: 'accept' | 'decline' | 'leave', slug: string) {
     if (this.isMembershipBusy(slug)) return;
     this.membershipBusy.push(slug);

@@ -1151,7 +1151,7 @@ export interface paths {
             };
         };
         put?: never;
-        /** Achète une recherche : prix débité d'avance, exécution par la tâche `webpool requests run`, pages non lancées remboursées */
+        /** Achète une recherche, ou soumet une liste de liens (provider list) : prix débité d'avance, examen par la tâche `webpool requests run` (normalize, classify, media, pool), ce qui n'a pas été fait remboursé */
         post: {
             parameters: {
                 query?: never;
@@ -1556,6 +1556,132 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/requests/{id}/links": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Sort de chaque lien d'une recherche ou d'une liste (auteur, propriétaires de la communauté qui a payé, admin) */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            items: components["schemas"]["RequestLink"][];
+                        };
+                    };
+                };
+                401: components["responses"]["Unauthorized"];
+                404: components["responses"]["NotFound"];
+                429: components["responses"]["RateLimited"];
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/lists": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Envoie une liste de liens (brute ou structurée) : même validation, même prix et même examen qu'une recherche ; les liens valides apportés sont récompensés */
+        post: {
+            parameters: {
+                query?: never;
+                header?: {
+                    /** @description comme POST /requests */
+                    "Idempotency-Key"?: string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ListInput"];
+                };
+            };
+            responses: {
+                /** @description Clé d'idempotence déjà servie : liste existante, rien de débité */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ListReceipt"];
+                    };
+                };
+                /** @description Liste enregistrée et payée */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ListReceipt"];
+                    };
+                };
+                400: components["responses"]["BadRequest"];
+                401: components["responses"]["Unauthorized"];
+                402: components["responses"]["PaymentRequired"];
+                404: components["responses"]["NotFound"];
+                /** @description Corps de plus de 256 Ko */
+                413: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Corps autre que application/json */
+                415: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Trop de recherches en attente ou trop de requêtes */
+                429: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1913,16 +2039,29 @@ export interface components {
             communities: components["schemas"]["CommunityWallet"][];
             /** @description invitations à des communautés, en attente d'acceptation */
             invitations: components["schemas"]["Invitation"][];
+            /** @description listes de liens soumises par les membres d'une communauté (provider list) */
+            lists: {
+                /** @description giri par lien, payés d'un bloc sur le pot de la communauté */
+                price_per_link: number;
+                /** @description liens au plus par liste, doublons retirés */
+                max_links: number;
+                /** @description giri gagnés par lien valide apporté (nouveau pour le corpus, entré dans le pool visé), sur le portefeuille personnel ; 0 : aucune récompense */
+                reward_per_link: number;
+                /** @description liens récompensés au plus par domaine et par membre sur 30 jours */
+                reward_domain_cap: number;
+                /** @description giri de récompense au plus par membre sur 30 jours */
+                reward_monthly_cap: number;
+            };
         };
         WalletEntry: {
             id: number;
             /** @description giri, positif au crédit */
             delta: number;
             /**
-             * @description donation : don sur un portefeuille personnel ; purchase : apport au pot d'une communauté
+             * @description donation : don sur un portefeuille personnel ; purchase : apport au pot d'une communauté ; reward : récompense de liens valides apportés
              * @enum {string}
              */
-            kind: "donation" | "purchase" | "debit" | "refund" | "adjustment";
+            kind: "donation" | "purchase" | "debit" | "refund" | "adjustment" | "reward";
             /** @description montant reçu, en centimes d'euro (don, achat) */
             amount_cents?: number | null;
             /** @description référence du paiement reçu */
@@ -1965,10 +2104,14 @@ export interface components {
             started_at: string | null;
             /** Format: date-time */
             finished_at: string | null;
+            /** @description liste de liens : nombre de liens soumis ; null pour une recherche */
+            links: number | null;
+            /** @description giri gagnés par les liens valides de la liste (portefeuille personnel de l'auteur) */
+            rewarded: number;
         };
         SearchRequestInput: {
             query: string;
-            /** @description un des providers de `GET /billing` */
+            /** @description un des providers de `GET /billing`, ou `list` pour soumettre une liste de liens */
             provider: string;
             /** @default 1 */
             pages: number;
@@ -1976,6 +2119,11 @@ export interface components {
             pool?: string;
             /** @description communauté dont le pot paie. Un pool d'une de vos communautés se paie toujours par elle : déduite si une seule communauté possède le pool, obligatoire si plusieurs ; jamais en personnel. */
             community?: string;
+            /** @description provider `list` seulement : liens à examiner (URL, ou {url, title}) ; http(s), doublons retirés, `max_links` au plus. Pour un membre : réservé aux pools d'une de ses communautés, payé par le pot. Pour un admin sans `community` : gratuit, tout pool. `query` est le libellé de la liste. */
+            links?: (string | {
+                url: string;
+                title?: string | null;
+            })[];
         };
         RequestReceipt: {
             request: components["schemas"]["SearchRequest"];
@@ -2083,6 +2231,60 @@ export interface components {
         PasswordInput: {
             current: string;
             password: string;
+        };
+        RequestLink: {
+            /** @description ordre dans la liste soumise, ou rang dans les résultats d'une recherche */
+            position: number | null;
+            /** @description URL soumise (liste) ou trouvée (recherche) */
+            url: string;
+            canonical_url: string | null;
+            domain: string | null;
+            /** @description titre de la page lu à la normalisation (il l'emporte sur le titre proposé) */
+            title: string | null;
+            /**
+             * @description queued : liste pas encore ingérée ; examining : en cours de normalisation ou de classement ; in_pool / not_in_pool : classé, entré ou non dans le pool visé (seuils, exclusions) ; in_corpus : classé, sans pool visé
+             * @enum {string}
+             */
+            outcome: "queued" | "examining" | "error" | "in_pool" | "not_in_pool" | "in_corpus";
+            /** @description URL déjà connue du corpus avant la soumission */
+            known: boolean;
+            /**
+             * @description catégorie d'une erreur ; quarantined : lien mis en quarantaine par le contrôle des liens
+             * @enum {string|null}
+             */
+            error_category: "not_found" | "host_refused" | "http_error" | "network" | "quarantined" | null;
+            /** @description admin seulement : message brut */
+            error?: string | null;
+            /** @description admin seulement */
+            http_status?: number | null;
+            /** @description giri gagnés par ce lien (0 si déjà connu, hors pool, ou au-delà des plafonds) */
+            reward: number;
+        };
+        ListInput: {
+            /** @description pool visé ; pour un membre, un pool d'une de ses communautés (payé par son pot) ; pour un admin sans community, tout pool (gratuit) */
+            pool: string;
+            /** @description libellé de la liste : tracé comme requête, il aide le classement */
+            label: string;
+            /** @description liste brute : une URL par ligne suivie d'un titre facultatif, Markdown ([titre](url), puces), CSV/TSV (colonne URL détectée) ou export de favoris HTML. Exclusif de links. */
+            text?: string;
+            /** @description liens structurés, exclusif de text */
+            links?: (string | {
+                url: string;
+                title?: string | null;
+            })[];
+            /** @description communauté dont le pot paie, si plusieurs possèdent le pool */
+            community?: string;
+        };
+        ListReceipt: {
+            request: components["schemas"]["SearchRequest"];
+            balance: number;
+            /** @description lignes de `text` ignorées (pas d'URL http(s)) */
+            rejected: {
+                line: number;
+                text: string;
+            }[];
+            /** @description doublons retirés de `text` */
+            duplicates: number;
         };
     };
     responses: {
